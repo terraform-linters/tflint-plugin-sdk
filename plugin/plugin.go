@@ -35,9 +35,28 @@ func (RuleSetPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, er
 // In order to communicate the interface correctly with RPC,
 // the type of the related structure is registered in gob at the initial time.
 func init() {
-	gob.Register(&hclsyntax.TemplateExpr{})
+	// https://github.com/hashicorp/hcl/blob/v2.0.0/hclsyntax/expression.go
 	gob.Register(&hclsyntax.LiteralValueExpr{})
 	gob.Register(&hclsyntax.ScopeTraversalExpr{})
+	gob.Register(&hclsyntax.RelativeTraversalExpr{})
+	gob.Register(&hclsyntax.FunctionCallExpr{})
+	gob.Register(&hclsyntax.ConditionalExpr{})
+	gob.Register(&hclsyntax.IndexExpr{})
+	gob.Register(&hclsyntax.TupleConsExpr{})
+	gob.Register(&hclsyntax.ObjectConsExpr{})
+	gob.Register(&hclsyntax.ObjectConsKeyExpr{})
+	gob.Register(&hclsyntax.ForExpr{})
+	gob.Register(&hclsyntax.SplatExpr{})
+	// https://github.com/hashicorp/hcl/blob/v2.0.0/hclsyntax/expression_ops.go
+	gob.Register(&hclsyntax.BinaryOpExpr{})
+	gob.Register(&hclsyntax.UnaryOpExpr{})
+	// https://github.com/hashicorp/hcl/blob/v2.0.0/hclsyntax/expression_template.go
+	gob.Register(&hclsyntax.TemplateExpr{})
+	gob.Register(&hclsyntax.TemplateJoinExpr{})
+	gob.Register(&hclsyntax.TemplateWrapExpr{})
+	// https://github.com/hashicorp/hcl/blob/v2.0.0/traversal.go
 	gob.Register(hcl.TraverseRoot{})
 	gob.Register(hcl.TraverseAttr{})
+	gob.Register(hcl.TraverseIndex{})
+	gob.Register(hcl.TraverseSplat{})
 }
