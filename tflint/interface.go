@@ -25,6 +25,6 @@ type Rule interface {
 // Server is the interface that hosts that provide the plugin mechanism must meet in order to respond to queries from the plugin.
 type Server interface {
 	Attributes(*AttributesRequest, *hcl.Attributes) error
-	EvalExpr(hcl.Expression, *cty.Value) error
+	EvalExpr(*EvalExprRequest, *cty.Value) error
 	EmitIssue(*EmitIssueRequest, *interface{}) error
 }

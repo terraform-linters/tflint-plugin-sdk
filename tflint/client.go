@@ -8,7 +8,6 @@ import (
 
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/zclconf/go-cty/cty"
-	"github.com/zclconf/go-cty/cty/convert"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
@@ -46,43 +45,19 @@ func (c *Client) WalkResourceAttributes(resource, attributeName string, walker f
 	return nil
 }
 
+// EvalExprRequest is the interface used to communicate via RPC.
+type EvalExprRequest struct {
+	Expr hcl.Expression
+	Ret  interface{}
+}
+
 // EvaluateExpr queries the host process for the result of evaluating the value of the passed expression
 // and reflects it as the value of the second argument based on that.
 func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	var val cty.Value
 	var err error
 
-	if err := c.rpcClient.Call("Plugin.EvalExpr", &expr, &val); err != nil {
-		return err
-	}
-
-	switch ret.(type) {
-	case *string:
-		val, err = convert.Convert(val, cty.String)
-	case *int:
-		val, err = convert.Convert(val, cty.Number)
-	case *[]string:
-		val, err = convert.Convert(val, cty.List(cty.String))
-	case *[]int:
-		val, err = convert.Convert(val, cty.List(cty.Number))
-	case *map[string]string:
-		val, err = convert.Convert(val, cty.Map(cty.String))
-	case *map[string]int:
-		val, err = convert.Convert(val, cty.Map(cty.Number))
-	}
-
-	if err != nil {
-		err := &Error{
-			Code:  TypeConversionError,
-			Level: ErrorLevel,
-			Message: fmt.Sprintf(
-				"Invalid type expression in %s:%d",
-				expr.Range().Filename,
-				expr.Range().Start.Line,
-			),
-			Cause: err,
-		}
-		log.Printf("[ERROR] %s", err)
+	if err := c.rpcClient.Call("Plugin.EvalExpr", EvalExprRequest{Expr: expr, Ret: ret}, &val); err != nil {
 		return err
 	}
 
