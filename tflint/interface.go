@@ -2,7 +2,6 @@ package tflint
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/zclconf/go-cty/cty"
 )
 
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
@@ -24,7 +23,7 @@ type Rule interface {
 
 // Server is the interface that hosts that provide the plugin mechanism must meet in order to respond to queries from the plugin.
 type Server interface {
-	Attributes(*AttributesRequest, *hcl.Attributes) error
-	EvalExpr(*EvalExprRequest, *cty.Value) error
+	Attributes(*AttributesRequest, *AttributesResponse) error
+	EvalExpr(*EvalExprRequest, *EvalExprResponse) error
 	EmitIssue(*EmitIssueRequest, *interface{}) error
 }

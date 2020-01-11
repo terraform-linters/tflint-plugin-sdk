@@ -28,15 +28,24 @@ type AttributesRequest struct {
 	AttributeName string
 }
 
+// AttributesResponse is the interface used to communicate via RPC.
+type AttributesResponse struct {
+	Attributes hcl.Attributes
+	Err        error
+}
+
 // WalkResourceAttributes queries the host process, receives a list of attributes that match the conditions,
 // and passes each to the walker function.
 func (c *Client) WalkResourceAttributes(resource, attributeName string, walker func(*hcl.Attribute) error) error {
-	var resp hcl.Attributes
-	if err := c.rpcClient.Call("Plugin.Attributes", AttributesRequest{Resource: resource, AttributeName: attributeName}, &resp); err != nil {
+	var response AttributesResponse
+	if err := c.rpcClient.Call("Plugin.Attributes", AttributesRequest{Resource: resource, AttributeName: attributeName}, &response); err != nil {
 		return err
 	}
+	if response.Err != nil {
+		return response.Err
+	}
 
-	for _, attribute := range resp {
+	for _, attribute := range response.Attributes {
 		if err := walker(attribute); err != nil {
 			return err
 		}
@@ -51,17 +60,26 @@ type EvalExprRequest struct {
 	Ret  interface{}
 }
 
+// EvalExprResponse is the interface used to communicate with RPC.
+type EvalExprResponse struct {
+	Val cty.Value
+	Err error
+}
+
 // EvaluateExpr queries the host process for the result of evaluating the value of the passed expression
 // and reflects it as the value of the second argument based on that.
 func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
-	var val cty.Value
+	var response EvalExprResponse
 	var err error
 
-	if err := c.rpcClient.Call("Plugin.EvalExpr", EvalExprRequest{Expr: expr, Ret: ret}, &val); err != nil {
+	if err := c.rpcClient.Call("Plugin.EvalExpr", EvalExprRequest{Expr: expr, Ret: ret}, &response); err != nil {
 		return err
 	}
+	if response.Err != nil {
+		return response.Err
+	}
 
-	err = gocty.FromCtyValue(val, ret)
+	err = gocty.FromCtyValue(response.Val, ret)
 	if err != nil {
 		err := &Error{
 			Code:  TypeMismatchError,
@@ -110,7 +128,7 @@ func (*Client) EnsureNoError(err error, proc func() error) error {
 		return proc()
 	}
 
-	if appErr, ok := err.(*Error); ok {
+	if appErr, ok := err.(Error); ok {
 		switch appErr.Level {
 		case WarningLevel:
 			return nil

@@ -35,6 +35,7 @@ func (RuleSetPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, er
 // In order to communicate the interface correctly with RPC,
 // the type of the related structure is registered in gob at the initial time.
 func init() {
+	gob.Register(tflint.Error{})
 	// https://github.com/hashicorp/hcl/blob/v2.0.0/hclsyntax/expression.go
 	gob.Register(&hclsyntax.LiteralValueExpr{})
 	gob.Register(&hclsyntax.ScopeTraversalExpr{})
