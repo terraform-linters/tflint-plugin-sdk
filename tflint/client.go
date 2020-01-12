@@ -37,6 +37,8 @@ type AttributesResponse struct {
 // WalkResourceAttributes queries the host process, receives a list of attributes that match the conditions,
 // and passes each to the walker function.
 func (c *Client) WalkResourceAttributes(resource, attributeName string, walker func(*hcl.Attribute) error) error {
+	log.Printf("[DEBUG] Walk `%s.*.%s` attribute", resource, attributeName)
+
 	var response AttributesResponse
 	if err := c.rpcClient.Call("Plugin.Attributes", AttributesRequest{Resource: resource, AttributeName: attributeName}, &response); err != nil {
 		return err
