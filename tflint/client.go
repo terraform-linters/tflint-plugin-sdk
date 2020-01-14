@@ -30,7 +30,7 @@ type AttributesRequest struct {
 
 // AttributesResponse is the interface used to communicate via RPC.
 type AttributesResponse struct {
-	Attributes hcl.Attributes
+	Attributes []*hcl.Attribute
 	Err        error
 }
 
