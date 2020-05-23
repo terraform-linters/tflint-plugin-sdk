@@ -11,7 +11,7 @@ import (
 
 // TestRunner returns a pseudo Runner for testing
 func TestRunner(t *testing.T, files map[string]string) *Runner {
-	runner := &Runner{Files: map[string]*hcl.File{}}
+	runner := &Runner{Files: map[string]*hcl.File{}, Issues: Issues{}}
 	parser := hclparse.NewParser()
 
 	for name, src := range files {
