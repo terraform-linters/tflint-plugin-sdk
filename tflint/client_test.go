@@ -3,8 +3,10 @@ package tflint
 import (
 	"encoding/gob"
 	"errors"
+	"io/ioutil"
 	"net"
 	"net/rpc"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -19,16 +21,15 @@ type mockServer struct {
 }
 
 func (*mockServer) Attributes(req *AttributesRequest, resp *AttributesResponse) error {
-	expr, diags := hclsyntax.ParseExpression([]byte("1"), "example.tf", hcl.Pos{Line: 1, Column: 1})
-	if diags.HasErrors() {
-		*resp = AttributesResponse{Attributes: []*hcl.Attribute{}, Err: diags}
-		return nil
-	}
-
-	*resp = AttributesResponse{Attributes: []*hcl.Attribute{
+	*resp = AttributesResponse{Attributes: []*Attribute{
 		{
 			Name: req.AttributeName,
-			Expr: expr,
+			Expr: []byte("1"),
+			ExprRange: hcl.Range{
+				Filename: "example.tf",
+				Start:    hcl.Pos{Line: 1, Column: 1},
+				End:      hcl.Pos{Line: 2, Column: 2},
+			},
 			Range: hcl.Range{
 				Start: hcl.Pos{Line: 1, Column: 1},
 				End:   hcl.Pos{Line: 2, Column: 2},
@@ -109,7 +110,16 @@ func Test_EvaluateExpr(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	expr, diags := hclsyntax.ParseExpression([]byte("1"), "example.tf", hcl.Pos{Line: 1, Column: 1})
+	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.Write([]byte("1")); err != nil {
+		t.Fatal(err)
+	}
+
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
 	if diags.HasErrors() {
 		t.Fatal(diags)
 	}
@@ -136,7 +146,21 @@ func Test_EmitIssue(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	if err := client.EmitIssue(&testRule{}, "test", hcl.Range{}, Metadata{}); err != nil {
+	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.Write([]byte("1")); err != nil {
+		t.Fatal(err)
+	}
+
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		t.Fatal(diags)
+	}
+
+	if err := client.EmitIssue(&testRule{}, file.Name(), hcl.Range{}, Metadata{Expr: expr}); err != nil {
 		t.Fatal(err)
 	}
 }
