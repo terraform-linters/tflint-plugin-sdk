@@ -80,6 +80,66 @@ func (c *Client) WalkResourceAttributes(resource, attributeName string, walker f
 	return nil
 }
 
+// BlocksRequest is the interface used to communicate via RPC.
+type BlocksRequest struct {
+	Resource  string
+	BlockName string
+}
+
+// BlocksResponse is the interface used to communicate via RPC.
+type BlocksResponse struct {
+	Blocks []*Block
+	Err    error
+}
+
+// Block is an intermediate representation of hcl.Block.
+// It has an body as a string of bytes so that hcl.Body is not transferred via RPC.
+type Block struct {
+	Type      string
+	Labels    []string
+	Body      []byte
+	BodyRange hcl.Range
+
+	DefRange    hcl.Range
+	TypeRange   hcl.Range
+	LabelRanges []hcl.Range
+}
+
+// WalkResourceBlocks queries the host process, receives a list of blocks that match the conditions,
+// and passes each to the walker function.
+func (c *Client) WalkResourceBlocks(resource, blockName string, walker func(*hcl.Block) error) error {
+	log.Printf("[DEBUG] Walk `%s.*.%s` block", resource, blockName)
+
+	var response BlocksResponse
+	if err := c.rpcClient.Call("Plugin.Blocks", BlocksRequest{Resource: resource, BlockName: blockName}, &response); err != nil {
+		return err
+	}
+	if response.Err != nil {
+		return response.Err
+	}
+
+	for _, block := range response.Blocks {
+		file, diags := parseConfig(block.Body, block.BodyRange.Filename, block.BodyRange.Start)
+		if diags.HasErrors() {
+			return diags
+		}
+		b := &hcl.Block{
+			Type:        block.Type,
+			Labels:      block.Labels,
+			Body:        file.Body,
+			DefRange:    block.DefRange,
+			TypeRange:   block.TypeRange,
+			LabelRanges: block.LabelRanges,
+		}
+
+		if err := walker(b); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // EvalExprRequest is the interface used to communicate via RPC.
 type EvalExprRequest struct {
 	Expr      []byte
@@ -188,6 +248,24 @@ func (*Client) EnsureNoError(err error, proc func() error) error {
 func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression, hcl.Diagnostics) {
 	if strings.HasSuffix(filename, ".tf") {
 		return hclsyntax.ParseExpression(src, filename, start)
+	}
+
+	if strings.HasSuffix(filename, ".tf.json") {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "JSON configuration syntax is not supported",
+				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
+			},
+		}
+	}
+
+	panic(fmt.Sprintf("Unexpected file: %s", filename))
+}
+
+func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Diagnostics) {
+	if strings.HasSuffix(filename, ".tf") {
+		return hclsyntax.ParseConfig(src, filename, start)
 	}
 
 	if strings.HasSuffix(filename, ".tf.json") {

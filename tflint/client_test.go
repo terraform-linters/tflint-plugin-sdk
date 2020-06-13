@@ -1,7 +1,6 @@
 package tflint
 
 import (
-	"encoding/gob"
 	"errors"
 	"io/ioutil"
 	"net"
@@ -39,6 +38,24 @@ func (*mockServer) Attributes(req *AttributesRequest, resp *AttributesResponse) 
 	return nil
 }
 
+func (*mockServer) Blocks(req *BlocksRequest, resp *BlocksResponse) error {
+	*resp = BlocksResponse{Blocks: []*Block{
+		{
+			Type:      "resource",
+			Labels:    []string{"aws_instance", "foo"},
+			Body:      []byte(`instance_type = "t2.micro"`),
+			BodyRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 28}},
+			DefRange:  hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
+			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
+			LabelRanges: []hcl.Range{
+				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 10}, End: hcl.Pos{Line: 3, Column: 23}},
+				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 25}, End: hcl.Pos{Line: 3, Column: 29}},
+			},
+		},
+	}, Err: nil}
+	return nil
+}
+
 func (*mockServer) EvalExpr(req *EvalExprRequest, resp *EvalExprResponse) error {
 	*resp = EvalExprResponse{Val: cty.StringVal("1"), Err: nil}
 	return nil
@@ -49,8 +66,6 @@ func (s *mockServer) EmitIssue(req *EmitIssueRequest, resp *interface{}) error {
 }
 
 func startMockServer(t *testing.T) (*Client, *mockServer) {
-	gob.Register(&hclsyntax.LiteralValueExpr{})
-
 	addy, err := net.ResolveTCPAddr("tcp", "0.0.0.0:42586")
 	if err != nil {
 		t.Fatal(err)
@@ -103,6 +118,64 @@ func Test_WalkResourceAttributes(t *testing.T) {
 	opt := cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val")
 	if !cmp.Equal(expected, walked, opt) {
 		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opt))
+	}
+}
+
+func Test_WalkResourceBlocks(t *testing.T) {
+	client, server := startMockServer(t)
+	defer server.Listener.Close()
+
+	walked := []*hcl.Block{}
+	walker := func(block *hcl.Block) error {
+		walked = append(walked, block)
+		return nil
+	}
+
+	if err := client.WalkResourceBlocks("foo", "bar", walker); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []*hcl.Block{
+		{
+			Type:   "resource",
+			Labels: []string{"aws_instance", "foo"},
+			Body: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"instance_type": {
+						Name: "instance_type",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 20}, End: hcl.Pos{Line: 2, Column: 28}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 19}, End: hcl.Pos{Line: 2, Column: 29}},
+						},
+						SrcRange:    hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 29}},
+						NameRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 16}},
+						EqualsRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 17}, End: hcl.Pos{Line: 2, Column: 18}},
+					},
+				},
+				Blocks:   hclsyntax.Blocks{},
+				SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 29}},
+				EndRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 29}, End: hcl.Pos{Line: 2, Column: 29}},
+			},
+			DefRange:  hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
+			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
+			LabelRanges: []hcl.Range{
+				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 10}, End: hcl.Pos{Line: 3, Column: 23}},
+				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 25}, End: hcl.Pos{Line: 3, Column: 29}},
+			},
+		},
+	}
+
+	opts := []cmp.Option{
+		cmpopts.IgnoreUnexported(hclsyntax.Body{}),
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+	}
+	if !cmp.Equal(expected, walked, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opts...))
 	}
 }
 
