@@ -83,7 +83,7 @@ func (c *Client) WalkResourceAttributes(resource, attributeName string, walker f
 // BlocksRequest is the interface used to communicate via RPC.
 type BlocksRequest struct {
 	Resource  string
-	BlockName string
+	BlockType string
 }
 
 // BlocksResponse is the interface used to communicate via RPC.
@@ -107,11 +107,11 @@ type Block struct {
 
 // WalkResourceBlocks queries the host process, receives a list of blocks that match the conditions,
 // and passes each to the walker function.
-func (c *Client) WalkResourceBlocks(resource, blockName string, walker func(*hcl.Block) error) error {
-	log.Printf("[DEBUG] Walk `%s.*.%s` block", resource, blockName)
+func (c *Client) WalkResourceBlocks(resource, blockType string, walker func(*hcl.Block) error) error {
+	log.Printf("[DEBUG] Walk `%s.*.%s` block", resource, blockType)
 
 	var response BlocksResponse
-	if err := c.rpcClient.Call("Plugin.Blocks", BlocksRequest{Resource: resource, BlockName: blockName}, &response); err != nil {
+	if err := c.rpcClient.Call("Plugin.Blocks", BlocksRequest{Resource: resource, BlockType: blockType}, &response); err != nil {
 		return err
 	}
 	if response.Err != nil {
