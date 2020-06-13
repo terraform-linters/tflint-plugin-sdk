@@ -2,11 +2,14 @@ package tflint
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/rpc"
+	"strings"
 
 	hcl "github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -30,8 +33,18 @@ type AttributesRequest struct {
 
 // AttributesResponse is the interface used to communicate via RPC.
 type AttributesResponse struct {
-	Attributes []*hcl.Attribute
+	Attributes []*Attribute
 	Err        error
+}
+
+// Attribute is an intermediate representation of hcl.Attribute.
+// It has an expression as a string of bytes so that hcl.Expression is not transferred via RPC.
+type Attribute struct {
+	Name      string
+	Expr      []byte
+	ExprRange hcl.Range
+	Range     hcl.Range
+	NameRange hcl.Range
 }
 
 // WalkResourceAttributes queries the host process, receives a list of attributes that match the conditions,
@@ -48,7 +61,18 @@ func (c *Client) WalkResourceAttributes(resource, attributeName string, walker f
 	}
 
 	for _, attribute := range response.Attributes {
-		if err := walker(attribute); err != nil {
+		expr, diags := parseExpression(attribute.Expr, attribute.ExprRange.Filename, attribute.ExprRange.Start)
+		if diags.HasErrors() {
+			return diags
+		}
+		attr := &hcl.Attribute{
+			Name:      attribute.Name,
+			Expr:      expr,
+			Range:     attribute.Range,
+			NameRange: attribute.NameRange,
+		}
+
+		if err := walker(attr); err != nil {
 			return err
 		}
 	}
@@ -58,8 +82,9 @@ func (c *Client) WalkResourceAttributes(resource, attributeName string, walker f
 
 // EvalExprRequest is the interface used to communicate via RPC.
 type EvalExprRequest struct {
-	Expr hcl.Expression
-	Ret  interface{}
+	Expr      []byte
+	ExprRange hcl.Range
+	Ret       interface{}
 }
 
 // EvalExprResponse is the interface used to communicate with RPC.
@@ -74,7 +99,16 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	var response EvalExprResponse
 	var err error
 
-	if err := c.rpcClient.Call("Plugin.EvalExpr", EvalExprRequest{Expr: expr, Ret: ret}, &response); err != nil {
+	src, err := ioutil.ReadFile(expr.Range().Filename)
+	if err != nil {
+		return err
+	}
+	req := EvalExprRequest{
+		Expr:      expr.Range().SliceBytes(src),
+		ExprRange: expr.Range(),
+		Ret:       ret,
+	}
+	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
 		return err
 	}
 	if response.Err != nil {
@@ -101,21 +135,28 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 
 // EmitIssueRequest is the interface used to communicate via RPC.
 type EmitIssueRequest struct {
-	Rule     *RuleObject
-	Message  string
-	Location hcl.Range
-	Meta     Metadata
+	Rule      *RuleObject
+	Message   string
+	Location  hcl.Range
+	Expr      []byte
+	ExprRange hcl.Range
 }
 
 // EmitIssue emits attributes to build the issue to the host process
 // Note that the passed rule need to be converted to generic objects
 // because the custom structure defined in the plugin cannot be sent via RPC.
 func (c *Client) EmitIssue(rule Rule, message string, location hcl.Range, meta Metadata) error {
+	src, err := ioutil.ReadFile(meta.Expr.Range().Filename)
+	if err != nil {
+		return err
+	}
+
 	req := &EmitIssueRequest{
-		Rule:     newObjectFromRule(rule),
-		Message:  message,
-		Location: location,
-		Meta:     meta,
+		Rule:      newObjectFromRule(rule),
+		Message:   message,
+		Location:  location,
+		Expr:      meta.Expr.Range().SliceBytes(src),
+		ExprRange: meta.Expr.Range(),
 	}
 	if err := c.rpcClient.Call("Plugin.EmitIssue", &req, new(interface{})); err != nil {
 		return err
@@ -142,4 +183,22 @@ func (*Client) EnsureNoError(err error, proc func() error) error {
 	} else {
 		return err
 	}
+}
+
+func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression, hcl.Diagnostics) {
+	if strings.HasSuffix(filename, ".tf") {
+		return hclsyntax.ParseExpression(src, filename, start)
+	}
+
+	if strings.HasSuffix(filename, ".tf.json") {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "JSON configuration syntax is not supported",
+				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
+			},
+		}
+	}
+
+	panic(fmt.Sprintf("Unexpected file: %s", filename))
 }
