@@ -140,6 +140,47 @@ func (c *Client) WalkResourceBlocks(resource, blockName string, walker func(*hcl
 	return nil
 }
 
+// ResourcesRequest is the interface used to communicate via RPC.
+type ResourcesRequest struct {
+	Name string
+}
+
+// ResourcesResponse is the interface used to communicate via RPC.
+type ResourcesResponse struct {
+	Resources []*Resource
+	Err       error
+}
+
+// Resource is an intermediate representation of configs.Resource.
+type Resource struct {
+	Name string
+	Type string
+
+	DeclRange hcl.Range
+	TypeRange hcl.Range
+}
+
+// WalkResources queries the host process, receives a list of blocks that match the conditions,
+// and passes each to the walker function.
+func (c *Client) WalkResources(resource string, walker func(*Resource) error) error {
+	log.Printf("[DEBUG] Walk `%s` resource", resource)
+
+	var response ResourcesResponse
+	if err := c.rpcClient.Call("Plugin.Resources", ResourcesRequest{Name: resource}, &response); err != nil {
+		return err
+	}
+	if response.Err != nil {
+		return response.Err
+	}
+
+	for _, block := range response.Resources {
+		if err := walker(block); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // EvalExprRequest is the interface used to communicate via RPC.
 type EvalExprRequest struct {
 	Expr      []byte

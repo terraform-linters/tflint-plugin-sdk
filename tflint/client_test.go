@@ -56,6 +56,18 @@ func (*mockServer) Blocks(req *BlocksRequest, resp *BlocksResponse) error {
 	return nil
 }
 
+func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) error {
+	*resp = ResourcesResponse{Resources: []*Resource{
+		{
+			Name:      "example",
+			Type:      "resource",
+			DeclRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
+			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
+		},
+	}, Err: nil}
+	return nil
+}
+
 func (*mockServer) EvalExpr(req *EvalExprRequest, resp *EvalExprResponse) error {
 	*resp = EvalExprResponse{Val: cty.StringVal("1"), Err: nil}
 	return nil
@@ -166,6 +178,39 @@ func Test_WalkResourceBlocks(t *testing.T) {
 				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 10}, End: hcl.Pos{Line: 3, Column: 23}},
 				{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 25}, End: hcl.Pos{Line: 3, Column: 29}},
 			},
+		},
+	}
+
+	opts := []cmp.Option{
+		cmpopts.IgnoreUnexported(hclsyntax.Body{}),
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+	}
+	if !cmp.Equal(expected, walked, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opts...))
+	}
+}
+
+func Test_WalkResources(t *testing.T) {
+	client, server := startMockServer(t)
+	defer server.Listener.Close()
+
+	walked := []*Resource{}
+	walker := func(block *Resource) error {
+		walked = append(walked, block)
+		return nil
+	}
+
+	if err := client.WalkResources("example", walker); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []*Resource{
+		{
+			Name:      "example",
+			Type:      "resource",
+			DeclRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
+			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
 		},
 	}
 
