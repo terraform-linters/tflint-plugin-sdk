@@ -206,18 +206,21 @@ type EmitIssueRequest struct {
 // Note that the passed rule need to be converted to generic objects
 // because the custom structure defined in the plugin cannot be sent via RPC.
 func (c *Client) EmitIssue(rule Rule, message string, location hcl.Range, meta Metadata) error {
-	src, err := ioutil.ReadFile(meta.Expr.Range().Filename)
-	if err != nil {
-		return err
+	req := &EmitIssueRequest{
+		Rule:     newObjectFromRule(rule),
+		Message:  message,
+		Location: location,
 	}
 
-	req := &EmitIssueRequest{
-		Rule:      newObjectFromRule(rule),
-		Message:   message,
-		Location:  location,
-		Expr:      meta.Expr.Range().SliceBytes(src),
-		ExprRange: meta.Expr.Range(),
+	if meta.Expr != nil {
+		src, err := ioutil.ReadFile(meta.Expr.Range().Filename)
+		if err != nil {
+			return err
+		}
+		req.Expr = meta.Expr.Range().SliceBytes(src)
+		req.ExprRange = meta.Expr.Range()
 	}
+
 	if err := c.rpcClient.Call("Plugin.EmitIssue", &req, new(interface{})); err != nil {
 		return err
 	}
