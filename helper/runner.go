@@ -58,6 +58,40 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 	return nil
 }
 
+// WalkResources searches for resources with a specific type and passes to the walker function
+func (r *Runner) WalkResources(resourceType string, walker func(*tflint.Resource) error) error {
+	for _, file := range r.Files {
+		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
+			Blocks: []hcl.BlockHeaderSchema{
+				{
+					Type:       "resource",
+					LabelNames: []string{"type", "name"},
+				},
+			},
+		})
+		if diags.HasErrors() {
+			return diags
+		}
+
+		for _, resource := range resources.Blocks {
+			if resource.Labels[0] != resourceType {
+				continue
+			}
+			err := walker(&tflint.Resource{
+				Name:      resource.Labels[1],
+				Type:      resource.Labels[0],
+				DeclRange: resource.DefRange,
+				TypeRange: resource.LabelRanges[0],
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // EvaluateExpr returns a value of the passed expression.
 // Note that there is no evaluation, no type conversion, etc.
 func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
