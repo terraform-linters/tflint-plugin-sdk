@@ -8,6 +8,7 @@ import (
 type Runner interface {
 	WalkResourceAttributes(string, string, func(*hcl.Attribute) error) error
 	WalkResourceBlocks(string, string, func(*hcl.Block) error) error
+	WalkResources(string, func(*Resource) error) error
 	EvaluateExpr(expr hcl.Expression, ret interface{}) error
 	EmitIssue(rule Rule, message string, location hcl.Range, meta Metadata) error
 	EnsureNoError(error, func() error) error
