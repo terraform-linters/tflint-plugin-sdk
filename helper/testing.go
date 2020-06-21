@@ -11,7 +11,8 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
-// TestRunner returns a pseudo Runner for testing
+// TestRunner returns a mock Runner for testing.
+// You can pass the map of file names and their contents in the second argument.
 func TestRunner(t *testing.T, files map[string]string) *Runner {
 	runner := &Runner{Files: map[string]*hcl.File{}, Issues: Issues{}}
 	parser := hclparse.NewParser()
@@ -27,7 +28,7 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 	return runner
 }
 
-// AssertIssues is an assertion helper for comparing issues
+// AssertIssues is an assertion helper for comparing issues.
 func AssertIssues(t *testing.T, expected Issues, actual Issues) {
 	opts := []cmp.Option{
 		// Byte field will be ignored because it's not important in tests such as positions
@@ -39,7 +40,7 @@ func AssertIssues(t *testing.T, expected Issues, actual Issues) {
 	}
 }
 
-// AssertIssuesWithoutRange is an assertion helper for comparing issues
+// AssertIssuesWithoutRange is an assertion helper for comparing issues except for range.
 func AssertIssuesWithoutRange(t *testing.T, expected Issues, actual Issues) {
 	opts := []cmp.Option{
 		cmpopts.IgnoreFields(Issue{}, "Range"),

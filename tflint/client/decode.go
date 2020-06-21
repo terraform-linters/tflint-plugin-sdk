@@ -1,11 +1,66 @@
-package tflint
+package client
 
 import (
+	"fmt"
+	"strings"
+
 	hcl "github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 )
 
-// Resource is an intermediate representation of configs.Resource.
+// Attribute is an intermediate representation of hcl.Attribute.
+type Attribute struct {
+	Name      string
+	Expr      []byte
+	ExprRange hcl.Range
+	Range     hcl.Range
+	NameRange hcl.Range
+}
+
+func decodeAttribute(attribute *Attribute) (*hcl.Attribute, hcl.Diagnostics) {
+	expr, diags := parseExpression(attribute.Expr, attribute.ExprRange.Filename, attribute.ExprRange.Start)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return &hcl.Attribute{
+		Name:      attribute.Name,
+		Expr:      expr,
+		Range:     attribute.Range,
+		NameRange: attribute.NameRange,
+	}, nil
+}
+
+// Block is an intermediate representation of hcl.Block.
+type Block struct {
+	Type      string
+	Labels    []string
+	Body      []byte
+	BodyRange hcl.Range
+
+	DefRange    hcl.Range
+	TypeRange   hcl.Range
+	LabelRanges []hcl.Range
+}
+
+func decodeBlock(block *Block) (*hcl.Block, hcl.Diagnostics) {
+	file, diags := parseConfig(block.Body, block.BodyRange.Filename, block.BodyRange.Start)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return &hcl.Block{
+		Type:        block.Type,
+		Labels:      block.Labels,
+		Body:        file.Body,
+		DefRange:    block.DefRange,
+		TypeRange:   block.TypeRange,
+		LabelRanges: block.LabelRanges,
+	}, nil
+}
+
+// Resource is an intermediate representation of terraform.Resource.
 type Resource struct {
 	Mode         terraform.ResourceMode
 	Name         string
@@ -69,7 +124,7 @@ func decodeResource(resource *Resource) (*terraform.Resource, hcl.Diagnostics) {
 	}, nil
 }
 
-// ManagedResource is an intermediate representation of configs.ManagedResource.
+// ManagedResource is an intermediate representation of terraform.ManagedResource.
 type ManagedResource struct {
 	Connection   *Connection
 	Provisioners []*Provisioner
@@ -110,7 +165,7 @@ func decodeManagedResource(resource *ManagedResource) (*terraform.ManagedResourc
 	}, nil
 }
 
-// Connection is an intermediate representation of configs.Connection.
+// Connection is an intermediate representation of terraform.Connection.
 type Connection struct {
 	Config      []byte
 	ConfigRange hcl.Range
@@ -168,4 +223,40 @@ func decodeProvisioner(provisioner *Provisioner) (*terraform.Provisioner, hcl.Di
 		DeclRange: provisioner.DeclRange,
 		TypeRange: provisioner.TypeRange,
 	}, nil
+}
+
+func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression, hcl.Diagnostics) {
+	if strings.HasSuffix(filename, ".tf") {
+		return hclsyntax.ParseExpression(src, filename, start)
+	}
+
+	if strings.HasSuffix(filename, ".tf.json") {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "JSON configuration syntax is not supported",
+				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
+			},
+		}
+	}
+
+	panic(fmt.Sprintf("Unexpected file: %s", filename))
+}
+
+func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Diagnostics) {
+	if strings.HasSuffix(filename, ".tf") {
+		return hclsyntax.ParseConfig(src, filename, start)
+	}
+
+	if strings.HasSuffix(filename, ".tf.json") {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "JSON configuration syntax is not supported",
+				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
+			},
+		}
+	}
+
+	panic(fmt.Sprintf("Unexpected file: %s", filename))
 }

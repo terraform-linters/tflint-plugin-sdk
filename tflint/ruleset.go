@@ -2,14 +2,14 @@ package tflint
 
 import "fmt"
 
-// RuleSet is a list of rules that a plugin should provide
+// RuleSet is a list of rules that a plugin should provide.
 type RuleSet struct {
 	Name    string
 	Version string
 	Rules   []Rule
 }
 
-// RuleSetName is the name of the rule set.
+// RuleSetName is the name of the ruleset.
 // Generally, this is synonymous with the name of the plugin.
 func (r *RuleSet) RuleSetName() string {
 	return r.Name
@@ -47,7 +47,7 @@ func (r *RuleSet) ApplyConfig(config *Config) {
 }
 
 // Check runs inspection for each rule by applying Runner.
-func (r *RuleSet) Check(runner *Client) error {
+func (r *RuleSet) Check(runner Runner) error {
 	for _, rule := range r.Rules {
 		if err := rule.Check(runner); err != nil {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)

@@ -6,12 +6,12 @@ import (
 )
 
 // Issue is a stub that has the same structure as the actually used issue object.
-// This is only used for testing, as the Runner client doesn't depend on the actual Issue structure.
+// This is only used for testing, as the mock Runner doesn't depend on the actual Issue structure.
 type Issue struct {
 	Rule    tflint.Rule
 	Message string
 	Range   hcl.Range
 }
 
-// Issues is a list of Issue
+// Issues is a list of Issue.
 type Issues []*Issue

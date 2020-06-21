@@ -2,6 +2,9 @@ package tflint
 
 import "fmt"
 
+// List of error types and levels in an application error.
+// It's possible to get this error from a plugin, but the basic error handling
+// is hidden inside the plugin system, so you usually don't have to worry about it.
 const (
 	// EvaluationError is an error when interpolation failed (unexpected)
 	EvaluationError string = "E:Evaluation"
@@ -30,8 +33,8 @@ const (
 	WarningLevel string = "Warning"
 )
 
-// Error is application error object. It has own error code
-// for processing according to a type of error.
+// Error is an application error object. It has own error code
+// for processing according to the type of error.
 type Error struct {
 	Code    string
 	Level   string
