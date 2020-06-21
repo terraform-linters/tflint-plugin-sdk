@@ -10,6 +10,7 @@ import (
 
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -151,18 +152,9 @@ type ResourcesResponse struct {
 	Err       error
 }
 
-// Resource is an intermediate representation of configs.Resource.
-type Resource struct {
-	Name string
-	Type string
-
-	DeclRange hcl.Range
-	TypeRange hcl.Range
-}
-
 // WalkResources queries the host process, receives a list of blocks that match the conditions,
 // and passes each to the walker function.
-func (c *Client) WalkResources(resource string, walker func(*Resource) error) error {
+func (c *Client) WalkResources(resource string, walker func(*terraform.Resource) error) error {
 	log.Printf("[DEBUG] Walk `%s` resource", resource)
 
 	var response ResourcesResponse
@@ -173,8 +165,13 @@ func (c *Client) WalkResources(resource string, walker func(*Resource) error) er
 		return response.Err
 	}
 
-	for _, block := range response.Resources {
-		if err := walker(block); err != nil {
+	for _, r := range response.Resources {
+		resource, diags := decodeResource(r)
+		if diags.HasErrors() {
+			return diags
+		}
+
+		if err := walker(resource); err != nil {
 			return err
 		}
 	}

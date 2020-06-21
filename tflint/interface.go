@@ -2,13 +2,14 @@ package tflint
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 )
 
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
 type Runner interface {
 	WalkResourceAttributes(string, string, func(*hcl.Attribute) error) error
 	WalkResourceBlocks(string, string, func(*hcl.Block) error) error
-	WalkResources(string, func(*Resource) error) error
+	WalkResources(string, func(*terraform.Resource) error) error
 	EvaluateExpr(expr hcl.Expression, ret interface{}) error
 	EmitIssue(rule Rule, message string, location hcl.Range, meta Metadata) error
 	EnsureNoError(error, func() error) error

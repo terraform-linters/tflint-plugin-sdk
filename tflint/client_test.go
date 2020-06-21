@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -59,8 +60,23 @@ func (*mockServer) Blocks(req *BlocksRequest, resp *BlocksResponse) error {
 func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) error {
 	*resp = ResourcesResponse{Resources: []*Resource{
 		{
-			Name:      "example",
-			Type:      "resource",
+			Mode:              terraform.ManagedResourceMode,
+			Name:              "example",
+			Type:              "resource",
+			Config:            []byte(`instance_type = "t2.micro"`),
+			ConfigRange:       hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 28}},
+			Count:             nil,
+			ForEach:           nil,
+			ProviderConfigRef: nil,
+			Managed: &ManagedResource{
+				Connection:             nil,
+				Provisioners:           []*Provisioner{},
+				CreateBeforeDestroy:    false,
+				PreventDestroy:         false,
+				IgnoreAllChanges:       false,
+				CreateBeforeDestroySet: false,
+				PreventDestroySet:      false,
+			},
 			DeclRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
 			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
 		},
@@ -195,8 +211,8 @@ func Test_WalkResources(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	walked := []*Resource{}
-	walker := func(block *Resource) error {
+	walked := []*terraform.Resource{}
+	walker := func(block *terraform.Resource) error {
 		walked = append(walked, block)
 		return nil
 	}
@@ -205,10 +221,44 @@ func Test_WalkResources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []*Resource{
+	expected := []*terraform.Resource{
 		{
-			Name:      "example",
-			Type:      "resource",
+			Mode: terraform.ManagedResourceMode,
+			Name: "example",
+			Type: "resource",
+			Config: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"instance_type": {
+						Name: "instance_type",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 20}, End: hcl.Pos{Line: 2, Column: 28}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 19}, End: hcl.Pos{Line: 2, Column: 29}},
+						},
+						SrcRange:    hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 29}},
+						NameRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 16}},
+						EqualsRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 17}, End: hcl.Pos{Line: 2, Column: 18}},
+					},
+				},
+				Blocks:   hclsyntax.Blocks{},
+				SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 29}},
+				EndRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 29}, End: hcl.Pos{Line: 2, Column: 29}},
+			},
+			Count:             nil,
+			ForEach:           nil,
+			ProviderConfigRef: nil,
+			Managed: &terraform.ManagedResource{
+				Connection:             nil,
+				Provisioners:           []*terraform.Provisioner{},
+				CreateBeforeDestroy:    false,
+				PreventDestroy:         false,
+				IgnoreAllChanges:       false,
+				CreateBeforeDestroySet: false,
+				PreventDestroySet:      false,
+			},
 			DeclRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 29}},
 			TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 8}},
 		},
