@@ -1,4 +1,4 @@
-package tflint
+package client
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -304,11 +305,11 @@ func Test_EvaluateExpr(t *testing.T) {
 
 type testRule struct{}
 
-func (*testRule) Name() string       { return "test" }
-func (*testRule) Enabled() bool      { return true }
-func (*testRule) Severity() string   { return "Error" }
-func (*testRule) Link() string       { return "" }
-func (*testRule) Check(Runner) error { return nil }
+func (*testRule) Name() string              { return "test" }
+func (*testRule) Enabled() bool             { return true }
+func (*testRule) Severity() string          { return "Error" }
+func (*testRule) Link() string              { return "" }
+func (*testRule) Check(tflint.Runner) error { return nil }
 
 func Test_EmitIssue(t *testing.T) {
 	client, server := startMockServer(t)
@@ -328,7 +329,7 @@ func Test_EmitIssue(t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	if err := client.EmitIssue(&testRule{}, file.Name(), hcl.Range{}, Metadata{Expr: expr}); err != nil {
+	if err := client.EmitIssue(&testRule{}, file.Name(), hcl.Range{}, tflint.Metadata{Expr: expr}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -351,17 +352,17 @@ func Test_EnsureNoError(t *testing.T) {
 		},
 		{
 			Name: "warning error",
-			Error: Error{
-				Code:    UnknownValueError,
-				Level:   WarningLevel,
+			Error: tflint.Error{
+				Code:    tflint.UnknownValueError,
+				Level:   tflint.WarningLevel,
 				Message: "Warning error",
 			},
 		},
 		{
 			Name: "app error",
-			Error: Error{
-				Code:    TypeMismatchError,
-				Level:   ErrorLevel,
+			Error: tflint.Error{
+				Code:    tflint.TypeMismatchError,
+				Level:   tflint.ErrorLevel,
 				Message: "App error",
 			},
 			ErrorText: "App error",

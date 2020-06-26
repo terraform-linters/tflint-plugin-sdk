@@ -8,20 +8,21 @@ import (
 	"github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	tfserver "github.com/terraform-linters/tflint-plugin-sdk/tflint/server"
 )
 
-// Client is an RPC client for use by the host
+// Client is an RPC client for the host.
 type Client struct {
 	rpcClient *rpc.Client
 	broker    *plugin.MuxBroker
 }
 
-// ClientOpts is an option for initializing the RPC client
+// ClientOpts is an option for initializing a Client.
 type ClientOpts struct {
 	Cmd *exec.Cmd
 }
 
-// NewClient is a wrapper of plugin.NewClient
+// NewClient is a wrapper of plugin.NewClient.
 func NewClient(opts *ClientOpts) *plugin.Client {
 	return plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
@@ -37,35 +38,37 @@ func NewClient(opts *ClientOpts) *plugin.Client {
 	})
 }
 
-// RuleSetName queries the RPC server for RuleSetName
+// RuleSetName calls the server-side RuleSetName method and returns its name.
 func (c *Client) RuleSetName() (string, error) {
 	var resp string
 	err := c.rpcClient.Call("Plugin.RuleSetName", new(interface{}), &resp)
 	return resp, err
 }
 
-// RuleSetVersion queries the RPC server for RuleSetVersion
+// RuleSetVersion calls the server-side RuleSetVersion method and returns its version.
 func (c *Client) RuleSetVersion() (string, error) {
 	var resp string
 	err := c.rpcClient.Call("Plugin.RuleSetVersion", new(interface{}), &resp)
 	return resp, err
 }
 
-// RuleNames queries the RPC server for RuleNames
+// RuleNames calls the server-side RuleNames method and returns the list of names.
 func (c *Client) RuleNames() ([]string, error) {
 	var resp []string
 	err := c.rpcClient.Call("Plugin.RuleNames", new(interface{}), &resp)
 	return resp, err
 }
 
-// ApplyConfig queries the RPC server for ApplyConfig
+// ApplyConfig calls the server-side ApplyConfig method.
 func (c *Client) ApplyConfig(config *tflint.Config) error {
 	return c.rpcClient.Call("Plugin.ApplyConfig", config, new(interface{}))
 }
 
-// Check queries the RPC server for Check
-// For bi-directional communication, you can pass a server that accepts Runner's queries
-func (c *Client) Check(server tflint.Server) error {
+// Check calls the server-side Check method.
+// At the same time, it starts the server to respond to requests from the plugin side.
+// Note that this server (tfserver.Server) serves clients that satisfy the Runner interface
+// and is different from the server (plugin.Server) that provides the plugin system.
+func (c *Client) Check(server tfserver.Server) error {
 	brokerID := c.broker.NextId()
 	go c.broker.AcceptAndServe(brokerID, server)
 

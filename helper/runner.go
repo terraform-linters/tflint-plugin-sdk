@@ -8,16 +8,13 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
-// Runner is a pseudo Runner client provided for plugin testing.
-// Actually, it is provided as an RPC client, but for the sake of simplicity,
-// only the methods that satisfy the minimum required Runner interface are implemented.
-// Specifically, there are restrictions on evaluation, annotation comments, module inspection, and so on.
+// Runner is a mock that satisfies the Runner interface for plugin testing.
 type Runner struct {
 	Files  map[string]*hcl.File
 	Issues Issues
 }
 
-// WalkResourceAttributes searches for resources and passes the appropriate attributes to the walker function
+// WalkResourceAttributes visits all specified attributes from Files.
 func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walker func(*hcl.Attribute) error) error {
 	for _, file := range r.Files {
 		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
@@ -60,7 +57,7 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 	return nil
 }
 
-// WalkResources searches for resources with a specific type and passes to the walker function
+// WalkResources visits all specified resources from Files.
 func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resource) error) error {
 	for _, file := range r.Files {
 		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
@@ -105,7 +102,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	return gocty.FromCtyValue(val, ret)
 }
 
-// EmitIssue adds an issue into the self
+// EmitIssue adds an issue to the runner itself.
 func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range, meta tflint.Metadata) error {
 	r.Issues = append(r.Issues, &Issue{
 		Rule:    rule,
@@ -115,7 +112,7 @@ func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range,
 	return nil
 }
 
-// EnsureNoError is a method that simply run a function if there is no error
+// EnsureNoError is a method that simply runs a function if there is no error.
 func (r *Runner) EnsureNoError(err error, proc func() error) error {
 	if err == nil {
 		return proc()
