@@ -140,20 +140,34 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	return nil
 }
 
-// EmitIssue calls the server-side EmitIssue method with the passed rule, range and metadata.
-func (c *Client) EmitIssue(rule tflint.Rule, message string, location hcl.Range, meta tflint.Metadata) error {
+// EmitIssueOnExpr calls the server-side EmitIssue method with the passed expression.
+func (c *Client) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
+	req := &EmitIssueRequest{
+		Rule:     encodeRule(rule),
+		Message:  message,
+		Location: expr.Range(),
+	}
+
+	src, err := ioutil.ReadFile(expr.Range().Filename)
+	if err != nil {
+		return err
+	}
+	req.Expr, req.ExprRange = encodeExpr(src, expr)
+
+	if err := c.rpcClient.Call("Plugin.EmitIssue", &req, new(interface{})); err != nil {
+		return err
+	}
+	return nil
+}
+
+// EmitIssue calls the server-side EmitIssue method with the passed rule and range.
+// You should use EmitIssueOnExpr if you want to emit an issue for an expression.
+// This API provides a lower level interface.
+func (c *Client) EmitIssue(rule tflint.Rule, message string, location hcl.Range) error {
 	req := &EmitIssueRequest{
 		Rule:     encodeRule(rule),
 		Message:  message,
 		Location: location,
-	}
-
-	if meta.Expr != nil {
-		src, err := ioutil.ReadFile(meta.Expr.Range().Filename)
-		if err != nil {
-			return err
-		}
-		req.Expr, req.ExprRange = encodeExpr(src, meta.Expr)
 	}
 
 	if err := c.rpcClient.Call("Plugin.EmitIssue", &req, new(interface{})); err != nil {

@@ -145,8 +145,18 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	return gocty.FromCtyValue(val, ret)
 }
 
+// EmitIssueOnExpr adds an issue to the runner itself.
+func (r *Runner) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
+	r.Issues = append(r.Issues, &Issue{
+		Rule:    rule,
+		Message: message,
+		Range:   expr.Range(),
+	})
+	return nil
+}
+
 // EmitIssue adds an issue to the runner itself.
-func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range, meta tflint.Metadata) error {
+func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range) error {
 	r.Issues = append(r.Issues, &Issue{
 		Rule:    rule,
 		Message: message,
