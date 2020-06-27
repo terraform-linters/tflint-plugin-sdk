@@ -341,6 +341,38 @@ func (r *dummyRule) Severity() string          { return tflint.ERROR }
 func (r *dummyRule) Link() string              { return "" }
 func (r *dummyRule) Check(tflint.Runner) error { return nil }
 
+func Test_EmitIssueOnExpr(t *testing.T) {
+	src := `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`
+
+	runner := TestRunner(t, map[string]string{"main.tf": src})
+
+	err := runner.WalkResourceAttributes("aws_instance", "instance_type", func(attribute *hcl.Attribute) error {
+		if err := runner.EmitIssueOnExpr(&dummyRule{}, "issue found", attribute.Expr); err != nil {
+			t.Fatal(err)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := Issues{
+		{
+			Rule:    &dummyRule{},
+			Message: "issue found",
+			Range:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 19}, End: hcl.Pos{Line: 3, Column: 29}},
+		},
+	}
+
+	opt := cmpopts.IgnoreFields(hcl.Pos{}, "Byte")
+	if !cmp.Equal(expected, runner.Issues, opt) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, runner.Issues, opt))
+	}
+}
+
 func Test_EmitIssue(t *testing.T) {
 	src := `
 resource "aws_instance" "foo" {
@@ -350,7 +382,7 @@ resource "aws_instance" "foo" {
 	runner := TestRunner(t, map[string]string{"main.tf": src})
 
 	err := runner.WalkResourceAttributes("aws_instance", "instance_type", func(attribute *hcl.Attribute) error {
-		if err := runner.EmitIssue(&dummyRule{}, "issue found", attribute.Expr.Range(), tflint.Metadata{}); err != nil {
+		if err := runner.EmitIssue(&dummyRule{}, "issue found", attribute.Expr.Range()); err != nil {
 			t.Fatal(err)
 		}
 		return nil

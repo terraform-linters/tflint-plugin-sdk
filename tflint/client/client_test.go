@@ -311,6 +311,29 @@ func (*testRule) Severity() string          { return "Error" }
 func (*testRule) Link() string              { return "" }
 func (*testRule) Check(tflint.Runner) error { return nil }
 
+func Test_EmitIssueOnExpr(t *testing.T) {
+	client, server := startMockServer(t)
+	defer server.Listener.Close()
+
+	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.Write([]byte("1")); err != nil {
+		t.Fatal(err)
+	}
+
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		t.Fatal(diags)
+	}
+
+	if err := client.EmitIssueOnExpr(&testRule{}, file.Name(), expr); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func Test_EmitIssue(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
@@ -329,7 +352,7 @@ func Test_EmitIssue(t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	if err := client.EmitIssue(&testRule{}, file.Name(), hcl.Range{}, tflint.Metadata{Expr: expr}); err != nil {
+	if err := client.EmitIssue(&testRule{}, file.Name(), expr.Range()); err != nil {
 		t.Fatal(err)
 	}
 }
