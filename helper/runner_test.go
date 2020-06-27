@@ -60,6 +60,66 @@ resource "aws_s3_bucket" "bar" {
 	}
 }
 
+func Test_WalkResourceBlocks(t *testing.T) {
+	src := `
+resource "aws_instance" "foo" {
+  ami = "ami-123456"
+  ebs_block_device {
+    volume_size = 16
+  }
+}
+
+resource "aws_s3_bucket" "bar" {
+  bucket = "my-tf-test-bucket"
+  acl    = "private"
+}`
+
+	runner := TestRunner(t, map[string]string{"main.tf": src})
+
+	walked := []*hcl.Block{}
+	walker := func(block *hcl.Block) error {
+		walked = append(walked, block)
+		return nil
+	}
+
+	if err := runner.WalkResourceBlocks("aws_instance", "ebs_block_device", walker); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []*hcl.Block{
+		{
+			Type: "ebs_block_device",
+			Body: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"volume_size": {
+						Name: "volume_size",
+						Expr: &hclsyntax.LiteralValueExpr{
+							SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 5, Column: 19}, End: hcl.Pos{Line: 5, Column: 21}},
+						},
+						SrcRange:    hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 5, Column: 5}, End: hcl.Pos{Line: 5, Column: 21}},
+						NameRange:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 5, Column: 5}, End: hcl.Pos{Line: 5, Column: 16}},
+						EqualsRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 5, Column: 17}, End: hcl.Pos{Line: 5, Column: 18}},
+					},
+				},
+				Blocks:   hclsyntax.Blocks{},
+				SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 4, Column: 20}, End: hcl.Pos{Line: 6, Column: 4}},
+				EndRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 6, Column: 4}, End: hcl.Pos{Line: 6, Column: 4}},
+			},
+			DefRange:  hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 4, Column: 3}, End: hcl.Pos{Line: 4, Column: 19}},
+			TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 4, Column: 3}, End: hcl.Pos{Line: 4, Column: 19}},
+		},
+	}
+
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+		cmpopts.IgnoreUnexported(hclsyntax.Body{}),
+	}
+	if !cmp.Equal(expected, walked, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opts...))
+	}
+}
+
 func Test_WalkResources(t *testing.T) {
 	src := `
 resource "aws_instance" "foo" {
@@ -144,12 +204,12 @@ resource "aws_s3_bucket" "bar" {
     create_before_destroy = true
     prevent_destroy       = true
     ignore_changes        = all
-  }`, "main.tf", 
-				hcl.Pos{Line: 3, Column: 3}, 
+  }`, "main.tf",
+				hcl.Pos{Line: 3, Column: 3},
 				hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 2, Column: 31}, End: hcl.Pos{Line: 31, Column: 2}},
 				hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 31, Column: 2}, End: hcl.Pos{Line: 31, Column: 2}},
 			),
-			Count:   parseExpression(t, `1`, "main.tf", hcl.Pos{Line: 5, Column: 11}),
+			Count: parseExpression(t, `1`, "main.tf", hcl.Pos{Line: 5, Column: 11}),
 			ForEach: parseExpression(t, `{
     foo = "bar"
   }`, "main.tf", hcl.Pos{Line: 6, Column: 14}),
@@ -164,7 +224,7 @@ resource "aws_s3_bucket" "bar" {
 			Managed: &terraform.ManagedResource{
 				Connection: &terraform.Connection{
 					Config: parseBody(
-						t, 
+						t,
 						`type = "ssh"`,
 						"main.tf",
 						hcl.Pos{Line: 13, Column: 5},
@@ -175,9 +235,9 @@ resource "aws_s3_bucket" "bar" {
 				},
 				Provisioners: []*terraform.Provisioner{
 					{
-						Type:       "local-exec",
+						Type: "local-exec",
 						Config: parseBody(
-							t, 
+							t,
 							`command    = "chmod 600 ssh-key.pem"
     when       = destroy
     on_failure = continue
@@ -192,7 +252,7 @@ resource "aws_s3_bucket" "bar" {
 						),
 						Connection: &terraform.Connection{
 							Config: parseBody(
-								t, 
+								t,
 								`type = "ssh"`,
 								"main.tf",
 								hcl.Pos{Line: 22, Column: 7},
@@ -201,10 +261,10 @@ resource "aws_s3_bucket" "bar" {
 							),
 							DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 21, Column: 5}, End: hcl.Pos{Line: 21, Column: 15}},
 						},
-						When:       terraform.ProvisionerWhenDestroy,
-						OnFailure:  terraform.ProvisionerOnFailureContinue,
-						DeclRange:  hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 3}, End: hcl.Pos{Line: 16, Column: 27}},
-						TypeRange:  hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 15}, End: hcl.Pos{Line: 16, Column: 27}},
+						When:      terraform.ProvisionerWhenDestroy,
+						OnFailure: terraform.ProvisionerOnFailureContinue,
+						DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 3}, End: hcl.Pos{Line: 16, Column: 27}},
+						TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 15}, End: hcl.Pos{Line: 16, Column: 27}},
 					},
 				},
 

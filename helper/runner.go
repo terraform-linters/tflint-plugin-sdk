@@ -57,6 +57,49 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 	return nil
 }
 
+// WalkResourceBlocks visits all specified blocks from Files.
+func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(*hcl.Block) error) error {
+	for _, file := range r.Files {
+		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
+			Blocks: []hcl.BlockHeaderSchema{
+				{
+					Type:       "resource",
+					LabelNames: []string{"type", "name"},
+				},
+			},
+		})
+		if diags.HasErrors() {
+			return diags
+		}
+
+		for _, resource := range resources.Blocks {
+			if resource.Labels[0] != resourceType {
+				continue
+			}
+
+			body, _, diags := resource.Body.PartialContent(&hcl.BodySchema{
+				Blocks: []hcl.BlockHeaderSchema{
+					{
+						Type: blockType,
+					},
+				},
+			})
+			if diags.HasErrors() {
+				return diags
+			}
+
+			for _, block := range body.Blocks {
+				err := walker(block)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 // WalkResources visits all specified resources from Files.
 func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resource) error) error {
 	for _, file := range r.Files {
