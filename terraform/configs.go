@@ -69,6 +69,16 @@ type Connection struct {
 	DeclRange hcl.Range
 }
 
+// Backend is an alternative representation of configs.Backend.
+// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/backend.go#L12-L18
+type Backend struct {
+	Type        string
+	Config      hcl.Body
+	ConfigRange hcl.Range
+	TypeRange   hcl.Range
+	DeclRange   hcl.Range
+}
+
 // ProvisionerWhen is an alternative representation of configs.ProvisionerWhen.
 // https://github.com/hashicorp/terraform/blob/v0.12.26/configs/provisioner.go#L172-L181
 type ProvisionerWhen int

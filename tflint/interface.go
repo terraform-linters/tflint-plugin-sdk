@@ -20,6 +20,9 @@ type Runner interface {
 	// You must pass a resource type as the first argument.
 	WalkResources(string, func(*terraform.Resource) error) error
 
+	// Backend returns the backend configuration, if any.
+	Backend() (*terraform.Backend, error)
+
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError
 	// to determine whether to continue processing.

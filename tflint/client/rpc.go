@@ -17,6 +17,15 @@ type AttributesResponse struct {
 	Err        error
 }
 
+// BackendRequest is a request to the server-side Backend method.
+type BackendRequest struct{}
+
+// BackendResponse is a response to the server-side Backend method.
+type BackendResponse struct {
+	Backend *Backend
+	Err     error
+}
+
 // BlocksRequest is a request to the server-side Blocks method.
 type BlocksRequest struct {
 	Resource  string
