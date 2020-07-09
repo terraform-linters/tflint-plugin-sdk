@@ -85,6 +85,17 @@ func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) err
 	return nil
 }
 
+func (*mockServer) Backend(req *BackendRequest, resp *BackendResponse) error {
+	*resp = BackendResponse{Backend: &Backend{
+		Type:        "example",
+		Config:      []byte(`storage = "cloud"`),
+		ConfigRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
+		DeclRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 22}},
+		TypeRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 11}, End: hcl.Pos{Line: 2, Column: 19}},
+	}, Err: nil}
+	return nil
+}
+
 func (*mockServer) EvalExpr(req *EvalExprRequest, resp *EvalExprResponse) error {
 	*resp = EvalExprResponse{Val: cty.StringVal("1"), Err: nil}
 	return nil
@@ -147,6 +158,53 @@ func Test_WalkResourceAttributes(t *testing.T) {
 	opt := cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val")
 	if !cmp.Equal(expected, walked, opt) {
 		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opt))
+	}
+}
+
+func Test_Backend(t *testing.T) {
+	client, server := startMockServer(t)
+	defer server.Listener.Close()
+
+	expected := &terraform.Backend{
+		Type: "example",
+		Config: &hclsyntax.Body{
+			Attributes: hclsyntax.Attributes{
+				"storage": {
+					Name: "storage",
+					Expr: &hclsyntax.TemplateExpr{
+						Parts: []hclsyntax.Expression{
+							&hclsyntax.LiteralValueExpr{
+								SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 16}, End: hcl.Pos{Line: 3, Column: 21}},
+							},
+						},
+						SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 15}, End: hcl.Pos{Line: 3, Column: 22}},
+					},
+					SrcRange:    hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
+					NameRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 12}},
+					EqualsRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 13}, End: hcl.Pos{Line: 3, Column: 14}},
+				},
+			},
+			Blocks:   hclsyntax.Blocks{},
+			SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
+			EndRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 22}, End: hcl.Pos{Line: 3, Column: 22}},
+		},
+		ConfigRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
+		DeclRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 22}},
+		TypeRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 11}, End: hcl.Pos{Line: 2, Column: 19}},
+	}
+
+	backend, err := client.Backend()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	opts := []cmp.Option{
+		cmpopts.IgnoreUnexported(hclsyntax.Body{}),
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+	}
+	if !cmp.Equal(expected, backend, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, backend, opts...))
 	}
 }
 

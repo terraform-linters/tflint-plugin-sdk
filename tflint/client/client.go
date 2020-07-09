@@ -103,6 +103,26 @@ func (c *Client) WalkResources(resource string, walker func(*terraform.Resource)
 	return nil
 }
 
+// Backend calls the server-side Backend method and returns the backend configuration.
+func (c *Client) Backend() (*terraform.Backend, error) {
+	log.Printf("[DEBUG] Backend")
+
+	var response BackendResponse
+	if err := c.rpcClient.Call("Plugin.Backend", BackendRequest{}, &response); err != nil {
+		return nil, err
+	}
+	if response.Err != nil {
+		return nil, response.Err
+	}
+
+	backend, diags := decodeBackend(response.Backend)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return backend, nil
+}
+
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response
 // in the passed argument.
 func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {

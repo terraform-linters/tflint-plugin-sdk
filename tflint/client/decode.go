@@ -165,6 +165,34 @@ func decodeManagedResource(resource *ManagedResource) (*terraform.ManagedResourc
 	}, nil
 }
 
+// Backend is an intermediate representation of terraform.Backend.
+type Backend struct {
+	Type        string
+	Config      []byte
+	ConfigRange hcl.Range
+	TypeRange   hcl.Range
+	DeclRange   hcl.Range
+}
+
+func decodeBackend(backend *Backend) (*terraform.Backend, hcl.Diagnostics) {
+	if backend == nil {
+		return nil, nil
+	}
+
+	file, diags := parseConfig(backend.Config, backend.ConfigRange.Filename, backend.ConfigRange.Start)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return &terraform.Backend{
+		Type:        backend.Type,
+		Config:      file.Body,
+		TypeRange:   backend.TypeRange,
+		DeclRange:   backend.DeclRange,
+		ConfigRange: backend.ConfigRange,
+	}, nil
+}
+
 // Connection is an intermediate representation of terraform.Connection.
 type Connection struct {
 	Config      []byte
