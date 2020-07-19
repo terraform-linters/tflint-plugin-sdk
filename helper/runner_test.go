@@ -11,6 +11,12 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
+func Test_satisfyRunnerInterface(t *testing.T) {
+	var runner tflint.Runner
+	runner = TestRunner(t, map[string]string{})
+	runner.EnsureNoError(nil, func() error { return nil })
+}
+
 func Test_WalkResourceAttributes(t *testing.T) {
 	src := `
 resource "aws_instance" "foo" {
@@ -307,6 +313,49 @@ func parseExpression(t *testing.T, src string, filename string, pos hcl.Pos) hcl
 		t.Fatal(diags)
 	}
 	return expr
+}
+
+func Test_Backend(t *testing.T) {
+	src := `
+terraform {
+  backend "s3" {
+    bucket = "mybucket"
+    key    = "path/to/my/key"
+    region = "us-east-1"
+  }
+}`
+
+	runner := TestRunner(t, map[string]string{"main.tf": src})
+
+	backend, err := runner.Backend()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := &terraform.Backend{
+		Type:      "s3",
+		TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 11}, End: hcl.Pos{Line: 3, Column: 15}},
+		Config: parseBody(
+			t,
+			`bucket = "mybucket"
+    key    = "path/to/my/key"
+    region = "us-east-1"`,
+			"main.tf",
+			hcl.Pos{Line: 4, Column: 5},
+			hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 16}, End: hcl.Pos{Line: 7, Column: 4}},
+			hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 7, Column: 4}, End: hcl.Pos{Line: 7, Column: 4}},
+		),
+		DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 3}, End: hcl.Pos{Line: 3, Column: 15}},
+	}
+
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+		cmpopts.IgnoreUnexported(hclsyntax.Body{}),
+	}
+	if !cmp.Equal(expected, backend, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, backend, opts...))
+	}
 }
 
 func Test_EvaluateExpr(t *testing.T) {

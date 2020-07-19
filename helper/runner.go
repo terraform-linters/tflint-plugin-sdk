@@ -135,6 +135,42 @@ func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resou
 	return nil
 }
 
+// Backend returns the terraform backend configuration.
+func (r *Runner) Backend() (*terraform.Backend, error) {
+	for _, file := range r.Files {
+		tfcfg, _, diags := file.Body.PartialContent(&hcl.BodySchema{
+			Blocks: []hcl.BlockHeaderSchema{
+				{Type: "terraform"},
+			},
+		})
+		if diags.HasErrors() {
+			return nil, diags
+		}
+
+		for _, block := range tfcfg.Blocks {
+			backendCfg, _, diags := block.Body.PartialContent(&hcl.BodySchema{
+				Blocks: []hcl.BlockHeaderSchema{
+					{Type: "backend", LabelNames: []string{"type"}},
+				},
+			})
+			if diags.HasErrors() {
+				return nil, diags
+			}
+
+			for _, backendBlock := range backendCfg.Blocks {
+				return &terraform.Backend{
+					Type:      backendBlock.Labels[0],
+					TypeRange: backendBlock.LabelRanges[0],
+					Config:    backendBlock.Body,
+					DeclRange: backendBlock.DefRange,
+				}, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
 // EvaluateExpr returns a value of the passed expression.
 // Note that there is no evaluation, no type conversion, etc.
 func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
