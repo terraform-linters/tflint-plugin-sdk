@@ -1,3 +1,18 @@
+## 0.3.0 (2020-07-19)
+
+This release adds `Backend()` API to accessing the Terraform backend configuration. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.18+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/10 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#48](https://github.com/terraform-linters/tflint-plugin-sdk/pull/48): plugin: Bump protocol version
+
+### Enhancements
+
+- [#47](https://github.com/terraform-linters/tflint-plugin-sdk/pull/47): client: Add `Runner.Backend()`
+- [#49](https://github.com/terraform-linters/tflint-plugin-sdk/pull/49): helper: Add Backend() helper
+
 ## 0.2.0 (2020-06-27)
 
 This release adds APIs to access more Terraform's configurations.
