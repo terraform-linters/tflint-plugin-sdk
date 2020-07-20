@@ -1,6 +1,9 @@
 package terraform
 
-import "github.com/hashicorp/hcl/v2"
+import (
+	"github.com/hashicorp/go-version"
+	"github.com/hashicorp/hcl/v2"
+)
 
 // Resource is an alternative representation of configs.Resource.
 // https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L13-L33
@@ -37,6 +40,13 @@ type ManagedResource struct {
 
 	CreateBeforeDestroySet bool
 	PreventDestroySet      bool
+}
+
+// PassedProviderConfig is an alternative representation of configs.PassedProviderConfig.
+// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/module_call.go#L155-L158
+type PassedProviderConfig struct {
+	InChild  *ProviderConfigRef
+	InParent *ProviderConfigRef
 }
 
 // ProviderConfigRef is an alternative representation of configs.ProviderConfigRef.
@@ -77,6 +87,40 @@ type Backend struct {
 	ConfigRange hcl.Range
 	TypeRange   hcl.Range
 	DeclRange   hcl.Range
+}
+
+// ModuleCall is an alternative representation of configs.ModuleCall.
+// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/module_call.go#L11-L31
+// DependsOn is not supported due to the difficulty of intermediate representation.
+type ModuleCall struct {
+	Name string
+
+	SourceAddr      string
+	SourceAddrRange hcl.Range
+	SourceSet       bool
+
+	Config      hcl.Body
+	ConfigRange hcl.Range
+
+	Version VersionConstraint
+
+	Count        hcl.Expression
+	CountRange   hcl.Range
+	ForEach      hcl.Expression
+	ForEachRange hcl.Range
+
+	Providers []PassedProviderConfig
+
+	// DependsOn []hcl.Traversal
+
+	DeclRange hcl.Range
+}
+
+// VersionConstraint is an alternative representation of configs.VersionConstraint.
+// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/version_constraint.go#L16-L19
+type VersionConstraint struct {
+	Required  version.Constraints
+	DeclRange hcl.Range
 }
 
 // ProvisionerWhen is an alternative representation of configs.ProvisionerWhen.

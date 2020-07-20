@@ -135,6 +135,11 @@ func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resou
 	return nil
 }
 
+// WalkModuleCalls visits all module calls from Files.
+func (r *Runner) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error {
+	return nil
+}
+
 // Backend returns the terraform backend configuration.
 func (r *Runner) Backend() (*terraform.Backend, error) {
 	for _, file := range r.Files {

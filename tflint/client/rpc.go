@@ -38,6 +38,15 @@ type BlocksResponse struct {
 	Err    error
 }
 
+// ModuleCallsRequest is a request to the server-side ModuleCalls method.
+type ModuleCallsRequest struct{}
+
+// ModuleCallsResponse is a response to the server-side ModuleCalls method.
+type ModuleCallsResponse struct {
+	ModuleCalls []*ModuleCall
+	Err         error
+}
+
 // ResourcesRequest is a request to the server-side Resources method.
 type ResourcesRequest struct {
 	Name string

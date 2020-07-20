@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-version"
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
@@ -162,6 +163,113 @@ func decodeManagedResource(resource *ManagedResource) (*terraform.ManagedResourc
 
 		CreateBeforeDestroySet: resource.CreateBeforeDestroySet,
 		PreventDestroySet:      resource.PreventDestroySet,
+	}, nil
+}
+
+// ModuleCall is an intermediate representation of terraform.ModuleCall.
+type ModuleCall struct {
+	Name string
+
+	SourceAddr      string
+	SourceAddrRange hcl.Range
+	SourceSet       bool
+
+	Version      string
+	VersionRange hcl.Range
+
+	Config      []byte
+	ConfigRange hcl.Range
+
+	Count        []byte
+	CountRange   hcl.Range
+	ForEach      []byte
+	ForEachRange hcl.Range
+
+	Providers []PassedProviderConfig
+	DeclRange hcl.Range
+
+	// DependsOn []hcl.Traversal
+}
+
+// PassedProviderConfig is an intermediate representation of terraform.PassedProviderConfig.
+type PassedProviderConfig struct {
+	InChild  *terraform.ProviderConfigRef
+	InParent *terraform.ProviderConfigRef
+}
+
+func decodeModuleCall(call *ModuleCall) (*terraform.ModuleCall, hcl.Diagnostics) {
+	file, diags := parseConfig(call.Config, call.ConfigRange.Filename, call.ConfigRange.Start)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	var count hcl.Expression
+	if call.Count != nil {
+		count, diags = parseExpression(call.Count, call.CountRange.Filename, call.CountRange.Start)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+	}
+
+	var forEach hcl.Expression
+	if call.ForEach != nil {
+		forEach, diags = parseExpression(call.ForEach, call.ForEachRange.Filename, call.ForEachRange.Start)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+	}
+
+	providers := []terraform.PassedProviderConfig{}
+	for _, provider := range call.Providers {
+		providers = append(providers, terraform.PassedProviderConfig{
+			InChild:  provider.InChild,
+			InParent: provider.InParent,
+		})
+	}
+
+	versionConstraint := terraform.VersionConstraint{DeclRange: call.VersionRange}
+	if !call.VersionRange.Empty() {
+		required, err := version.NewConstraint(call.Version)
+		if err != nil {
+			detail := fmt.Sprintf(
+				"ModuleCall '%s' version constraint '%s' parse error: %s",
+				call.Name,
+				call.Version,
+				err,
+			)
+
+			return nil, hcl.Diagnostics{
+				&hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Failed to reparse module version constraint",
+					Detail:   detail,
+					Subject:  &call.VersionRange,
+				},
+			}
+		}
+
+		versionConstraint.Required = required
+	}
+
+	return &terraform.ModuleCall{
+		Name: call.Name,
+
+		SourceAddr:      call.SourceAddr,
+		SourceAddrRange: call.SourceAddrRange,
+		SourceSet:       call.SourceSet,
+
+		Config:      file.Body,
+		ConfigRange: call.ConfigRange,
+
+		Version: versionConstraint,
+
+		Count:        count,
+		CountRange:   call.CountRange,
+		ForEach:      forEach,
+		ForEachRange: call.ForEachRange,
+
+		Providers: providers,
+		DeclRange: call.DeclRange,
 	}, nil
 }
 

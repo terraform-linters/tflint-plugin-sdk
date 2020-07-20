@@ -103,6 +103,33 @@ func (c *Client) WalkResources(resource string, walker func(*terraform.Resource)
 	return nil
 }
 
+// WalkModuleCalls calls the server-side ModuleCalls method and passed the decode response
+// to the passed function.
+func (c *Client) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error {
+	log.Printf("[DEBUG] WalkModuleCalls")
+
+	var response ModuleCallsResponse
+	if err := c.rpcClient.Call("Plugin.ModuleCalls", ModuleCallsRequest{}, &response); err != nil {
+		return err
+	}
+	if response.Err != nil {
+		return response.Err
+	}
+
+	for _, c := range response.ModuleCalls {
+		call, diags := decodeModuleCall(c)
+		if diags.HasErrors() {
+			return diags
+		}
+
+		if err := walker(call); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Backend calls the server-side Backend method and returns the backend configuration.
 func (c *Client) Backend() (*terraform.Backend, error) {
 	log.Printf("[DEBUG] Backend")
