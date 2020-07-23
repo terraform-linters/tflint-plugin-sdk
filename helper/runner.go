@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
@@ -135,6 +136,37 @@ func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resou
 	return nil
 }
 
+// WalkModuleCalls visits all module calls from Files.
+func (r *Runner) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error {
+	for _, file := range r.Files {
+		calls, _, diags := file.Body.PartialContent(&hcl.BodySchema{
+			Blocks: []hcl.BlockHeaderSchema{
+				{
+					Type:       "module",
+					LabelNames: []string{"name"},
+				},
+			},
+		})
+		if diags.HasErrors() {
+			return diags
+		}
+
+		for _, block := range calls.Blocks {
+			call, diags := simpleDecodeModuleCallBlock(block)
+			if diags.HasErrors() {
+				return diags
+			}
+
+			err := walker(call)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // Backend returns the terraform backend configuration.
 func (r *Runner) Backend() (*terraform.Backend, error) {
 	for _, file := range r.Files {
@@ -251,20 +283,9 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 
 	var ref *terraform.ProviderConfigRef
 	if attr, exists := content.Attributes["provider"]; exists {
-		traversal, diags := hcl.AbsTraversalForExpr(attr.Expr)
+		ref, diags = decodeProviderConfigRef(attr.Expr)
 		if diags.HasErrors() {
 			return nil, diags
-		}
-
-		ref = &terraform.ProviderConfigRef{
-			Name:      traversal.RootName(),
-			NameRange: traversal[0].SourceRange(),
-		}
-
-		if len(traversal) > 1 {
-			aliasStep := traversal[1].(hcl.TraverseAttr)
-			ref.Alias = aliasStep.Name
-			ref.AliasRange = aliasStep.SourceRange().Ptr()
 		}
 	}
 
@@ -378,4 +399,110 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 		DeclRange: resource.DefRange,
 		TypeRange: resource.LabelRanges[0],
 	}, nil
+}
+
+func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.Diagnostics) {
+	content, remain, diags := block.Body.PartialContent(&hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "source", Required: true},
+			{Name: "version"},
+			{Name: "providers"},
+		},
+	})
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	var sourceAddr string
+	var sourceAddrRange hcl.Range
+	if attr, exists := content.Attributes["source"]; exists {
+		if diags := gohcl.DecodeExpression(attr.Expr, nil, &sourceAddr); diags.HasErrors() {
+			return nil, diags
+		}
+		sourceAddrRange = attr.Expr.Range()
+	}
+
+	providers := []terraform.PassedProviderConfig{}
+	if attr, exists := content.Attributes["providers"]; exists {
+		pairs, diags := hcl.ExprMap(attr.Expr)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+
+		for _, pair := range pairs {
+			key, diags := decodeProviderConfigRef(pair.Key)
+			if diags.HasErrors() {
+				return nil, diags
+			}
+
+			value, diags := decodeProviderConfigRef(pair.Value)
+			if diags.HasErrors() {
+				return nil, diags
+			}
+
+			providers = append(providers, terraform.PassedProviderConfig{
+				InChild:  key,
+				InParent: value,
+			})
+		}
+	}
+
+	var versionRequired version.Constraints
+	var versionValue string
+	var versionRange hcl.Range
+	var err error
+	if attr, exists := content.Attributes["version"]; exists {
+		versionRange = attr.Expr.Range()
+
+		if diags := gohcl.DecodeExpression(attr.Expr, nil, &versionValue); diags.HasErrors() {
+			return nil, diags
+		}
+
+		versionRequired, err = version.NewConstraint(versionValue)
+		if err != nil {
+			return nil, hcl.Diagnostics{
+				{Severity: hcl.DiagError, Summary: "Invalid version constraint"},
+			}
+		}
+	}
+
+	return &terraform.ModuleCall{
+		Name: block.Labels[0],
+
+		SourceAddr:      sourceAddr,
+		SourceAddrRange: sourceAddrRange,
+		SourceSet:       !sourceAddrRange.Empty(),
+
+		Config:      remain,
+		ConfigRange: block.DefRange,
+
+		Version: terraform.VersionConstraint{
+			Required:  versionRequired,
+			DeclRange: versionRange,
+		},
+
+		Providers: providers,
+
+		DeclRange: block.DefRange,
+	}, nil
+}
+
+func decodeProviderConfigRef(expr hcl.Expression) (*terraform.ProviderConfigRef, hcl.Diagnostics) {
+	traversal, diags := hcl.AbsTraversalForExpr(expr)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	ref := &terraform.ProviderConfigRef{
+		Name:      traversal.RootName(),
+		NameRange: traversal[0].SourceRange(),
+	}
+
+	if len(traversal) > 1 {
+		aliasStep := traversal[1].(hcl.TraverseAttr)
+		ref.Alias = aliasStep.Name
+		ref.AliasRange = aliasStep.SourceRange().Ptr()
+	}
+
+	return ref, nil
 }

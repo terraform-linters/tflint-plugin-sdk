@@ -20,6 +20,9 @@ type Runner interface {
 	// You must pass a resource type as the first argument.
 	WalkResources(string, func(*terraform.Resource) error) error
 
+	// WalkModuleCalls visits module calls with the passed function.
+	WalkModuleCalls(func(*terraform.ModuleCall) error) error
+
 	// Backend returns the backend configuration, if any.
 	Backend() (*terraform.Backend, error)
 
