@@ -1,3 +1,22 @@
+## 0.4.0 (2020-08-17)
+
+This release adds `WalkModuleCalls()` API to accessing the module calls. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.19+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/11 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#53](https://github.com/terraform-linters/tflint-plugin-sdk/pull/53): plugin: Bump protocol version
+
+### Enhancements
+
+- [#50](https://github.com/terraform-linters/tflint-plugin-sdk/pull/50): client: Implement `WalkModuleCalls`
+
+### Chores
+
+- [#51](https://github.com/terraform-linters/tflint-plugin-sdk/pull/51): Bump github.com/google/go-cmp from 0.5.0 to 0.5.1
+- [#52](https://github.com/terraform-linters/tflint-plugin-sdk/pull/52): Bump github.com/hashicorp/go-version from 1.0.0 to 1.2.1
+
 ## 0.3.0 (2020-07-19)
 
 This release adds `Backend()` API to accessing the Terraform backend configuration. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.18+.
