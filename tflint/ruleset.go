@@ -1,6 +1,9 @@
 package tflint
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // RuleSet is a list of rules that a plugin should provide.
 type RuleSet struct {
@@ -33,10 +36,17 @@ func (r *RuleSet) RuleNames() []string {
 // Currently used only to enable/disable rules.
 func (r *RuleSet) ApplyConfig(config *Config) {
 	rules := []Rule{}
+
+	if config.DisabledByDefault {
+		log.Printf("[DEBUG] Only mode is enabled. Ignoring default plugin rules")
+	}
+
 	for _, rule := range r.Rules {
 		enabled := rule.Enabled()
 		if cfg := config.Rules[rule.Name()]; cfg != nil {
 			enabled = cfg.Enabled
+		} else if config.DisabledByDefault {
+			enabled = false
 		}
 
 		if enabled {
