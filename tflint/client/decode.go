@@ -74,6 +74,7 @@ type Resource struct {
 	ForEachRange hcl.Range
 
 	ProviderConfigRef *terraform.ProviderConfigRef
+	Provider          terraform.Provider
 
 	Managed *ManagedResource
 
@@ -117,6 +118,7 @@ func decodeResource(resource *Resource) (*terraform.Resource, hcl.Diagnostics) {
 		ForEach: forEach,
 
 		ProviderConfigRef: resource.ProviderConfigRef,
+		Provider:          resource.Provider,
 
 		Managed: managed,
 
@@ -258,15 +260,12 @@ func decodeModuleCall(call *ModuleCall) (*terraform.ModuleCall, hcl.Diagnostics)
 		SourceAddrRange: call.SourceAddrRange,
 		SourceSet:       call.SourceSet,
 
-		Config:      file.Body,
-		ConfigRange: call.ConfigRange,
+		Config: file.Body,
 
 		Version: versionConstraint,
 
-		Count:        count,
-		CountRange:   call.CountRange,
-		ForEach:      forEach,
-		ForEachRange: call.ForEachRange,
+		Count:   count,
+		ForEach: forEach,
 
 		Providers: providers,
 		DeclRange: call.DeclRange,
@@ -293,11 +292,10 @@ func decodeBackend(backend *Backend) (*terraform.Backend, hcl.Diagnostics) {
 	}
 
 	return &terraform.Backend{
-		Type:        backend.Type,
-		Config:      file.Body,
-		TypeRange:   backend.TypeRange,
-		DeclRange:   backend.DeclRange,
-		ConfigRange: backend.ConfigRange,
+		Type:      backend.Type,
+		Config:    file.Body,
+		TypeRange: backend.TypeRange,
+		DeclRange: backend.DeclRange,
 	}, nil
 }
 

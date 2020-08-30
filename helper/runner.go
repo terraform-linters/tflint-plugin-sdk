@@ -473,8 +473,7 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 		SourceAddrRange: sourceAddrRange,
 		SourceSet:       !sourceAddrRange.Empty(),
 
-		Config:      remain,
-		ConfigRange: block.DefRange,
+		Config: remain,
 
 		Version: terraform.VersionConstraint{
 			Required:  versionRequired,
