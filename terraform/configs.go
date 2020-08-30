@@ -6,7 +6,7 @@ import (
 )
 
 // Resource is an alternative representation of configs.Resource.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L13-L33
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L14-L34
 // DependsOn is not supported due to the difficulty of intermediate representation.
 type Resource struct {
 	Mode    ResourceMode
@@ -17,6 +17,7 @@ type Resource struct {
 	ForEach hcl.Expression
 
 	ProviderConfigRef *ProviderConfigRef
+	Provider          Provider
 
 	// DependsOn []hcl.Traversal
 
@@ -27,7 +28,7 @@ type Resource struct {
 }
 
 // ManagedResource is an alternative representation of configs.ManagedResource.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L35-L47
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L37-L48
 // IgnoreChanges is not supported due to the difficulty of intermediate representation.
 type ManagedResource struct {
 	Connection   *Connection
@@ -43,14 +44,14 @@ type ManagedResource struct {
 }
 
 // PassedProviderConfig is an alternative representation of configs.PassedProviderConfig.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/module_call.go#L155-L158
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/module_call.go#L140-L143
 type PassedProviderConfig struct {
 	InChild  *ProviderConfigRef
 	InParent *ProviderConfigRef
 }
 
 // ProviderConfigRef is an alternative representation of configs.ProviderConfigRef.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L371-L376
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L373-L378
 type ProviderConfigRef struct {
 	Name       string
 	NameRange  hcl.Range
@@ -59,7 +60,7 @@ type ProviderConfigRef struct {
 }
 
 // Provisioner is an alternative representation of configs.Provisioner.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/provisioner.go#L9-L20
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/provisioner.go#L11-L20
 type Provisioner struct {
 	Type       string
 	Config     hcl.Body
@@ -72,7 +73,7 @@ type Provisioner struct {
 }
 
 // Connection is an alternative representation of configs.Connection.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/provisioner.go#L164-L170
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/provisioner.go#L166-L170
 type Connection struct {
 	Config hcl.Body
 
@@ -80,17 +81,17 @@ type Connection struct {
 }
 
 // Backend is an alternative representation of configs.Backend.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/backend.go#L12-L18
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/backend.go#L12-L18
 type Backend struct {
-	Type        string
-	Config      hcl.Body
-	ConfigRange hcl.Range
-	TypeRange   hcl.Range
-	DeclRange   hcl.Range
+	Type   string
+	Config hcl.Body
+
+	TypeRange hcl.Range
+	DeclRange hcl.Range
 }
 
 // ModuleCall is an alternative representation of configs.ModuleCall.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/module_call.go#L11-L31
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/module_call.go#L12-L31
 // DependsOn is not supported due to the difficulty of intermediate representation.
 type ModuleCall struct {
 	Name string
@@ -99,15 +100,12 @@ type ModuleCall struct {
 	SourceAddrRange hcl.Range
 	SourceSet       bool
 
-	Config      hcl.Body
-	ConfigRange hcl.Range
+	Config hcl.Body
 
 	Version VersionConstraint
 
-	Count        hcl.Expression
-	CountRange   hcl.Range
-	ForEach      hcl.Expression
-	ForEachRange hcl.Range
+	Count   hcl.Expression
+	ForEach hcl.Expression
 
 	Providers []PassedProviderConfig
 
@@ -117,14 +115,14 @@ type ModuleCall struct {
 }
 
 // VersionConstraint is an alternative representation of configs.VersionConstraint.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/version_constraint.go#L16-L19
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/version_constraint.go#L16-L19
 type VersionConstraint struct {
 	Required  version.Constraints
 	DeclRange hcl.Range
 }
 
 // ProvisionerWhen is an alternative representation of configs.ProvisionerWhen.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/provisioner.go#L172-L181
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/provisioner.go#L172-L181
 type ProvisionerWhen int
 
 const (
@@ -137,7 +135,7 @@ const (
 )
 
 // ProvisionerOnFailure is an alternative representation of configs.ProvisionerOnFailure.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/provisioner.go#L183-L193
+// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/provisioner.go#L183-L193
 type ProvisionerOnFailure int
 
 const (
