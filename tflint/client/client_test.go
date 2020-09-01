@@ -69,6 +69,7 @@ func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) err
 			Count:             nil,
 			ForEach:           nil,
 			ProviderConfigRef: nil,
+			Provider:          terraform.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
 			Managed: &ManagedResource{
 				Connection:             nil,
 				Provisioners:           []*Provisioner{},
@@ -188,9 +189,8 @@ func Test_Backend(t *testing.T) {
 			SrcRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
 			EndRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 22}, End: hcl.Pos{Line: 3, Column: 22}},
 		},
-		ConfigRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 3, Column: 5}, End: hcl.Pos{Line: 3, Column: 22}},
-		DeclRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 22}},
-		TypeRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 11}, End: hcl.Pos{Line: 2, Column: 19}},
+		DeclRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 22}},
+		TypeRange: hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 11}, End: hcl.Pos{Line: 2, Column: 19}},
 	}
 
 	backend, err := client.Backend()
@@ -309,6 +309,7 @@ func Test_WalkResources(t *testing.T) {
 			Count:             nil,
 			ForEach:           nil,
 			ProviderConfigRef: nil,
+			Provider:          terraform.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
 			Managed: &terraform.ManagedResource{
 				Connection:             nil,
 				Provisioners:           []*terraform.Provisioner{},
