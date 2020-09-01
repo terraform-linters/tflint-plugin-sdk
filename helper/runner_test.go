@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func Test_satisfyRunnerInterface(t *testing.T) {
@@ -369,6 +370,30 @@ resource "aws_instance" "foo" {
 	err := runner.WalkResourceAttributes("aws_instance", "instance_type", func(attribute *hcl.Attribute) error {
 		var instanceType string
 		if err := runner.EvaluateExpr(attribute.Expr, &instanceType); err != nil {
+			t.Fatal(err)
+		}
+
+		if instanceType != "t2.micro" {
+			t.Fatalf(`expected value is "t2.micro", but got "%s"`, instanceType)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func Test_EvaluateExprType(t *testing.T) {
+	src := `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`
+
+	runner := TestRunner(t, map[string]string{"main.tf": src})
+
+	err := runner.WalkResourceAttributes("aws_instance", "instance_type", func(attribute *hcl.Attribute) error {
+		var instanceType string
+		if err := runner.EvaluateExprType(attribute.Expr, &instanceType, cty.String); err != nil {
 			t.Fatal(err)
 		}
 

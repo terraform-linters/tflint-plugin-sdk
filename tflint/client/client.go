@@ -10,6 +10,7 @@ import (
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
@@ -153,6 +154,18 @@ func (c *Client) Backend() (*terraform.Backend, error) {
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response
 // in the passed argument.
 func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
+	return c.evaluateExpr(expr, ret, cty.Type{})
+}
+
+// EvaluateExprType calls the server-side EvalExpr method with a specific cty.Type
+// and reflects the response in the passed argument.
+func (c *Client) EvaluateExprType(expr hcl.Expression, ret interface{}, wantType cty.Type) error {
+	return c.evaluateExpr(expr, ret, wantType)
+}
+
+// EvaluateExprType calls the server-side EvalExpr method and reflects the response
+// in the passed argument.
+func (c *Client) evaluateExpr(expr hcl.Expression, ret interface{}, wantType cty.Type) error {
 	var response EvalExprResponse
 	var err error
 
@@ -160,7 +173,7 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	if err != nil {
 		return err
 	}
-	req := EvalExprRequest{Ret: ret}
+	req := EvalExprRequest{Ret: ret, WantType: wantType}
 	req.Expr, req.ExprRange = encodeExpr(src, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
 		return err

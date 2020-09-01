@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
@@ -206,6 +207,16 @@ func (r *Runner) Backend() (*terraform.Backend, error) {
 // EvaluateExpr returns a value of the passed expression.
 // Note that there is no evaluation, no type conversion, etc.
 func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
+	val, diags := expr.Value(&hcl.EvalContext{})
+	if diags.HasErrors() {
+		return diags
+	}
+	return gocty.FromCtyValue(val, ret)
+}
+
+// EvaluateExprType returns a value of the passed expression.
+// Note that there is no evaluation, no type conversion, etc.
+func (r *Runner) EvaluateExprType(expr hcl.Expression, ret interface{}, wantType cty.Type) error {
 	val, diags := expr.Value(&hcl.EvalContext{})
 	if diags.HasErrors() {
 		return diags

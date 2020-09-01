@@ -3,6 +3,7 @@ package tflint
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
@@ -30,6 +31,9 @@ type Runner interface {
 	// Since this function returns an application error, it is expected to use the EnsureNoError
 	// to determine whether to continue processing.
 	EvaluateExpr(expr hcl.Expression, ret interface{}) error
+
+	// EvaluateExprType is like EvaluateExpr, but also accepts a known cty.Type to pass to EvalExpr
+	EvaluateExprType(expr hcl.Expression, ret interface{}, wantType cty.Type) error
 
 	// EmitIssue sends an issue with an expression to TFLint. You need to pass the message of the issue and the expression.
 	EmitIssueOnExpr(rule Rule, message string, expr hcl.Expression) error

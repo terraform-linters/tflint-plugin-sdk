@@ -63,6 +63,7 @@ type EvalExprRequest struct {
 	Expr      []byte
 	ExprRange hcl.Range
 	Ret       interface{}
+	WantType  cty.Type
 }
 
 // EvalExprResponse is a response to the server-side EvalExpr method.

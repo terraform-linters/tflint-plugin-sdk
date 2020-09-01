@@ -361,6 +361,34 @@ func Test_EvaluateExpr(t *testing.T) {
 	}
 }
 
+func Test_EvaluateExprType(t *testing.T) {
+	client, server := startMockServer(t)
+	defer server.Listener.Close()
+
+	file, err := ioutil.TempFile("", "tflint-test-evaluateExprType-*.tf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.Write([]byte("1")); err != nil {
+		t.Fatal(err)
+	}
+
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		t.Fatal(diags)
+	}
+
+	var ret string
+	if err := client.EvaluateExprType(expr, &ret, cty.String); err != nil {
+		t.Fatal(err)
+	}
+
+	if ret != "1" {
+		t.Fatalf("Expected: 1, but got %s", ret)
+	}
+}
+
 type testRule struct{}
 
 func (*testRule) Name() string              { return "test" }
