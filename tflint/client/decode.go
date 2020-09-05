@@ -8,7 +8,192 @@ import (
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/experiments"
 )
+
+// Config is an intermediate representation of configs.Config.
+type Config struct {
+	Path            addrs.Module
+	Module          *Module
+	CallRange       hcl.Range
+	SourceAddr      string
+	SourceAddrRange hcl.Range
+	Version         string
+}
+
+func decodeConfig(config *Config) (*configs.Config, hcl.Diagnostics) {
+	module, diags := decodeModule(config.Module)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	var ver *version.Version
+	var err error
+	if config.Version != "" {
+		ver, err = version.NewVersion(config.Version)
+		if err != nil {
+			return nil, hcl.Diagnostics{
+				&hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Failed to reparse version",
+					Detail:   err.Error(),
+				},
+			}
+		}
+	}
+
+	return &configs.Config{
+		Path:            config.Path,
+		Module:          module,
+		CallRange:       config.CallRange,
+		SourceAddr:      config.SourceAddr,
+		SourceAddrRange: config.SourceAddrRange,
+		Version:         ver,
+	}, nil
+}
+
+// Module is an intermediate representation of configs.Module.
+type Module struct {
+	SourceDir string
+
+	CoreVersionConstraints      []string
+	CoreVersionConstraintRanges []hcl.Range
+
+	ActiveExperiments experiments.Set
+
+	Backend              *Backend
+	ProviderConfigs      map[string]*Provider
+	ProviderRequirements *RequiredProviders
+	ProviderLocalNames   map[terraform.Provider]string
+	ProviderMetas        map[terraform.Provider]*ProviderMeta
+
+	Variables map[string]*Variable
+	Locals    map[string]*Local
+	Outputs   map[string]*Output
+
+	ModuleCalls map[string]*ModuleCall
+
+	ManagedResources map[string]*Resource
+	DataResources    map[string]*Resource
+}
+
+func decodeModule(module *Module) (*configs.Module, hcl.Diagnostics) {
+	versionConstraints := make([]terraform.VersionConstraint, len(module.CoreVersionConstraints))
+	for i, v := range module.CoreVersionConstraints {
+		constraint, diags := parseVersionConstraint(v, module.CoreVersionConstraintRanges[i])
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		versionConstraints[i] = constraint
+	}
+
+	backend, diags := decodeBackend(module.Backend)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	providers := map[string]*configs.Provider{}
+	for k, v := range module.ProviderConfigs {
+		p, diags := decodeProvider(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		providers[k] = p
+	}
+
+	requirements, diags := decodeRequiredProviders(module.ProviderRequirements)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	metas := map[terraform.Provider]*configs.ProviderMeta{}
+	for k, v := range module.ProviderMetas {
+		m, diags := decodeProviderMeta(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		metas[k] = m
+	}
+
+	variables := map[string]*configs.Variable{}
+	for k, v := range module.Variables {
+		variable, diags := decodeVariable(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		variables[k] = variable
+	}
+
+	locals := map[string]*configs.Local{}
+	for k, v := range module.Locals {
+		l, diags := decodeLocal(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		locals[k] = l
+	}
+
+	outputs := map[string]*configs.Output{}
+	for k, v := range module.Outputs {
+		o, diags := decodeOutput(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		outputs[k] = o
+	}
+
+	calls := map[string]*terraform.ModuleCall{}
+	for k, v := range module.ModuleCalls {
+		c, diags := decodeModuleCall(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		calls[k] = c
+	}
+
+	managed := map[string]*terraform.Resource{}
+	for k, v := range module.ManagedResources {
+		r, diags := decodeResource(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		managed[k] = r
+	}
+
+	data := map[string]*terraform.Resource{}
+	for k, v := range module.DataResources {
+		d, diags := decodeResource(v)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		data[k] = d
+	}
+
+	return &configs.Module{
+		SourceDir: module.SourceDir,
+
+		CoreVersionConstraints: versionConstraints,
+
+		ActiveExperiments: module.ActiveExperiments,
+
+		Backend:              backend,
+		ProviderConfigs:      providers,
+		ProviderRequirements: requirements,
+		ProviderLocalNames:   module.ProviderLocalNames,
+		ProviderMetas:        metas,
+
+		Variables: variables,
+		Locals:    locals,
+		Outputs:   outputs,
+
+		ModuleCalls: calls,
+
+		ManagedResources: managed,
+		DataResources:    data,
+	}, nil
+}
 
 // Attribute is an intermediate representation of hcl.Attribute.
 type Attribute struct {
@@ -141,6 +326,10 @@ type ManagedResource struct {
 }
 
 func decodeManagedResource(resource *ManagedResource) (*terraform.ManagedResource, hcl.Diagnostics) {
+	if resource == nil {
+		return nil, nil
+	}
+
 	connection, diags := decodeConnection(resource.Connection)
 	if diags.HasErrors() {
 		return nil, diags
@@ -229,28 +418,9 @@ func decodeModuleCall(call *ModuleCall) (*terraform.ModuleCall, hcl.Diagnostics)
 		})
 	}
 
-	versionConstraint := terraform.VersionConstraint{DeclRange: call.VersionRange}
-	if !call.VersionRange.Empty() {
-		required, err := version.NewConstraint(call.Version)
-		if err != nil {
-			detail := fmt.Sprintf(
-				"ModuleCall '%s' version constraint '%s' parse error: %s",
-				call.Name,
-				call.Version,
-				err,
-			)
-
-			return nil, hcl.Diagnostics{
-				&hcl.Diagnostic{
-					Severity: hcl.DiagError,
-					Summary:  "Failed to reparse module version constraint",
-					Detail:   detail,
-					Subject:  &call.VersionRange,
-				},
-			}
-		}
-
-		versionConstraint.Required = required
+	versionConstraint, diags := parseVersionConstraint(call.Version, call.VersionRange)
+	if diags.HasErrors() {
+		return nil, diags
 	}
 
 	return &terraform.ModuleCall{
@@ -393,4 +563,30 @@ func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Dia
 	}
 
 	panic(fmt.Sprintf("Unexpected file: %s", filename))
+}
+
+func parseVersionConstraint(versionStr string, versionRange hcl.Range) (terraform.VersionConstraint, hcl.Diagnostics) {
+	versionConstraint := terraform.VersionConstraint{DeclRange: versionRange}
+	if !versionRange.Empty() {
+		required, err := version.NewConstraint(versionStr)
+		if err != nil {
+			detail := fmt.Sprintf(
+				"Version constraint '%s' parse error: %s",
+				versionStr,
+				err,
+			)
+
+			return versionConstraint, hcl.Diagnostics{
+				&hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  "Failed to reparse version constraint",
+					Detail:   detail,
+					Subject:  &versionRange,
+				},
+			}
+		}
+
+		versionConstraint.Required = required
+	}
+	return versionConstraint, nil
 }
