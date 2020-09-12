@@ -6,7 +6,7 @@ import (
 )
 
 // Resource is an alternative representation of configs.Resource.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L14-L34
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/resource.go#L14-L34
 // DependsOn is not supported due to the difficulty of intermediate representation.
 type Resource struct {
 	Mode    addrs.ResourceMode
@@ -28,7 +28,7 @@ type Resource struct {
 }
 
 // ManagedResource is an alternative representation of configs.ManagedResource.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L37-L48
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/resource.go#L37-L48
 // IgnoreChanges is not supported due to the difficulty of intermediate representation.
 type ManagedResource struct {
 	Connection   *Connection
@@ -44,7 +44,7 @@ type ManagedResource struct {
 }
 
 // ProviderConfigRef is an alternative representation of configs.ProviderConfigRef.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/resource.go#L373-L378
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/resource.go#L373-L378
 type ProviderConfigRef struct {
 	Name       string
 	NameRange  hcl.Range
