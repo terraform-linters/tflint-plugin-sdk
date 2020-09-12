@@ -1,10 +1,13 @@
 package helper
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -196,6 +199,74 @@ func (r *Runner) Backend() (*terraform.Backend, error) {
 					Config:    backendBlock.Body,
 					DeclRange: backendBlock.DefRange,
 				}, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+// Config returns the Terraform configuration
+func (r *Runner) Config() (*configs.Config, error) {
+	config := &configs.Config{
+		Module: &configs.Module{},
+	}
+
+	for _, file := range r.Files {
+		content, diags := file.Body.Content(configFileSchema)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+
+		for _, block := range content.Blocks {
+			switch block.Type {
+			case "terraform":
+				content, diags := block.Body.Content(terraformBlockSchema)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+
+				for _, block := range content.Blocks {
+					switch block.Type {
+					case "backend":
+						config.Module.Backend = &terraform.Backend{
+							Type:      block.Labels[0],
+							TypeRange: block.LabelRanges[0],
+							Config:    block.Body,
+							DeclRange: block.DefRange,
+						}
+					case "required_providers":
+						// TODO
+					case "provider_meta":
+						// TODO
+					default:
+						continue
+					}
+				}
+			case "provider":
+				// TODO
+			case "variable":
+				// TODO
+			case "locals":
+				// TODO
+			case "output":
+				// TODO
+			case "module":
+				call, diags := simpleDecodeModuleCallBlock(block)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				config.Module.ModuleCalls[call.Name] = call
+			case "resource":
+				resource, diags := simpleDecodeResouceBlock(block)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				config.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
+			case "data":
+				// TODO
+			default:
+				continue
 			}
 		}
 	}
@@ -504,4 +575,66 @@ func decodeProviderConfigRef(expr hcl.Expression) (*terraform.ProviderConfigRef,
 	}
 
 	return ref, nil
+}
+
+// configFileSchema is the schema for the top-level of a config file.
+// @see https://github.com/hashicorp/terraform/blob/v0.13.2/configs/parser_config.go#L197-L239
+var configFileSchema = &hcl.BodySchema{
+	Blocks: []hcl.BlockHeaderSchema{
+		{
+			Type: "terraform",
+		},
+		{
+			Type: "required_providers",
+		},
+		{
+			Type:       "provider",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "variable",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type: "locals",
+		},
+		{
+			Type:       "output",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "module",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "resource",
+			LabelNames: []string{"type", "name"},
+		},
+		{
+			Type:       "data",
+			LabelNames: []string{"type", "name"},
+		},
+	},
+}
+
+// terraformBlockSchema is the schema for a top-level "terraform" block in a configuration file.
+// @see https://github.com/hashicorp/terraform/blob/v0.13.2/configs/parser_config.go#L241-L261
+var terraformBlockSchema = &hcl.BodySchema{
+	Attributes: []hcl.AttributeSchema{
+		{Name: "required_version"},
+		{Name: "experiments"},
+	},
+	Blocks: []hcl.BlockHeaderSchema{
+		{
+			Type:       "backend",
+			LabelNames: []string{"type"},
+		},
+		{
+			Type: "required_providers",
+		},
+		{
+			Type:       "provider_meta",
+			LabelNames: []string{"provider"},
+		},
+	},
 }

@@ -3,6 +3,7 @@ package tflint
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 )
 
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
@@ -25,6 +26,10 @@ type Runner interface {
 
 	// Backend returns the backend configuration, if any.
 	Backend() (*terraform.Backend, error)
+
+	// Config returns the Terraform configuration.
+	// This object contains almost all accessible data structures from plugins.
+	Config() (*configs.Config, error)
 
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError

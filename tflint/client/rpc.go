@@ -58,6 +58,15 @@ type ResourcesResponse struct {
 	Err       error
 }
 
+// ConfigRequest is a request to the server-side Config method.
+type ConfigRequest struct{}
+
+// ConfigResponse is a response to the server-side Config method.
+type ConfigResponse struct {
+	Config *Config
+	Err    error
+}
+
 // EvalExprRequest is a request to the server-side EvalExpr method.
 type EvalExprRequest struct {
 	Expr      []byte

@@ -9,6 +9,7 @@ import (
 
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -148,6 +149,26 @@ func (c *Client) Backend() (*terraform.Backend, error) {
 	}
 
 	return backend, nil
+}
+
+// Config calls the server-side Config method and returns the Terraform configuration.
+func (c *Client) Config() (*configs.Config, error) {
+	log.Print("[DEBUG] Accessing to Config")
+
+	var response ConfigResponse
+	if err := c.rpcClient.Call("Plugin.Config", ConfigRequest{}, &response); err != nil {
+		return nil, err
+	}
+	if response.Err != nil {
+		return nil, response.Err
+	}
+
+	config, diags := decodeConfig(response.Config)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return config, nil
 }
 
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response
