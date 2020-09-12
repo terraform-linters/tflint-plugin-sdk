@@ -315,7 +315,7 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 // simpleDecodeResourceBlock decodes the data equivalent to configs.Resource from hcl.Block
 // without depending on Terraform. Some operations have been omitted for ease of implementation.
 // As such, it is expected to parse the minimal code needed for testing.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L78-L288
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/resource.go#L80-L290
 func simpleDecodeResouceBlock(resource *hcl.Block) (*configs.Resource, hcl.Diagnostics) {
 	content, resourceRemain, diags := resource.Body.PartialContent(&hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{

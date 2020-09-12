@@ -6,7 +6,7 @@ import (
 )
 
 // Module is an alternative representation of configs.Module.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/configs/module.go#L14-L45
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/module.go#L14-L45
 type Module struct {
 	SourceDir string
 
