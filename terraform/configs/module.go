@@ -1,7 +1,7 @@
 package configs
 
 import (
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/experiments"
 )
 
@@ -10,22 +10,22 @@ import (
 type Module struct {
 	SourceDir string
 
-	CoreVersionConstraints []terraform.VersionConstraint
+	CoreVersionConstraints []VersionConstraint
 
 	ActiveExperiments experiments.Set
 
-	Backend              *terraform.Backend
+	Backend              *Backend
 	ProviderConfigs      map[string]*Provider
 	ProviderRequirements *RequiredProviders
-	ProviderLocalNames   map[terraform.Provider]string
-	ProviderMetas        map[terraform.Provider]*ProviderMeta
+	ProviderLocalNames   map[addrs.Provider]string
+	ProviderMetas        map[addrs.Provider]*ProviderMeta
 
 	Variables map[string]*Variable
 	Locals    map[string]*Local
 	Outputs   map[string]*Output
 
-	ModuleCalls map[string]*terraform.ModuleCall
+	ModuleCalls map[string]*ModuleCall
 
-	ManagedResources map[string]*terraform.Resource
-	DataResources    map[string]*terraform.Resource
+	ManagedResources map[string]*Resource
+	DataResources    map[string]*Resource
 }

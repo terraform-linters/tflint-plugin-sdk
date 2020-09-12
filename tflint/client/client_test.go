@@ -12,7 +12,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -61,7 +62,7 @@ func (*mockServer) Blocks(req *BlocksRequest, resp *BlocksResponse) error {
 func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) error {
 	*resp = ResourcesResponse{Resources: []*Resource{
 		{
-			Mode:              terraform.ManagedResourceMode,
+			Mode:              addrs.ManagedResourceMode,
 			Name:              "example",
 			Type:              "resource",
 			Config:            []byte(`instance_type = "t2.micro"`),
@@ -69,7 +70,7 @@ func (*mockServer) Resources(req *ResourcesRequest, resp *ResourcesResponse) err
 			Count:             nil,
 			ForEach:           nil,
 			ProviderConfigRef: nil,
-			Provider:          terraform.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
+			Provider:          addrs.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
 			Managed: &ManagedResource{
 				Connection:             nil,
 				Provisioners:           []*Provisioner{},
@@ -166,7 +167,7 @@ func Test_Backend(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	expected := &terraform.Backend{
+	expected := &configs.Backend{
 		Type: "example",
 		Config: &hclsyntax.Body{
 			Attributes: hclsyntax.Attributes{
@@ -270,8 +271,8 @@ func Test_WalkResources(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	walked := []*terraform.Resource{}
-	walker := func(block *terraform.Resource) error {
+	walked := []*configs.Resource{}
+	walker := func(block *configs.Resource) error {
 		walked = append(walked, block)
 		return nil
 	}
@@ -280,9 +281,9 @@ func Test_WalkResources(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []*terraform.Resource{
+	expected := []*configs.Resource{
 		{
-			Mode: terraform.ManagedResourceMode,
+			Mode: addrs.ManagedResourceMode,
 			Name: "example",
 			Type: "resource",
 			Config: &hclsyntax.Body{
@@ -309,10 +310,10 @@ func Test_WalkResources(t *testing.T) {
 			Count:             nil,
 			ForEach:           nil,
 			ProviderConfigRef: nil,
-			Provider:          terraform.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
-			Managed: &terraform.ManagedResource{
+			Provider:          addrs.Provider{Type: "aws", Namespace: "hashicorp", Hostname: "registry.terraform.io"},
+			Managed: &configs.ManagedResource{
 				Connection:             nil,
-				Provisioners:           []*terraform.Provisioner{},
+				Provisioners:           []*configs.Provisioner{},
 				CreateBeforeDestroy:    false,
 				PreventDestroy:         false,
 				IgnoreAllChanges:       false,

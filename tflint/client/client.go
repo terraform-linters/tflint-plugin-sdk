@@ -8,7 +8,6 @@ import (
 	"net/rpc"
 
 	hcl "github.com/hashicorp/hcl/v2"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -80,7 +79,7 @@ func (c *Client) WalkResourceBlocks(resource, blockType string, walker func(*hcl
 
 // WalkResources calls the server-side Resources method and passes the decoded response
 // to the passed function.
-func (c *Client) WalkResources(resource string, walker func(*terraform.Resource) error) error {
+func (c *Client) WalkResources(resource string, walker func(*configs.Resource) error) error {
 	log.Printf("[DEBUG] Walk `%s` resource", resource)
 
 	var response ResourcesResponse
@@ -106,7 +105,7 @@ func (c *Client) WalkResources(resource string, walker func(*terraform.Resource)
 
 // WalkModuleCalls calls the server-side ModuleCalls method and passed the decode response
 // to the passed function.
-func (c *Client) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error {
+func (c *Client) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
 	log.Printf("[DEBUG] WalkModuleCalls")
 
 	var response ModuleCallsResponse
@@ -132,7 +131,7 @@ func (c *Client) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error
 }
 
 // Backend calls the server-side Backend method and returns the backend configuration.
-func (c *Client) Backend() (*terraform.Backend, error) {
+func (c *Client) Backend() (*configs.Backend, error) {
 	log.Printf("[DEBUG] Backend")
 
 	var response BackendResponse
