@@ -2,7 +2,7 @@ package configs
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 )
 
 // Provider is an alternative representation of configs.Provider.
@@ -13,7 +13,7 @@ type Provider struct {
 	Alias      string
 	AliasRange *hcl.Range // nil if no alias set
 
-	Version terraform.VersionConstraint
+	Version VersionConstraint
 
 	Config hcl.Body
 
@@ -35,8 +35,8 @@ type ProviderMeta struct {
 type RequiredProvider struct {
 	Name        string
 	Source      string
-	Type        terraform.Provider
-	Requirement terraform.VersionConstraint
+	Type        addrs.Provider
+	Requirement VersionConstraint
 	DeclRange   hcl.Range
 }
 

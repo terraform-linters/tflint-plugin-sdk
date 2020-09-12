@@ -2,7 +2,7 @@ package client
 
 import (
 	hcl "github.com/hashicorp/hcl/v2"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 )
 
@@ -76,7 +76,7 @@ func decodeProviderMeta(meta *ProviderMeta) (*configs.ProviderMeta, hcl.Diagnost
 type RequiredProvider struct {
 	Name             string
 	Source           string
-	Type             terraform.Provider
+	Type             addrs.Provider
 	Requirement      string
 	RequirementRange hcl.Range
 	DeclRange        hcl.Range

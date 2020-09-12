@@ -7,7 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
@@ -166,8 +167,8 @@ resource "aws_s3_bucket" "bar" {
 
 	runner := TestRunner(t, map[string]string{"main.tf": src})
 
-	walked := []*terraform.Resource{}
-	walker := func(resource *terraform.Resource) error {
+	walked := []*configs.Resource{}
+	walker := func(resource *configs.Resource) error {
 		walked = append(walked, resource)
 		return nil
 	}
@@ -176,9 +177,9 @@ resource "aws_s3_bucket" "bar" {
 		t.Fatal(err)
 	}
 
-	expected := []*terraform.Resource{
+	expected := []*configs.Resource{
 		{
-			Mode: terraform.ManagedResourceMode,
+			Mode: addrs.ManagedResourceMode,
 			Name: "foo",
 			Type: "aws_instance",
 			Config: parseBody(
@@ -220,15 +221,15 @@ resource "aws_s3_bucket" "bar" {
     foo = "bar"
   }`, "main.tf", hcl.Pos{Line: 6, Column: 14}),
 
-			ProviderConfigRef: &terraform.ProviderConfigRef{
+			ProviderConfigRef: &configs.ProviderConfigRef{
 				Name:       "aws",
 				NameRange:  hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 14}, End: hcl.Pos{Line: 3, Column: 17}},
 				Alias:      "west",
 				AliasRange: &hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 17}, End: hcl.Pos{Line: 3, Column: 22}},
 			},
 
-			Managed: &terraform.ManagedResource{
-				Connection: &terraform.Connection{
+			Managed: &configs.ManagedResource{
+				Connection: &configs.Connection{
 					Config: parseBody(
 						t,
 						`type = "ssh"`,
@@ -239,7 +240,7 @@ resource "aws_s3_bucket" "bar" {
 					),
 					DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 12, Column: 3}, End: hcl.Pos{Line: 12, Column: 13}},
 				},
-				Provisioners: []*terraform.Provisioner{
+				Provisioners: []*configs.Provisioner{
 					{
 						Type: "local-exec",
 						Config: parseBody(
@@ -256,7 +257,7 @@ resource "aws_s3_bucket" "bar" {
 							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 28}, End: hcl.Pos{Line: 24, Column: 4}},
 							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 24, Column: 4}, End: hcl.Pos{Line: 24, Column: 4}},
 						),
-						Connection: &terraform.Connection{
+						Connection: &configs.Connection{
 							Config: parseBody(
 								t,
 								`type = "ssh"`,
@@ -267,8 +268,8 @@ resource "aws_s3_bucket" "bar" {
 							),
 							DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 21, Column: 5}, End: hcl.Pos{Line: 21, Column: 15}},
 						},
-						When:      terraform.ProvisionerWhenDestroy,
-						OnFailure: terraform.ProvisionerOnFailureContinue,
+						When:      configs.ProvisionerWhenDestroy,
+						OnFailure: configs.ProvisionerOnFailureContinue,
 						DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 3}, End: hcl.Pos{Line: 16, Column: 27}},
 						TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 15}, End: hcl.Pos{Line: 16, Column: 27}},
 					},
@@ -332,7 +333,7 @@ terraform {
 		t.Fatal(err)
 	}
 
-	expected := &terraform.Backend{
+	expected := &configs.Backend{
 		Type:      "s3",
 		TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 11}, End: hcl.Pos{Line: 3, Column: 15}},
 		Config: parseBody(
