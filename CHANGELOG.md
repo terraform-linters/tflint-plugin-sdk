@@ -1,3 +1,37 @@
+## 0.5.0 (2020-09-13)
+
+This release adds `Config()` API to accessing the Terraform configuration. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.20+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/15 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#59](https://github.com/terraform-linters/tflint-plugin-sdk/pull/59): Make terraform configuration compatible with v0.13
+  - Remove `Backend.ConfigRange`, `ModleCall.ConfigRange`, `ModuleCall.CountRange`, and `ModuleCall.ForEachRange`
+- [#65](https://github.com/terraform-linters/tflint-plugin-sdk/pull/65): Tweaks package structures
+  - Renamed package names
+    - `terraform.Backend` => `configs.Backend`
+    - `terraform.Resource` => `configs.Resource`
+    - `terraform.ModuleCall` => `configs.ModuleCall`
+- [#67](https://github.com/terraform-linters/tflint-plugin-sdk/pull/67): plugin: Bump protocol version
+
+### Enhancements
+
+- [#60](https://github.com/terraform-linters/tflint-plugin-sdk/pull/60): tflint: Add `Runner.Config()`
+
+### Internal Changes
+
+- [#54](https://github.com/terraform-linters/tflint-plugin-sdk/pull/54): Accept DisabledByDefault config attribute
+
+### Chores
+
+- [#55](https://github.com/terraform-linters/tflint-plugin-sdk/pull/55): chore(deps): bump go to v1.15
+- [#56](https://github.com/terraform-linters/tflint-plugin-sdk/pull/56): Update GitHub Actions by Dependabot
+- [#57](https://github.com/terraform-linters/tflint-plugin-sdk/pull/57): Bump actions/setup-go from v1 to v2.1.2
+- [#58](https://github.com/terraform-linters/tflint-plugin-sdk/pull/58): Bump github.com/google/go-cmp from 0.5.1 to 0.5.2
+- [#63](https://github.com/terraform-linters/tflint-plugin-sdk/pull/63): Bump github.com/zclconf/go-cty from 1.5.1 to 1.6.1
+- [#66](https://github.com/terraform-linters/tflint-plugin-sdk/pull/66): Make terraform configuration compatible with v0.13.2
+
 ## 0.4.0 (2020-08-17)
 
 This release adds `WalkModuleCalls()` API to accessing the module calls. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.19+.
