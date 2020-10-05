@@ -1,10 +1,13 @@
 package helper
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -103,7 +106,7 @@ func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(
 }
 
 // WalkResources visits all specified resources from Files.
-func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resource) error) error {
+func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resource) error) error {
 	for _, file := range r.Files {
 		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
 			Blocks: []hcl.BlockHeaderSchema{
@@ -138,7 +141,7 @@ func (r *Runner) WalkResources(resourceType string, walker func(*terraform.Resou
 }
 
 // WalkModuleCalls visits all module calls from Files.
-func (r *Runner) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error {
+func (r *Runner) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
 	for _, file := range r.Files {
 		calls, _, diags := file.Body.PartialContent(&hcl.BodySchema{
 			Blocks: []hcl.BlockHeaderSchema{
@@ -169,7 +172,7 @@ func (r *Runner) WalkModuleCalls(walker func(*terraform.ModuleCall) error) error
 }
 
 // Backend returns the terraform backend configuration.
-func (r *Runner) Backend() (*terraform.Backend, error) {
+func (r *Runner) Backend() (*configs.Backend, error) {
 	for _, file := range r.Files {
 		tfcfg, _, diags := file.Body.PartialContent(&hcl.BodySchema{
 			Blocks: []hcl.BlockHeaderSchema{
@@ -191,12 +194,80 @@ func (r *Runner) Backend() (*terraform.Backend, error) {
 			}
 
 			for _, backendBlock := range backendCfg.Blocks {
-				return &terraform.Backend{
+				return &configs.Backend{
 					Type:      backendBlock.Labels[0],
 					TypeRange: backendBlock.LabelRanges[0],
 					Config:    backendBlock.Body,
 					DeclRange: backendBlock.DefRange,
 				}, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+// Config returns the Terraform configuration
+func (r *Runner) Config() (*configs.Config, error) {
+	config := &configs.Config{
+		Module: &configs.Module{},
+	}
+
+	for _, file := range r.Files {
+		content, diags := file.Body.Content(configFileSchema)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+
+		for _, block := range content.Blocks {
+			switch block.Type {
+			case "terraform":
+				content, diags := block.Body.Content(terraformBlockSchema)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+
+				for _, block := range content.Blocks {
+					switch block.Type {
+					case "backend":
+						config.Module.Backend = &configs.Backend{
+							Type:      block.Labels[0],
+							TypeRange: block.LabelRanges[0],
+							Config:    block.Body,
+							DeclRange: block.DefRange,
+						}
+					case "required_providers":
+						// TODO
+					case "provider_meta":
+						// TODO
+					default:
+						continue
+					}
+				}
+			case "provider":
+				// TODO
+			case "variable":
+				// TODO
+			case "locals":
+				// TODO
+			case "output":
+				// TODO
+			case "module":
+				call, diags := simpleDecodeModuleCallBlock(block)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				config.Module.ModuleCalls[call.Name] = call
+			case "resource":
+				resource, diags := simpleDecodeResouceBlock(block)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				config.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
+			case "data":
+				// TODO
+			default:
+				continue
 			}
 		}
 	}
@@ -255,8 +326,8 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 // simpleDecodeResourceBlock decodes the data equivalent to configs.Resource from hcl.Block
 // without depending on Terraform. Some operations have been omitted for ease of implementation.
 // As such, it is expected to parse the minimal code needed for testing.
-// https://github.com/hashicorp/terraform/blob/v0.12.26/configs/resource.go#L78-L288
-func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Diagnostics) {
+// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/resource.go#L80-L290
+func simpleDecodeResouceBlock(resource *hcl.Block) (*configs.Resource, hcl.Diagnostics) {
 	content, resourceRemain, diags := resource.Body.PartialContent(&hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{
@@ -292,7 +363,7 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 		forEach = attr.Expr
 	}
 
-	var ref *terraform.ProviderConfigRef
+	var ref *configs.ProviderConfigRef
 	if attr, exists := content.Attributes["provider"]; exists {
 		ref, diags = decodeProviderConfigRef(attr.Expr)
 		if diags.HasErrors() {
@@ -300,7 +371,7 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 		}
 	}
 
-	managed := &terraform.ManagedResource{}
+	managed := &configs.ManagedResource{}
 	for _, block := range content.Blocks {
 		switch block.Type {
 		case "lifecycle":
@@ -339,17 +410,17 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 				}
 			}
 		case "connection":
-			managed.Connection = &terraform.Connection{
+			managed.Connection = &configs.Connection{
 				Config:    block.Body,
 				DeclRange: block.DefRange,
 			}
 		case "provisioner":
-			pv := &terraform.Provisioner{
+			pv := &configs.Provisioner{
 				Type:      block.Labels[0],
 				TypeRange: block.LabelRanges[0],
 				DeclRange: block.DefRange,
-				When:      terraform.ProvisionerWhenCreate,
-				OnFailure: terraform.ProvisionerOnFailureFail,
+				When:      configs.ProvisionerWhenCreate,
+				OnFailure: configs.ProvisionerOnFailureFail,
 			}
 
 			content, config, diags := block.Body.PartialContent(&hcl.BodySchema{
@@ -369,23 +440,23 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 			if attr, exists := content.Attributes["when"]; exists {
 				switch hcl.ExprAsKeyword(attr.Expr) {
 				case "create":
-					pv.When = terraform.ProvisionerWhenCreate
+					pv.When = configs.ProvisionerWhenCreate
 				case "destroy":
-					pv.When = terraform.ProvisionerWhenDestroy
+					pv.When = configs.ProvisionerWhenDestroy
 				}
 			}
 
 			if attr, exists := content.Attributes["on_failure"]; exists {
 				switch hcl.ExprAsKeyword(attr.Expr) {
 				case "continue":
-					pv.OnFailure = terraform.ProvisionerOnFailureContinue
+					pv.OnFailure = configs.ProvisionerOnFailureContinue
 				case "fail":
-					pv.OnFailure = terraform.ProvisionerOnFailureFail
+					pv.OnFailure = configs.ProvisionerOnFailureFail
 				}
 			}
 
 			for _, block := range content.Blocks {
-				pv.Connection = &terraform.Connection{
+				pv.Connection = &configs.Connection{
 					Config:    block.Body,
 					DeclRange: block.DefRange,
 				}
@@ -395,8 +466,8 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 		}
 	}
 
-	return &terraform.Resource{
-		Mode:    terraform.ManagedResourceMode,
+	return &configs.Resource{
+		Mode:    addrs.ManagedResourceMode,
 		Name:    resource.Labels[1],
 		Type:    resource.Labels[0],
 		Config:  resourceRemain,
@@ -412,7 +483,7 @@ func simpleDecodeResouceBlock(resource *hcl.Block) (*terraform.Resource, hcl.Dia
 	}, nil
 }
 
-func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.Diagnostics) {
+func simpleDecodeModuleCallBlock(block *hcl.Block) (*configs.ModuleCall, hcl.Diagnostics) {
 	content, remain, diags := block.Body.PartialContent(&hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{Name: "source", Required: true},
@@ -433,7 +504,7 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 		sourceAddrRange = attr.Expr.Range()
 	}
 
-	providers := []terraform.PassedProviderConfig{}
+	providers := []configs.PassedProviderConfig{}
 	if attr, exists := content.Attributes["providers"]; exists {
 		pairs, diags := hcl.ExprMap(attr.Expr)
 		if diags.HasErrors() {
@@ -451,7 +522,7 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 				return nil, diags
 			}
 
-			providers = append(providers, terraform.PassedProviderConfig{
+			providers = append(providers, configs.PassedProviderConfig{
 				InChild:  key,
 				InParent: value,
 			})
@@ -477,7 +548,7 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 		}
 	}
 
-	return &terraform.ModuleCall{
+	return &configs.ModuleCall{
 		Name: block.Labels[0],
 
 		SourceAddr:      sourceAddr,
@@ -486,7 +557,7 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 
 		Config: remain,
 
-		Version: terraform.VersionConstraint{
+		Version: configs.VersionConstraint{
 			Required:  versionRequired,
 			DeclRange: versionRange,
 		},
@@ -497,13 +568,13 @@ func simpleDecodeModuleCallBlock(block *hcl.Block) (*terraform.ModuleCall, hcl.D
 	}, nil
 }
 
-func decodeProviderConfigRef(expr hcl.Expression) (*terraform.ProviderConfigRef, hcl.Diagnostics) {
+func decodeProviderConfigRef(expr hcl.Expression) (*configs.ProviderConfigRef, hcl.Diagnostics) {
 	traversal, diags := hcl.AbsTraversalForExpr(expr)
 	if diags.HasErrors() {
 		return nil, diags
 	}
 
-	ref := &terraform.ProviderConfigRef{
+	ref := &configs.ProviderConfigRef{
 		Name:      traversal.RootName(),
 		NameRange: traversal[0].SourceRange(),
 	}
@@ -515,4 +586,66 @@ func decodeProviderConfigRef(expr hcl.Expression) (*terraform.ProviderConfigRef,
 	}
 
 	return ref, nil
+}
+
+// configFileSchema is the schema for the top-level of a config file.
+// @see https://github.com/hashicorp/terraform/blob/v0.13.2/configs/parser_config.go#L197-L239
+var configFileSchema = &hcl.BodySchema{
+	Blocks: []hcl.BlockHeaderSchema{
+		{
+			Type: "terraform",
+		},
+		{
+			Type: "required_providers",
+		},
+		{
+			Type:       "provider",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "variable",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type: "locals",
+		},
+		{
+			Type:       "output",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "module",
+			LabelNames: []string{"name"},
+		},
+		{
+			Type:       "resource",
+			LabelNames: []string{"type", "name"},
+		},
+		{
+			Type:       "data",
+			LabelNames: []string{"type", "name"},
+		},
+	},
+}
+
+// terraformBlockSchema is the schema for a top-level "terraform" block in a configuration file.
+// @see https://github.com/hashicorp/terraform/blob/v0.13.2/configs/parser_config.go#L241-L261
+var terraformBlockSchema = &hcl.BodySchema{
+	Attributes: []hcl.AttributeSchema{
+		{Name: "required_version"},
+		{Name: "experiments"},
+	},
+	Blocks: []hcl.BlockHeaderSchema{
+		{
+			Type:       "backend",
+			LabelNames: []string{"type"},
+		},
+		{
+			Type: "required_providers",
+		},
+		{
+			Type:       "provider_meta",
+			LabelNames: []string{"provider"},
+		},
+	},
 }

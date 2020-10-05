@@ -1,9 +1,13 @@
-package terraform
+package addrs
 
 import svchost "github.com/hashicorp/terraform-svchost"
 
+// Module is an alternative representation of addrs.Module.
+// https://github.com/hashicorp/terraform/blob/v0.13.2/addrs/module.go#L17
+type Module []string
+
 // Provider is an alternative representation of addrs.Provider.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/addrs/provider.go#L16-L20
+// https://github.com/hashicorp/terraform/blob/v0.13.2/addrs/provider.go#L16-L20
 type Provider struct {
 	Type      string
 	Namespace string
@@ -11,7 +15,7 @@ type Provider struct {
 }
 
 // ResourceMode is an alternative representation of addrs.ResourceMode.
-// https://github.com/hashicorp/terraform/blob/v0.13.1/addrs/resource.go#L326-L344
+// https://github.com/hashicorp/terraform/blob/v0.13.2/addrs/resource.go#L326-L344
 type ResourceMode rune
 
 const (

@@ -2,7 +2,7 @@ package tflint
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -19,13 +19,17 @@ type Runner interface {
 
 	// WalkResources visits resources with the passed function.
 	// You must pass a resource type as the first argument.
-	WalkResources(string, func(*terraform.Resource) error) error
+	WalkResources(string, func(*configs.Resource) error) error
 
 	// WalkModuleCalls visits module calls with the passed function.
-	WalkModuleCalls(func(*terraform.ModuleCall) error) error
+	WalkModuleCalls(func(*configs.ModuleCall) error) error
 
 	// Backend returns the backend configuration, if any.
-	Backend() (*terraform.Backend, error)
+	Backend() (*configs.Backend, error)
+
+	// Config returns the Terraform configuration.
+	// This object contains almost all accessible data structures from plugins.
+	Config() (*configs.Config, error)
 
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError
