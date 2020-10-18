@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-version"
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 )
 
@@ -67,13 +68,7 @@ func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression
 	}
 
 	if strings.HasSuffix(filename, ".tf.json") {
-		return nil, hcl.Diagnostics{
-			&hcl.Diagnostic{
-				Severity: hcl.DiagError,
-				Summary:  "JSON configuration syntax is not supported",
-				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
-			},
-		}
+		return json.ParseExpressionWithStartPos(src, filename, start)
 	}
 
 	panic(fmt.Sprintf("Unexpected file: %s", filename))
@@ -85,13 +80,7 @@ func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Dia
 	}
 
 	if strings.HasSuffix(filename, ".tf.json") {
-		return nil, hcl.Diagnostics{
-			&hcl.Diagnostic{
-				Severity: hcl.DiagError,
-				Summary:  "JSON configuration syntax is not supported",
-				Subject:  &hcl.Range{Filename: filename, Start: start, End: start},
-			},
-		}
+		return json.ParseWithStartPos(src, filename, start)
 	}
 
 	panic(fmt.Sprintf("Unexpected file: %s", filename))
