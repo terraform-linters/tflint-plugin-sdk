@@ -60,7 +60,7 @@ func (c *Client) RuleNames() ([]string, error) {
 }
 
 // ApplyConfig calls the server-side ApplyConfig method.
-func (c *Client) ApplyConfig(config *tflint.Config) error {
+func (c *Client) ApplyConfig(config *tflint.MarshalledConfig) error {
 	return c.rpcClient.Call("Plugin.ApplyConfig", config, new(interface{}))
 }
 
