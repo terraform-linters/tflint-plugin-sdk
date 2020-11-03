@@ -47,9 +47,12 @@ func (s *Server) RuleNames(args interface{}, resp *[]string) error {
 }
 
 // ApplyConfig applies the passed config to its own plugin implementation.
-func (s *Server) ApplyConfig(config *tflint.Config, resp *interface{}) error {
-	s.impl.ApplyConfig(config)
-	return nil
+func (s *Server) ApplyConfig(config *tflint.MarshalledConfig, resp *interface{}) error {
+	cfg, err := config.Unmarshal()
+	if err != nil {
+		return err
+	}
+	return s.impl.ApplyConfig(cfg)
 }
 
 // Check calls its own plugin implementation with an RPC client that can send
