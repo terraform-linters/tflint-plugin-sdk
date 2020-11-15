@@ -9,6 +9,8 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/convert"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
@@ -16,16 +18,21 @@ import (
 type Runner struct {
 	Files  map[string]*hcl.File
 	Issues Issues
+
+	config *configs.Config
 }
 
 // WalkResourceAttributes visits all specified attributes from Files.
 func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walker func(*hcl.Attribute) error) error {
-	for _, file := range r.Files {
-		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
-			Blocks: []hcl.BlockHeaderSchema{
+	for _, resource := range r.config.Module.ManagedResources {
+		if resource.Type != resourceType {
+			continue
+		}
+
+		body, _, diags := resource.Config.PartialContent(&hcl.BodySchema{
+			Attributes: []hcl.AttributeSchema{
 				{
-					Type:       "resource",
-					LabelNames: []string{"type", "name"},
+					Name: attributeName,
 				},
 			},
 		})
@@ -33,27 +40,10 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 			return diags
 		}
 
-		for _, resource := range resources.Blocks {
-			if resource.Labels[0] != resourceType {
-				continue
-			}
-
-			body, _, diags := resource.Body.PartialContent(&hcl.BodySchema{
-				Attributes: []hcl.AttributeSchema{
-					{
-						Name: attributeName,
-					},
-				},
-			})
-			if diags.HasErrors() {
-				return diags
-			}
-
-			if attribute, ok := body.Attributes[attributeName]; ok {
-				err := walker(attribute)
-				if err != nil {
-					return err
-				}
+		if attribute, ok := body.Attributes[attributeName]; ok {
+			err := walker(attribute)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -63,12 +53,15 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 
 // WalkResourceBlocks visits all specified blocks from Files.
 func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(*hcl.Block) error) error {
-	for _, file := range r.Files {
-		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
+	for _, resource := range r.config.Module.ManagedResources {
+		if resource.Type != resourceType {
+			continue
+		}
+
+		body, _, diags := resource.Config.PartialContent(&hcl.BodySchema{
 			Blocks: []hcl.BlockHeaderSchema{
 				{
-					Type:       "resource",
-					LabelNames: []string{"type", "name"},
+					Type: blockType,
 				},
 			},
 		})
@@ -76,27 +69,10 @@ func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(
 			return diags
 		}
 
-		for _, resource := range resources.Blocks {
-			if resource.Labels[0] != resourceType {
-				continue
-			}
-
-			body, _, diags := resource.Body.PartialContent(&hcl.BodySchema{
-				Blocks: []hcl.BlockHeaderSchema{
-					{
-						Type: blockType,
-					},
-				},
-			})
-			if diags.HasErrors() {
-				return diags
-			}
-
-			for _, block := range body.Blocks {
-				err := walker(block)
-				if err != nil {
-					return err
-				}
+		for _, block := range body.Blocks {
+			err := walker(block)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -106,33 +82,14 @@ func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(
 
 // WalkResources visits all specified resources from Files.
 func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resource) error) error {
-	for _, file := range r.Files {
-		resources, _, diags := file.Body.PartialContent(&hcl.BodySchema{
-			Blocks: []hcl.BlockHeaderSchema{
-				{
-					Type:       "resource",
-					LabelNames: []string{"type", "name"},
-				},
-			},
-		})
-		if diags.HasErrors() {
-			return diags
+	for _, resource := range r.config.Module.ManagedResources {
+		if resource.Type != resourceType {
+			continue
 		}
 
-		for _, block := range resources.Blocks {
-			resource, diags := simpleDecodeResouceBlock(block)
-			if diags.HasErrors() {
-				return diags
-			}
-
-			if resource.Type != resourceType {
-				continue
-			}
-
-			err := walker(resource)
-			if err != nil {
-				return err
-			}
+		err := walker(resource)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -141,29 +98,10 @@ func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resourc
 
 // WalkModuleCalls visits all module calls from Files.
 func (r *Runner) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
-	for _, file := range r.Files {
-		calls, _, diags := file.Body.PartialContent(&hcl.BodySchema{
-			Blocks: []hcl.BlockHeaderSchema{
-				{
-					Type:       "module",
-					LabelNames: []string{"name"},
-				},
-			},
-		})
-		if diags.HasErrors() {
-			return diags
-		}
-
-		for _, block := range calls.Blocks {
-			call, diags := simpleDecodeModuleCallBlock(block)
-			if diags.HasErrors() {
-				return diags
-			}
-
-			err := walker(call)
-			if err != nil {
-				return err
-			}
+	for _, call := range r.config.Module.ModuleCalls {
+		err := walker(call)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -172,115 +110,52 @@ func (r *Runner) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
 
 // Backend returns the terraform backend configuration.
 func (r *Runner) Backend() (*configs.Backend, error) {
-	for _, file := range r.Files {
-		tfcfg, _, diags := file.Body.PartialContent(&hcl.BodySchema{
-			Blocks: []hcl.BlockHeaderSchema{
-				{Type: "terraform"},
-			},
-		})
-		if diags.HasErrors() {
-			return nil, diags
-		}
-
-		for _, block := range tfcfg.Blocks {
-			backendCfg, _, diags := block.Body.PartialContent(&hcl.BodySchema{
-				Blocks: []hcl.BlockHeaderSchema{
-					{Type: "backend", LabelNames: []string{"type"}},
-				},
-			})
-			if diags.HasErrors() {
-				return nil, diags
-			}
-
-			for _, backendBlock := range backendCfg.Blocks {
-				return &configs.Backend{
-					Type:      backendBlock.Labels[0],
-					TypeRange: backendBlock.LabelRanges[0],
-					Config:    backendBlock.Body,
-					DeclRange: backendBlock.DefRange,
-				}, nil
-			}
-		}
-	}
-
-	return nil, nil
+	return r.config.Module.Backend, nil
 }
 
 // Config returns the Terraform configuration
 func (r *Runner) Config() (*configs.Config, error) {
-	config := &configs.Config{
-		Module: &configs.Module{},
-	}
-
-	for _, file := range r.Files {
-		content, diags := file.Body.Content(configFileSchema)
-		if diags.HasErrors() {
-			return nil, diags
-		}
-
-		for _, block := range content.Blocks {
-			switch block.Type {
-			case "terraform":
-				content, diags := block.Body.Content(terraformBlockSchema)
-				if diags.HasErrors() {
-					return nil, diags
-				}
-
-				for _, block := range content.Blocks {
-					switch block.Type {
-					case "backend":
-						config.Module.Backend = &configs.Backend{
-							Type:      block.Labels[0],
-							TypeRange: block.LabelRanges[0],
-							Config:    block.Body,
-							DeclRange: block.DefRange,
-						}
-					case "required_providers":
-						// TODO
-					case "provider_meta":
-						// TODO
-					default:
-						continue
-					}
-				}
-			case "provider":
-				// TODO
-			case "variable":
-				// TODO
-			case "locals":
-				// TODO
-			case "output":
-				// TODO
-			case "module":
-				call, diags := simpleDecodeModuleCallBlock(block)
-				if diags.HasErrors() {
-					return nil, diags
-				}
-				config.Module.ModuleCalls[call.Name] = call
-			case "resource":
-				resource, diags := simpleDecodeResouceBlock(block)
-				if diags.HasErrors() {
-					return nil, diags
-				}
-				config.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
-			case "data":
-				// TODO
-			default:
-				continue
-			}
-		}
-	}
-
-	return nil, nil
+	return r.config, nil
 }
 
 // EvaluateExpr returns a value of the passed expression.
-// Note that there is no evaluation, no type conversion, etc.
+// Note that some features are limited
 func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
-	val, diags := expr.Value(&hcl.EvalContext{})
+	var wantType cty.Type
+	switch ret.(type) {
+	case *string, string:
+		wantType = cty.String
+	case *int, int:
+		wantType = cty.Number
+	case *[]string, []string:
+		wantType = cty.List(cty.String)
+	case *[]int, []int:
+		wantType = cty.List(cty.Number)
+	case *map[string]string, map[string]string:
+		wantType = cty.Map(cty.String)
+	case *map[string]int, map[string]int:
+		wantType = cty.Map(cty.Number)
+	default:
+		panic(fmt.Errorf("Unexpected result type: %T", ret))
+	}
+
+	variables := map[string]cty.Value{}
+	for _, variable := range r.config.Module.Variables {
+		variables[variable.Name] = variable.Default
+	}
+	rawVal, diags := expr.Value(&hcl.EvalContext{
+		Variables: map[string]cty.Value{
+			"var": cty.ObjectVal(variables),
+		},
+	})
 	if diags.HasErrors() {
 		return diags
 	}
+	val, err := convert.Convert(rawVal, wantType)
+	if err != nil {
+		return err
+	}
+
 	return gocty.FromCtyValue(val, ret)
 }
 
@@ -310,6 +185,81 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 		return proc()
 	}
 	return err
+}
+
+func (r *Runner) initFromFiles() error {
+	r.config = &configs.Config{
+		Module: &configs.Module{
+			ModuleCalls:      map[string]*configs.ModuleCall{},
+			ManagedResources: map[string]*configs.Resource{},
+			Variables:        map[string]*configs.Variable{},
+		},
+	}
+
+	for _, file := range r.Files {
+		content, diags := file.Body.Content(configFileSchema)
+		if diags.HasErrors() {
+			return diags
+		}
+
+		for _, block := range content.Blocks {
+			switch block.Type {
+			case "terraform":
+				content, diags := block.Body.Content(terraformBlockSchema)
+				if diags.HasErrors() {
+					return diags
+				}
+
+				for _, block := range content.Blocks {
+					switch block.Type {
+					case "backend":
+						r.config.Module.Backend = &configs.Backend{
+							Type:      block.Labels[0],
+							TypeRange: block.LabelRanges[0],
+							Config:    block.Body,
+							DeclRange: block.DefRange,
+						}
+					case "required_providers":
+						// TODO
+					case "provider_meta":
+						// TODO
+					default:
+						continue
+					}
+				}
+			case "provider":
+				// TODO
+			case "variable":
+				variable, diags := simpleDecodeVariableBlock(block)
+				if diags.HasErrors() {
+					return diags
+				}
+				r.config.Module.Variables[variable.Name] = variable
+			case "locals":
+				// TODO
+			case "output":
+				// TODO
+			case "module":
+				call, diags := simpleDecodeModuleCallBlock(block)
+				if diags.HasErrors() {
+					return diags
+				}
+				r.config.Module.ModuleCalls[call.Name] = call
+			case "resource":
+				resource, diags := simpleDecodeResouceBlock(block)
+				if diags.HasErrors() {
+					return diags
+				}
+				r.config.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
+			case "data":
+				// TODO
+			default:
+				continue
+			}
+		}
+	}
+
+	return nil
 }
 
 // simpleDecodeResourceBlock decodes the data equivalent to configs.Resource from hcl.Block
@@ -575,6 +525,35 @@ func decodeProviderConfigRef(expr hcl.Expression) (*configs.ProviderConfigRef, h
 	}
 
 	return ref, nil
+}
+
+func simpleDecodeVariableBlock(block *hcl.Block) (*configs.Variable, hcl.Diagnostics) {
+	v := &configs.Variable{
+		Name:      block.Labels[0],
+		DeclRange: block.DefRange,
+	}
+
+	content, diags := block.Body.Content(&hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{
+				Name: "default",
+			},
+		},
+	})
+	if diags.HasErrors() {
+		return v, diags
+	}
+
+	if attr, exists := content.Attributes["default"]; exists {
+		val, diags := attr.Expr.Value(nil)
+		if diags.HasErrors() {
+			return v, diags
+		}
+
+		v.Default = val
+	}
+
+	return v, nil
 }
 
 // configFileSchema is the schema for the top-level of a config file.
