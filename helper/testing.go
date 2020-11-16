@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -25,6 +26,9 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 		runner.Files[name] = file
 	}
 
+	if err := runner.initFromFiles(); err != nil {
+		panic(fmt.Sprintf("Failed to initialize runner: %s", err))
+	}
 	return runner
 }
 
