@@ -1,3 +1,29 @@
+## 0.6.0 (2020-11-23)
+
+This release adds support for JSON configuration syntax. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.21+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/19 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#72](https://github.com/terraform-linters/tflint-plugin-sdk/pull/72): Allow serving custom RuleSet by plugins
+  - Change `tflint.Ruleset` struct to the interface. The previous behavior can be reproduced by using the `tflint.BuiltinRuleSet`. If you do not need plugin-specific processing, please use `tflint.BuiltinRuleSet` directly.
+- [#78](https://github.com/terraform-linters/tflint-plugin-sdk/pull/78): Bump protocol version
+
+### Enhancements
+
+- [#69](https://github.com/terraform-linters/tflint-plugin-sdk/pull/69): Add support for JSON configuration syntax
+- [#75](https://github.com/terraform-linters/tflint-plugin-sdk/pull/75): helper: Update helper runner 
+
+### Chores
+
+- [#68](https://github.com/terraform-linters/tflint-plugin-sdk/pull/68): Bump actions/setup-go from v2.1.2 to v2.1.3
+- [#71](https://github.com/terraform-linters/tflint-plugin-sdk/pull/71): Bump github.com/zclconf/go-cty from 1.6.1 to 1.7.0
+- [#73](https://github.com/terraform-linters/tflint-plugin-sdk/pull/73): Bump github.com/hashicorp/go-hclog from 0.14.1 to 0.15.0
+- [#74](https://github.com/terraform-linters/tflint-plugin-sdk/pull/74): Bump github.com/hashicorp/go-plugin from 1.3.0 to 1.4.0
+- [#76](https://github.com/terraform-linters/tflint-plugin-sdk/pull/76): Bump github.com/google/go-cmp from 0.5.2 to 0.5.3
+- [#77](https://github.com/terraform-linters/tflint-plugin-sdk/pull/77): Bump github.com/hashicorp/hcl/v2 from 2.7.0 to 2.7.1
+
 ## 0.5.0 (2020-09-13)
 
 This release adds `Config()` API to accessing the Terraform configuration. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.20+.
