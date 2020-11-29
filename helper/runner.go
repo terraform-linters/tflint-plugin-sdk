@@ -118,6 +118,12 @@ func (r *Runner) Config() (*configs.Config, error) {
 	return r.config, nil
 }
 
+// RootProvider returns the provider configuration.
+// In the helper runner, it always returns its own provider.
+func (r *Runner) RootProvider(name string) (*configs.Provider, error) {
+	return r.config.Module.ProviderConfigs[name], nil
+}
+
 // EvaluateExpr returns a value of the passed expression.
 // Note that some features are limited
 func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
@@ -157,6 +163,12 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	}
 
 	return gocty.FromCtyValue(val, ret)
+}
+
+// EvaluateExprOnRootCtx returns a value of the passed expression.
+// Note this is just alias of EvaluateExpr.
+func (r *Runner) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error {
+	return r.EvaluateExpr(expr, ret)
 }
 
 // EmitIssueOnExpr adds an issue to the runner itself.

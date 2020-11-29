@@ -23,6 +23,10 @@ type Provider struct {
 }
 
 func decodeProvider(provider *Provider) (*configs.Provider, hcl.Diagnostics) {
+	if provider == nil {
+		return nil, nil
+	}
+
 	versionConstraint, diags := parseVersionConstraint(provider.Version, provider.VersionRange)
 	if diags.HasErrors() {
 		return nil, diags
