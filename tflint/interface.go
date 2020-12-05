@@ -53,10 +53,18 @@ type Runner interface {
 	// This object contains almost all accessible data structures from plugins.
 	Config() (*configs.Config, error)
 
+	// RootProvider returns the provider configuration in the root module.
+	// It can be used by child modules to access the credentials defined in the root module.
+	RootProvider(name string) (*configs.Provider, error)
+
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError
 	// to determine whether to continue processing.
 	EvaluateExpr(expr hcl.Expression, ret interface{}) error
+
+	// EvaluateExprOnRootCtx is the equivalent of EvaluateExpr method in the context of the root module.
+	// Its main use is to evaluate the provider block obtained by the RootProvider method.
+	EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error
 
 	// EmitIssue sends an issue with an expression to TFLint. You need to pass the message of the issue and the expression.
 	EmitIssueOnExpr(rule Rule, message string, expr hcl.Expression) error

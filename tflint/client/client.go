@@ -170,6 +170,26 @@ func (c *Client) Config() (*configs.Config, error) {
 	return config, nil
 }
 
+// RootProvider calls the server-side RootProvider method and returns the provider configuration.
+func (c *Client) RootProvider(name string) (*configs.Provider, error) {
+	log.Printf("[DEBUG] Accessing to the `%s` provider config in the root module", name)
+
+	var response RootProviderResponse
+	if err := c.rpcClient.Call("Plugin.RootProvider", RootProviderRequest{Name: name}, &response); err != nil {
+		return nil, err
+	}
+	if response.Err != nil {
+		return nil, response.Err
+	}
+
+	provider, diags := decodeProvider(response.Provider)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+
+	return provider, nil
+}
+
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response
 // in the passed argument.
 func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
@@ -183,6 +203,43 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	req := EvalExprRequest{Ret: ret}
 	req.Expr, req.ExprRange = encodeExpr(src, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
+		return err
+	}
+	if response.Err != nil {
+		return response.Err
+	}
+
+	err = gocty.FromCtyValue(response.Val, ret)
+	if err != nil {
+		err := &tflint.Error{
+			Code:  tflint.TypeMismatchError,
+			Level: tflint.ErrorLevel,
+			Message: fmt.Sprintf(
+				"Invalid type expression in %s:%d",
+				expr.Range().Filename,
+				expr.Range().Start.Line,
+			),
+			Cause: err,
+		}
+		log.Printf("[ERROR] %s", err)
+		return err
+	}
+	return nil
+}
+
+// EvaluateExprOnRootCtx calls the server-side EvalExprOnRootCtx method and reflects the response
+// in the passed argument.
+func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error {
+	var response EvalExprResponse
+	var err error
+
+	src, err := ioutil.ReadFile(expr.Range().Filename)
+	if err != nil {
+		return err
+	}
+	req := EvalExprRequest{Ret: ret}
+	req.Expr, req.ExprRange = encodeExpr(src, expr)
+	if err := c.rpcClient.Call("Plugin.EvalExprOnRootCtx", req, &response); err != nil {
 		return err
 	}
 	if response.Err != nil {

@@ -67,6 +67,17 @@ type ConfigResponse struct {
 	Err    error
 }
 
+// RootProviderRequest is a request to the server-side RootProvider method.
+type RootProviderRequest struct {
+	Name string
+}
+
+// RootProviderResponse is a response to the server-side RootProvider method.
+type RootProviderResponse struct {
+	Provider *Provider
+	Err      error
+}
+
 // EvalExprRequest is a request to the server-side EvalExpr method.
 type EvalExprRequest struct {
 	Expr      []byte
