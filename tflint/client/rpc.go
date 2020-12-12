@@ -78,6 +78,19 @@ type RootProviderResponse struct {
 	Err      error
 }
 
+// RuleConfigRequest is a request to the server-side RuleConfig method.
+type RuleConfigRequest struct {
+	Name string
+}
+
+// RuleConfigResponse is a response to the server-side RuleConfig method.
+type RuleConfigResponse struct {
+	Exists bool
+	Config []byte
+	Range  hcl.Range
+	Err    error
+}
+
 // EvalExprRequest is a request to the server-side EvalExpr method.
 type EvalExprRequest struct {
 	Expr      []byte

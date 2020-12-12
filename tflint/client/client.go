@@ -8,6 +8,8 @@ import (
 	"net/rpc"
 
 	hcl "github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -188,6 +190,33 @@ func (c *Client) RootProvider(name string) (*configs.Provider, error) {
 	}
 
 	return provider, nil
+}
+
+// DecodeRuleConfig calls the server-side RuleConfig method and reflects the response
+// in the passed argument.
+func (c *Client) DecodeRuleConfig(name string, ret interface{}) error {
+	var response RuleConfigResponse
+
+	req := RuleConfigRequest{Name: name}
+	if err := c.rpcClient.Call("Plugin.RuleConfig", req, &response); err != nil {
+		return err
+	}
+	if response.Err != nil {
+		return response.Err
+	}
+
+	if !response.Exists {
+		return nil
+	}
+	file, diags := hclsyntax.ParseConfig(response.Config, response.Range.Filename, response.Range.Start)
+	if diags.HasErrors() {
+		return diags
+	}
+	if diags = gohcl.DecodeBody(file.Body, nil, ret); diags.HasErrors() {
+		return diags
+	}
+
+	return nil
 }
 
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response

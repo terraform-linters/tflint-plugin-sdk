@@ -57,6 +57,9 @@ type Runner interface {
 	// It can be used by child modules to access the credentials defined in the root module.
 	RootProvider(name string) (*configs.Provider, error)
 
+	// DecodeRuleConfig fetches the rule's configuration and reflects the result in ret.
+	DecodeRuleConfig(name string, ret interface{}) error
+
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError
 	// to determine whether to continue processing.

@@ -19,12 +19,25 @@ type Runner struct {
 	Files  map[string]*hcl.File
 	Issues Issues
 
-	config *configs.Config
+	tfconfig *configs.Config
+	config   Config
+}
+
+// Config is a pseudo TFLint config file object for testing from plugins.
+type Config struct {
+	Rules []RuleConfig `hcl:"rule,block"`
+}
+
+// RuleConfig is a pseudo TFLint config file object for testing from plugins.
+type RuleConfig struct {
+	Name    string   `hcl:"name,label"`
+	Enabled bool     `hcl:"enabled"`
+	Body    hcl.Body `hcl:",remain"`
 }
 
 // WalkResourceAttributes visits all specified attributes from Files.
 func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walker func(*hcl.Attribute) error) error {
-	for _, resource := range r.config.Module.ManagedResources {
+	for _, resource := range r.tfconfig.Module.ManagedResources {
 		if resource.Type != resourceType {
 			continue
 		}
@@ -53,7 +66,7 @@ func (r *Runner) WalkResourceAttributes(resourceType, attributeName string, walk
 
 // WalkResourceBlocks visits all specified blocks from Files.
 func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(*hcl.Block) error) error {
-	for _, resource := range r.config.Module.ManagedResources {
+	for _, resource := range r.tfconfig.Module.ManagedResources {
 		if resource.Type != resourceType {
 			continue
 		}
@@ -82,7 +95,7 @@ func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(
 
 // WalkResources visits all specified resources from Files.
 func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resource) error) error {
-	for _, resource := range r.config.Module.ManagedResources {
+	for _, resource := range r.tfconfig.Module.ManagedResources {
 		if resource.Type != resourceType {
 			continue
 		}
@@ -98,7 +111,7 @@ func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resourc
 
 // WalkModuleCalls visits all module calls from Files.
 func (r *Runner) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
-	for _, call := range r.config.Module.ModuleCalls {
+	for _, call := range r.tfconfig.Module.ModuleCalls {
 		err := walker(call)
 		if err != nil {
 			return err
@@ -110,18 +123,32 @@ func (r *Runner) WalkModuleCalls(walker func(*configs.ModuleCall) error) error {
 
 // Backend returns the terraform backend configuration.
 func (r *Runner) Backend() (*configs.Backend, error) {
-	return r.config.Module.Backend, nil
+	return r.tfconfig.Module.Backend, nil
 }
 
 // Config returns the Terraform configuration
 func (r *Runner) Config() (*configs.Config, error) {
-	return r.config, nil
+	return r.tfconfig, nil
 }
 
 // RootProvider returns the provider configuration.
 // In the helper runner, it always returns its own provider.
 func (r *Runner) RootProvider(name string) (*configs.Provider, error) {
-	return r.config.Module.ProviderConfigs[name], nil
+	return r.tfconfig.Module.ProviderConfigs[name], nil
+}
+
+// DecodeRuleConfig extracts the rule's configuration into the given value
+func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
+	for _, rule := range r.config.Rules {
+		if rule.Name == name {
+			if diags := gohcl.DecodeBody(rule.Body, nil, ret); diags.HasErrors() {
+				return diags
+			}
+			return nil
+		}
+	}
+
+	return nil
 }
 
 // EvaluateExpr returns a value of the passed expression.
@@ -146,7 +173,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	}
 
 	variables := map[string]cty.Value{}
-	for _, variable := range r.config.Module.Variables {
+	for _, variable := range r.tfconfig.Module.Variables {
 		variables[variable.Name] = variable.Default
 	}
 	rawVal, diags := expr.Value(&hcl.EvalContext{
@@ -200,7 +227,7 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 }
 
 func (r *Runner) initFromFiles() error {
-	r.config = &configs.Config{
+	r.tfconfig = &configs.Config{
 		Module: &configs.Module{
 			ModuleCalls:      map[string]*configs.ModuleCall{},
 			ManagedResources: map[string]*configs.Resource{},
@@ -225,7 +252,7 @@ func (r *Runner) initFromFiles() error {
 				for _, block := range content.Blocks {
 					switch block.Type {
 					case "backend":
-						r.config.Module.Backend = &configs.Backend{
+						r.tfconfig.Module.Backend = &configs.Backend{
 							Type:      block.Labels[0],
 							TypeRange: block.LabelRanges[0],
 							Config:    block.Body,
@@ -246,7 +273,7 @@ func (r *Runner) initFromFiles() error {
 				if diags.HasErrors() {
 					return diags
 				}
-				r.config.Module.Variables[variable.Name] = variable
+				r.tfconfig.Module.Variables[variable.Name] = variable
 			case "locals":
 				// TODO
 			case "output":
@@ -256,13 +283,13 @@ func (r *Runner) initFromFiles() error {
 				if diags.HasErrors() {
 					return diags
 				}
-				r.config.Module.ModuleCalls[call.Name] = call
+				r.tfconfig.Module.ModuleCalls[call.Name] = call
 			case "resource":
 				resource, diags := simpleDecodeResouceBlock(block)
 				if diags.HasErrors() {
 					return diags
 				}
-				r.config.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
+				r.tfconfig.Module.ManagedResources[fmt.Sprintf("%s.%s", resource.Type, resource.Name)] = resource
 			case "data":
 				// TODO
 			default:
