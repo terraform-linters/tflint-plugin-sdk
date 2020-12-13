@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
@@ -23,7 +24,16 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 		if diags.HasErrors() {
 			t.Fatal(diags)
 		}
-		runner.Files[name] = file
+
+		if name == ".tflint.hcl" {
+			var config Config
+			if diags := gohcl.DecodeBody(file.Body, nil, &config); diags.HasErrors() {
+				t.Fatal(diags)
+			}
+			runner.config = config
+		} else {
+			runner.Files[name] = file
+		}
 	}
 
 	if err := runner.initFromFiles(); err != nil {
