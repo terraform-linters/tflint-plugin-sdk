@@ -95,6 +95,7 @@ type RuleConfigResponse struct {
 type EvalExprRequest struct {
 	Expr      []byte
 	ExprRange hcl.Range
+	Type      cty.Type
 	Ret       interface{}
 }
 

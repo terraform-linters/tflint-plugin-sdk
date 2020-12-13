@@ -153,23 +153,29 @@ func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
 
 // EvaluateExpr returns a value of the passed expression.
 // Note that some features are limited
-func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
+func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, wantTy *cty.Type) error {
 	var wantType cty.Type
-	switch ret.(type) {
-	case *string, string:
-		wantType = cty.String
-	case *int, int:
-		wantType = cty.Number
-	case *[]string, []string:
-		wantType = cty.List(cty.String)
-	case *[]int, []int:
-		wantType = cty.List(cty.Number)
-	case *map[string]string, map[string]string:
-		wantType = cty.Map(cty.String)
-	case *map[string]int, map[string]int:
-		wantType = cty.Map(cty.Number)
-	default:
-		panic(fmt.Errorf("Unexpected result type: %T", ret))
+
+	if wantTy != nil {
+		wantType = *wantTy
+	}
+	if wantType == (cty.Type{}) {
+		switch ret.(type) {
+		case *string, string:
+			wantType = cty.String
+		case *int, int:
+			wantType = cty.Number
+		case *[]string, []string:
+			wantType = cty.List(cty.String)
+		case *[]int, []int:
+			wantType = cty.List(cty.Number)
+		case *map[string]string, map[string]string:
+			wantType = cty.Map(cty.String)
+		case *map[string]int, map[string]int:
+			wantType = cty.Map(cty.Number)
+		default:
+			panic(fmt.Errorf("Unexpected result type: %T", ret))
+		}
 	}
 
 	variables := map[string]cty.Value{}
@@ -194,8 +200,8 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 
 // EvaluateExprOnRootCtx returns a value of the passed expression.
 // Note this is just alias of EvaluateExpr.
-func (r *Runner) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error {
-	return r.EvaluateExpr(expr, ret)
+func (r *Runner) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wantType *cty.Type) error {
+	return r.EvaluateExpr(expr, ret, wantType)
 }
 
 // EmitIssueOnExpr adds an issue to the runner itself.

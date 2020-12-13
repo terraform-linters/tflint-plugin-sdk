@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
@@ -221,7 +222,11 @@ func (c *Client) DecodeRuleConfig(name string, ret interface{}) error {
 
 // EvaluateExpr calls the server-side EvalExpr method and reflects the response
 // in the passed argument.
-func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
+func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}, wantType *cty.Type) error {
+	if wantType == nil {
+		wantType = &cty.Type{}
+	}
+
 	var response EvalExprResponse
 	var err error
 
@@ -229,7 +234,7 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 	if err != nil {
 		return err
 	}
-	req := EvalExprRequest{Ret: ret}
+	req := EvalExprRequest{Ret: ret, Type: *wantType}
 	req.Expr, req.ExprRange = encodeExpr(src, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
 		return err
@@ -258,7 +263,11 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}) error {
 
 // EvaluateExprOnRootCtx calls the server-side EvalExprOnRootCtx method and reflects the response
 // in the passed argument.
-func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error {
+func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wantType *cty.Type) error {
+	if wantType == nil {
+		wantType = &cty.Type{}
+	}
+
 	var response EvalExprResponse
 	var err error
 
@@ -266,7 +275,7 @@ func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) err
 	if err != nil {
 		return err
 	}
-	req := EvalExprRequest{Ret: ret}
+	req := EvalExprRequest{Ret: ret, Type: *wantType}
 	req.Expr, req.ExprRange = encodeExpr(src, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExprOnRootCtx", req, &response); err != nil {
 		return err

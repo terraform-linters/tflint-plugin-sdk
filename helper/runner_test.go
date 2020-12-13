@@ -369,7 +369,7 @@ resource "aws_instance" "foo" {
 
 	err := runner.WalkResourceAttributes("aws_instance", "instance_type", func(attribute *hcl.Attribute) error {
 		var instanceType string
-		if err := runner.EvaluateExpr(attribute.Expr, &instanceType); err != nil {
+		if err := runner.EvaluateExpr(attribute.Expr, &instanceType, nil); err != nil {
 			t.Fatal(err)
 		}
 

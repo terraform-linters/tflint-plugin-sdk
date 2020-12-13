@@ -3,6 +3,7 @@ package tflint
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // RuleSet is a list of rules that a plugin should provide.
@@ -61,13 +62,15 @@ type Runner interface {
 	DecodeRuleConfig(name string, ret interface{}) error
 
 	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
+	// If you want to ensure the type of ret, you can pass the type as the 3rd argument.
+	// If you pass nil as the type, it will be inferred from the type of ret.
 	// Since this function returns an application error, it is expected to use the EnsureNoError
 	// to determine whether to continue processing.
-	EvaluateExpr(expr hcl.Expression, ret interface{}) error
+	EvaluateExpr(expr hcl.Expression, ret interface{}, wantType *cty.Type) error
 
 	// EvaluateExprOnRootCtx is the equivalent of EvaluateExpr method in the context of the root module.
 	// Its main use is to evaluate the provider block obtained by the RootProvider method.
-	EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}) error
+	EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wantType *cty.Type) error
 
 	// EmitIssue sends an issue with an expression to TFLint. You need to pass the message of the issue and the expression.
 	EmitIssueOnExpr(rule Rule, message string, expr hcl.Expression) error
