@@ -354,7 +354,7 @@ func Test_EvaluateExpr(t *testing.T) {
 	}
 
 	var ret string
-	if err := client.EvaluateExpr(expr, &ret); err != nil {
+	if err := client.EvaluateExpr(expr, &ret, nil); err != nil {
 		t.Fatal(err)
 	}
 
