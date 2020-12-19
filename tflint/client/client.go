@@ -302,6 +302,23 @@ func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wan
 	return nil
 }
 
+// IsNullExpr calls the server-side IsNullExpr method with the passed expression.
+func (c *Client) IsNullExpr(expr hcl.Expression) (bool, error) {
+	var response IsNullExprResponse
+
+	src, err := ioutil.ReadFile(expr.Range().Filename)
+	if err != nil {
+		return false, err
+	}
+	req := &IsNullExprRequest{}
+	req.Expr, req.Range = encodeExpr(src, expr)
+	if err := c.rpcClient.Call("Plugin.IsNullExpr", req, &response); err != nil {
+		return false, err
+	}
+
+	return response.Ret, response.Err
+}
+
 // EmitIssueOnExpr calls the server-side EmitIssue method with the passed expression.
 func (c *Client) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
 	req := &EmitIssueRequest{

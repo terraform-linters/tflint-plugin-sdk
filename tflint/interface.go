@@ -72,6 +72,10 @@ type Runner interface {
 	// Its main use is to evaluate the provider block obtained by the RootProvider method.
 	EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wantType *cty.Type) error
 
+	// IsNullExpr checks whether the passed expression is null or not.
+	// This returns an error when the passed expression is invalid, occurs evaluation errors, etc.
+	IsNullExpr(expr hcl.Expression) (bool, error)
+
 	// EmitIssue sends an issue with an expression to TFLint. You need to pass the message of the issue and the expression.
 	EmitIssueOnExpr(rule Rule, message string, expr hcl.Expression) error
 
