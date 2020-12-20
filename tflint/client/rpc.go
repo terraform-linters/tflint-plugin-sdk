@@ -105,6 +105,18 @@ type EvalExprResponse struct {
 	Err error
 }
 
+// IsNullExprRequest is a request to the server-side IsNullExpr method.
+type IsNullExprRequest struct {
+	Expr  []byte
+	Range hcl.Range
+}
+
+// IsNullExprResponse is a response to the server-side IsNullExpr method.
+type IsNullExprResponse struct {
+	Ret bool
+	Err error
+}
+
 // EmitIssueRequest is a request to the server-side EmitIssue method.
 type EmitIssueRequest struct {
 	Rule      *Rule

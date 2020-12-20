@@ -204,6 +204,16 @@ func (r *Runner) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wan
 	return r.EvaluateExpr(expr, ret, wantType)
 }
 
+// IsNullExpr checks whether the passed expression is null or not.
+// Note that it does not eval the expression for simplify the implementation.
+func (r *Runner) IsNullExpr(expr hcl.Expression) (bool, error) {
+	val, diags := expr.Value(nil)
+	if diags.HasErrors() {
+		return false, diags
+	}
+	return val.IsNull(), nil
+}
+
 // EmitIssueOnExpr adds an issue to the runner itself.
 func (r *Runner) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
 	r.Issues = append(r.Issues, &Issue{
