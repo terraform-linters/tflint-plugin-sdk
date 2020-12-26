@@ -54,6 +54,11 @@ type Runner interface {
 	// This object contains almost all accessible data structures from plugins.
 	Config() (*configs.Config, error)
 
+	// File returns the hcl.File object.
+	// This is low level API for accessing information such as comments and syntax.
+	// When accessing resources, expressions, etc, it is recommended to use high-level APIs.
+	File(string) (*hcl.File, error)
+
 	// RootProvider returns the provider configuration in the root module.
 	// It can be used by child modules to access the credentials defined in the root module.
 	RootProvider(name string) (*configs.Provider, error)

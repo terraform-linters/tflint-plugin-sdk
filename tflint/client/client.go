@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/rpc"
@@ -173,6 +172,20 @@ func (c *Client) Config() (*configs.Config, error) {
 	return config, nil
 }
 
+// File calls the server-side File method and returns the hcl.File object.
+func (c *Client) File(filename string) (*hcl.File, error) {
+	var response FileResponse
+	if err := c.rpcClient.Call("Plugin.File", FileRequest{Filename: filename}, &response); err != nil {
+		return nil, err
+	}
+
+	file, diags := parseConfig(response.Bytes, filename, response.Range.Start)
+	if diags.HasErrors() {
+		return nil, diags
+	}
+	return file, nil
+}
+
 // RootProvider calls the server-side RootProvider method and returns the provider configuration.
 func (c *Client) RootProvider(name string) (*configs.Provider, error) {
 	log.Printf("[DEBUG] Accessing to the `%s` provider config in the root module", name)
@@ -227,15 +240,14 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}, wantType *ct
 		wantType = &cty.Type{}
 	}
 
-	var response EvalExprResponse
-	var err error
-
-	src, err := ioutil.ReadFile(expr.Range().Filename)
+	file, err := c.File(expr.Range().Filename)
 	if err != nil {
 		return err
 	}
+
+	var response EvalExprResponse
 	req := EvalExprRequest{Ret: ret, Type: *wantType}
-	req.Expr, req.ExprRange = encodeExpr(src, expr)
+	req.Expr, req.ExprRange = encodeExpr(file.Bytes, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
 		return err
 	}
@@ -267,16 +279,14 @@ func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wan
 	if wantType == nil {
 		wantType = &cty.Type{}
 	}
-
-	var response EvalExprResponse
-	var err error
-
-	src, err := ioutil.ReadFile(expr.Range().Filename)
+	file, err := c.File(expr.Range().Filename)
 	if err != nil {
 		return err
 	}
+
+	var response EvalExprResponse
 	req := EvalExprRequest{Ret: ret, Type: *wantType}
-	req.Expr, req.ExprRange = encodeExpr(src, expr)
+	req.Expr, req.ExprRange = encodeExpr(file.Bytes, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExprOnRootCtx", req, &response); err != nil {
 		return err
 	}
@@ -304,14 +314,14 @@ func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wan
 
 // IsNullExpr calls the server-side IsNullExpr method with the passed expression.
 func (c *Client) IsNullExpr(expr hcl.Expression) (bool, error) {
-	var response IsNullExprResponse
-
-	src, err := ioutil.ReadFile(expr.Range().Filename)
+	file, err := c.File(expr.Range().Filename)
 	if err != nil {
 		return false, err
 	}
+
+	var response IsNullExprResponse
 	req := &IsNullExprRequest{}
-	req.Expr, req.Range = encodeExpr(src, expr)
+	req.Expr, req.Range = encodeExpr(file.Bytes, expr)
 	if err := c.rpcClient.Call("Plugin.IsNullExpr", req, &response); err != nil {
 		return false, err
 	}
@@ -321,17 +331,17 @@ func (c *Client) IsNullExpr(expr hcl.Expression) (bool, error) {
 
 // EmitIssueOnExpr calls the server-side EmitIssue method with the passed expression.
 func (c *Client) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
+	file, err := c.File(expr.Range().Filename)
+	if err != nil {
+		return err
+	}
+
 	req := &EmitIssueRequest{
 		Rule:     encodeRule(rule),
 		Message:  message,
 		Location: expr.Range(),
 	}
-
-	src, err := ioutil.ReadFile(expr.Range().Filename)
-	if err != nil {
-		return err
-	}
-	req.Expr, req.ExprRange = encodeExpr(src, expr)
+	req.Expr, req.ExprRange = encodeExpr(file.Bytes, expr)
 
 	if err := c.rpcClient.Call("Plugin.EmitIssue", &req, new(interface{})); err != nil {
 		return err

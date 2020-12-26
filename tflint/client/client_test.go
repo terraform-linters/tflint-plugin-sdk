@@ -2,10 +2,8 @@ package client
 
 import (
 	"errors"
-	"io/ioutil"
 	"net"
 	"net/rpc"
-	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -95,6 +93,11 @@ func (*mockServer) Backend(req *BackendRequest, resp *BackendResponse) error {
 		DeclRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 3}, End: hcl.Pos{Line: 2, Column: 22}},
 		TypeRange:   hcl.Range{Filename: "example.tf", Start: hcl.Pos{Line: 2, Column: 11}, End: hcl.Pos{Line: 2, Column: 19}},
 	}, Err: nil}
+	return nil
+}
+
+func (*mockServer) File(req *FileRequest, resp *FileResponse) error {
+	*resp = FileResponse{Bytes: []byte("foo = 1"), Range: hcl.Range{Filename: req.Filename, Start: hcl.InitialPos}}
 	return nil
 }
 
@@ -339,16 +342,7 @@ func Test_EvaluateExpr(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(file.Name())
-	if _, err := file.Write([]byte("1")); err != nil {
-		t.Fatal(err)
-	}
-
-	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), "example.tf", hcl.Pos{Line: 1, Column: 7})
 	if diags.HasErrors() {
 		t.Fatal(diags)
 	}
@@ -375,21 +369,12 @@ func Test_EmitIssueOnExpr(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(file.Name())
-	if _, err := file.Write([]byte("1")); err != nil {
-		t.Fatal(err)
-	}
-
-	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), "example.tf", hcl.Pos{Line: 1, Column: 7})
 	if diags.HasErrors() {
 		t.Fatal(diags)
 	}
 
-	if err := client.EmitIssueOnExpr(&testRule{}, file.Name(), expr); err != nil {
+	if err := client.EmitIssueOnExpr(&testRule{}, "example.tf", expr); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -398,21 +383,12 @@ func Test_EmitIssue(t *testing.T) {
 	client, server := startMockServer(t)
 	defer server.Listener.Close()
 
-	file, err := ioutil.TempFile("", "tflint-test-evaluateExpr-*.tf")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(file.Name())
-	if _, err := file.Write([]byte("1")); err != nil {
-		t.Fatal(err)
-	}
-
-	expr, diags := hclsyntax.ParseExpression([]byte("1"), file.Name(), hcl.Pos{Line: 1, Column: 1})
+	expr, diags := hclsyntax.ParseExpression([]byte("1"), "example.tf", hcl.Pos{Line: 1, Column: 7})
 	if diags.HasErrors() {
 		t.Fatal(diags)
 	}
 
-	if err := client.EmitIssue(&testRule{}, file.Name(), expr.Range()); err != nil {
+	if err := client.EmitIssue(&testRule{}, "example.tf", expr.Range()); err != nil {
 		t.Fatal(err)
 	}
 }
