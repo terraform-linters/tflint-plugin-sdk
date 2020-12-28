@@ -67,6 +67,17 @@ type ConfigResponse struct {
 	Err    error
 }
 
+// FileRequest is a request to the server-side File method.
+type FileRequest struct {
+	Filename string
+}
+
+// FileResponse is a response to the server-side File method.
+type FileResponse struct {
+	Bytes []byte
+	Range hcl.Range
+}
+
 // RootProviderRequest is a request to the server-side RootProvider method.
 type RootProviderRequest struct {
 	Name string

@@ -131,6 +131,11 @@ func (r *Runner) Config() (*configs.Config, error) {
 	return r.tfconfig, nil
 }
 
+// File returns the hcl.File object
+func (r *Runner) File(filename string) (*hcl.File, error) {
+	return r.Files[filename], nil
+}
+
 // RootProvider returns the provider configuration.
 // In the helper runner, it always returns its own provider.
 func (r *Runner) RootProvider(name string) (*configs.Provider, error) {
