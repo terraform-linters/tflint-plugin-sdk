@@ -21,6 +21,8 @@ For more details on the API, see [tflint](https://pkg.go.dev/github.com/terrafor
 
 ## Architecture
 
+![architecture](architecture.png)
+
 This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFLint launches the plugin as a sub-process and communicates with the plugin over RPC. The plugin acts as a server, while TFLint acts as a client that sends inspection requests to the plugin.
 
 On the other hand, the plugin sends various requests to a server (TFLint) to get detailed runtime contexts (e.g. variables and expressions). This means that TFLint and plugins can act as both a server and a client.
