@@ -3,7 +3,7 @@ package configs
 import "github.com/hashicorp/hcl/v2"
 
 // ModuleCall is an alternative representation of configs.ModuleCall.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/module_call.go#L12-L31
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/module_call.go#L12-L31
 // DependsOn is not supported due to the difficulty of intermediate representation.
 type ModuleCall struct {
 	Name string
@@ -27,7 +27,7 @@ type ModuleCall struct {
 }
 
 // PassedProviderConfig is an alternative representation of configs.PassedProviderConfig.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/module_call.go#L140-L143
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/module_call.go#L148-L151
 type PassedProviderConfig struct {
 	InChild  *ProviderConfigRef
 	InParent *ProviderConfigRef

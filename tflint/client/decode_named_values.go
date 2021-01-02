@@ -14,8 +14,10 @@ type Variable struct {
 	Type        cty.Type
 	ParsingMode configs.VariableParsingMode
 	Validations []*VariableValidation
+	Sensitive   bool
 
 	DescriptionSet bool
+	SensitiveSet   bool
 
 	DeclRange hcl.Range
 }
@@ -37,8 +39,10 @@ func decodeVariable(variable *Variable) (*configs.Variable, hcl.Diagnostics) {
 		Type:        variable.Type,
 		ParsingMode: variable.ParsingMode,
 		Validations: ret,
+		Sensitive:   variable.Sensitive,
 
 		DescriptionSet: variable.DescriptionSet,
+		SensitiveSet:   variable.SensitiveSet,
 
 		DeclRange: variable.DeclRange,
 	}, nil

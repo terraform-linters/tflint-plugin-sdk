@@ -3,7 +3,7 @@ package configs
 import "github.com/hashicorp/hcl/v2"
 
 // Provisioner is an alternative representation of configs.Provisioner.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/provisioner.go#L11-L20
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/provisioner.go#L11-L20
 type Provisioner struct {
 	Type       string
 	Config     hcl.Body
@@ -16,7 +16,7 @@ type Provisioner struct {
 }
 
 // Connection is an alternative representation of configs.Connection.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/provisioner.go#L166-L170
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/provisioner.go#L176-L180
 type Connection struct {
 	Config hcl.Body
 
@@ -24,7 +24,7 @@ type Connection struct {
 }
 
 // ProvisionerWhen is an alternative representation of configs.ProvisionerWhen.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/provisioner.go#L172-L181
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/provisioner.go#L182-L191
 type ProvisionerWhen int
 
 const (
@@ -37,7 +37,7 @@ const (
 )
 
 // ProvisionerOnFailure is an alternative representation of configs.ProvisionerOnFailure.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/provisioner.go#L183-L193
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/provisioner.go#L193-L203
 type ProvisionerOnFailure int
 
 const (
