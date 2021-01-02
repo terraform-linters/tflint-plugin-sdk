@@ -7,7 +7,7 @@ import (
 )
 
 // Config is an alternative representation of configs.Config.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/config.go#L22-L78
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/config.go#L22-L78
 type Config struct {
 	// Root            *Config
 	// Parent          *Config

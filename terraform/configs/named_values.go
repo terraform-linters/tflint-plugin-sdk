@@ -6,7 +6,7 @@ import (
 )
 
 // Variable is an alternative representation of configs.Variable.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/named_values.go#L21-L32
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/named_values.go#L21-L34
 type Variable struct {
 	Name        string
 	Description string
@@ -14,14 +14,16 @@ type Variable struct {
 	Type        cty.Type
 	ParsingMode VariableParsingMode
 	Validations []*VariableValidation
+	Sensitive   bool
 
 	DescriptionSet bool
+	SensitiveSet   bool
 
 	DeclRange hcl.Range
 }
 
 // VariableParsingMode is an alternative representation of configs.VariableParsingMode.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/named_values.go#L226-L234
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/named_values.go#L234-L242
 type VariableParsingMode rune
 
 // VariableParseLiteral is a variable parsing mode that just takes the given
@@ -33,7 +35,7 @@ const VariableParseLiteral VariableParsingMode = 'L'
 const VariableParseHCL VariableParsingMode = 'H'
 
 // VariableValidation is an alternative representation of configs.VariableValidation.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/named_values.go#L273-L289
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/named_values.go#L281-L297
 type VariableValidation struct {
 	// Condition is an expression that refers to the variable being tested
 	// and contains no other references. The expression must return true
@@ -53,7 +55,7 @@ type VariableValidation struct {
 }
 
 // Local is an alternative representation of configs.Local.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/named_values.go#L485-L490
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/named_values.go#L501-L506
 type Local struct {
 	Name string
 	Expr hcl.Expression
@@ -62,7 +64,7 @@ type Local struct {
 }
 
 // Output is an alternative representation of configs.Output.
-// https://github.com/hashicorp/terraform/blob/v0.13.2/configs/named_values.go#L422-L433
+// https://github.com/hashicorp/terraform/blob/v0.14.3/configs/named_values.go#L430-L441
 type Output struct {
 	Name        string
 	Description string
