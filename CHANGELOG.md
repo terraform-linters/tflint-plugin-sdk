@@ -1,3 +1,30 @@
+## 0.7.0 (2021-01-03)
+
+This release changes the Runner interface. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.23+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/23 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#83](https://github.com/terraform-linters/tflint-plugin-sdk/pull/83): tflint: Add wantType argument to EvaluateExpr
+- [#92](https://github.com/terraform-linters/tflint-plugin-sdk/pull/92): Bump protocol version
+
+### Enhancements
+
+- [#79](https://github.com/terraform-linters/tflint-plugin-sdk/pull/79): tflint: Extend runner API for accessing the root provider configuration
+- [#82](https://github.com/terraform-linters/tflint-plugin-sdk/pull/82): tflint: Add support for fetching rule config
+- [#85](https://github.com/terraform-linters/tflint-plugin-sdk/pull/85): tflint: Add `IsNullExpr` API
+- [#88](https://github.com/terraform-linters/tflint-plugin-sdk/pull/88): Avoid to read file directly from plugin side
+- [#91](https://github.com/terraform-linters/tflint-plugin-sdk/pull/91): Make terraform configuration compatible with v0.14
+
+### Chores
+
+- [#80](https://github.com/terraform-linters/tflint-plugin-sdk/pull/80): 
+Bump github.com/google/go-cmp from 0.5.3 to 0.5.4
+- [#86](https://github.com/terraform-linters/tflint-plugin-sdk/pull/86): Bump github.com/zclconf/go-cty from 1.7.0 to 1.7.1
+- [#87](https://github.com/terraform-linters/tflint-plugin-sdk/pull/87): Bump github.com/hashicorp/hcl/v2 from 2.7.1 to 2.8.1
+- [#90](https://github.com/terraform-linters/tflint-plugin-sdk/pull/90): Revise README
+
 ## 0.6.0 (2020-11-23)
 
 This release adds support for JSON configuration syntax. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.21+.
