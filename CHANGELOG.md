@@ -1,3 +1,9 @@
+## 0.7.1 (2020-01-10)
+
+### BugFixes
+
+- [#93](https://github.com/terraform-linters/tflint-plugin-sdk/pull/93): tflint: Add workaround for parsing heredoc expressions
+
 ## 0.7.0 (2021-01-03)
 
 This release changes the Runner interface. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.23+.
