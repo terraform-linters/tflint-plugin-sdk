@@ -1,16 +1,19 @@
 package client
 
 import (
+	"fmt"
+
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/msgpack"
 )
 
 // Variable is an intermediate representation of configs.Variable.
 type Variable struct {
 	Name        string
 	Description string
-	Default     cty.Value
+	Default     []byte
 	Type        cty.Type
 	ParsingMode configs.VariableParsingMode
 	Validations []*VariableValidation
@@ -32,10 +35,20 @@ func decodeVariable(variable *Variable) (*configs.Variable, hcl.Diagnostics) {
 		ret[i] = validation
 	}
 
+	defaultVal, err := msgpack.Unmarshal(variable.Default, variable.Type)
+	if err != nil {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary: fmt.Sprint(err),
+			},
+		}
+	}
+
 	return &configs.Variable{
 		Name:        variable.Name,
 		Description: variable.Description,
-		Default:     variable.Default,
+		Default:     defaultVal,
 		Type:        variable.Type,
 		ParsingMode: variable.ParsingMode,
 		Validations: ret,
