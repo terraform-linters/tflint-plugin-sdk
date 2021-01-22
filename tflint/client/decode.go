@@ -79,6 +79,9 @@ func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression
 
 func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Diagnostics) {
 	if strings.HasSuffix(filename, ".tf") {
+		// HACK: Always add a newline to avoid heredoc parse errors.
+		// @see https://github.com/hashicorp/hcl/issues/441
+		src = []byte(string(src) + "\n")
 		return hclsyntax.ParseConfig(src, filename, start)
 	}
 
