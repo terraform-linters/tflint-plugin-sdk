@@ -5,7 +5,7 @@ import (
 
 	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
-	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/json"
 	"github.com/zclconf/go-cty/cty/msgpack"
 )
 
@@ -14,7 +14,7 @@ type Variable struct {
 	Name        string
 	Description string
 	Default     []byte
-	Type        cty.Type
+	Type        []byte
 	ParsingMode configs.VariableParsingMode
 	Validations []*VariableValidation
 	Sensitive   bool
@@ -35,14 +35,25 @@ func decodeVariable(variable *Variable) (*configs.Variable, hcl.Diagnostics) {
 		ret[i] = validation
 	}
 
-	defaultVal, err := msgpack.Unmarshal(variable.Default, variable.Type)
+	typeVal, err := json.UnmarshalType(variable.Type)
 	if err != nil {
 		return nil, hcl.Diagnostics{
 			&hcl.Diagnostic{
 				Severity: hcl.DiagError,
-				Summary: "cannot unmarshal variable default value",
-				Detail: fmt.Sprint(err),
-				Subject: &variable.DeclRange,
+				Summary:  "cannot unmarshal type for variable",
+				Detail:   fmt.Sprint(err),
+				Subject:  &variable.DeclRange,
+			},
+		}
+	}
+	defaultVal, err := msgpack.Unmarshal(variable.Default, typeVal)
+	if err != nil {
+		return nil, hcl.Diagnostics{
+			&hcl.Diagnostic{
+				Severity: hcl.DiagError,
+				Summary:  "cannot unmarshal variable default value",
+				Detail:   fmt.Sprint(err),
+				Subject:  &variable.DeclRange,
 			},
 		}
 	}
@@ -51,7 +62,7 @@ func decodeVariable(variable *Variable) (*configs.Variable, hcl.Diagnostics) {
 		Name:        variable.Name,
 		Description: variable.Description,
 		Default:     defaultVal,
-		Type:        variable.Type,
+		Type:        typeVal,
 		ParsingMode: variable.ParsingMode,
 		Validations: ret,
 		Sensitive:   variable.Sensitive,
