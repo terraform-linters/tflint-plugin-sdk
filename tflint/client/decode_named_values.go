@@ -40,7 +40,9 @@ func decodeVariable(variable *Variable) (*configs.Variable, hcl.Diagnostics) {
 		return nil, hcl.Diagnostics{
 			&hcl.Diagnostic{
 				Severity: hcl.DiagError,
-				Summary: fmt.Sprint(err),
+				Summary: "cannot unmarshal variable default value",
+				Detail: fmt.Sprint(err),
+				Subject: &variable.DeclRange,
 			},
 		}
 	}
