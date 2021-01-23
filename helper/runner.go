@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/hcl/v2"
@@ -187,9 +188,16 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, wantTy *cty.
 	for _, variable := range r.tfconfig.Module.Variables {
 		variables[variable.Name] = variable.Default
 	}
+	workspace, success := os.LookupEnv("TERRAFORM_WORKSPACE")
+	if !success {
+		workspace = "default"
+	}
 	rawVal, diags := expr.Value(&hcl.EvalContext{
 		Variables: map[string]cty.Value{
 			"var": cty.ObjectVal(variables),
+			"terraform": cty.ObjectVal(map[string]cty.Value{
+				"workspace": cty.StringVal(workspace),
+			}),
 		},
 	})
 	if diags.HasErrors() {
