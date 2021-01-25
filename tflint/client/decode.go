@@ -77,9 +77,35 @@ func parseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression
 	panic(fmt.Sprintf("Unexpected file: %s", filename))
 }
 
+func hasUnterminatedTemplateString(diags []*hcl.Diagnostic) bool {
+	for _, diag := range diags {
+		if diag.Summary == "Unterminated template string" &&
+			diag.Detail == "No closing marker was found for the string." {
+			return true
+		}
+	}
+
+	return false
+}
+
 func parseConfig(src []byte, filename string, start hcl.Pos) (*hcl.File, hcl.Diagnostics) {
 	if strings.HasSuffix(filename, ".tf") {
-		return hclsyntax.ParseConfig(src, filename, start)
+		file, diags := hclsyntax.ParseConfig(src, filename, start)
+		if hasUnterminatedTemplateString(diags) {
+			// HACK: Add a newline to avoid heredoc parse errors.
+			// @see https://github.com/hashicorp/hcl/issues/441
+			src = []byte(string(src) + "\n")
+			fixedFile, fixedDiags := hclsyntax.ParseConfig(src, filename, start)
+
+			// Still has error? Return first result
+			if hasUnterminatedTemplateString(fixedDiags) {
+				return file, diags
+			}
+
+			return fixedFile, fixedDiags
+		}
+
+		return file, diags
 	}
 
 	if strings.HasSuffix(filename, ".tf.json") {
