@@ -1,4 +1,4 @@
-## 0.8.0 (2020-01-31)
+## 0.8.0 (2021-01-31)
 
 This release fixes some bugs when using `Config` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.24+.
 
@@ -18,7 +18,7 @@ See also https://github.com/terraform-linters/tflint-ruleset-template/pull/26 fo
 - [#94](https://github.com/terraform-linters/tflint-plugin-sdk/pull/94): Bump github.com/hashicorp/hcl/v2 from 2.8.1 to 2.8.2
 - [#99](https://github.com/terraform-linters/tflint-plugin-sdk/pull/99): Allow use of ${terraform.workspace} in tests
 
-## 0.7.1 (2020-01-10)
+## 0.7.1 (2021-01-10)
 
 ### BugFixes
 
