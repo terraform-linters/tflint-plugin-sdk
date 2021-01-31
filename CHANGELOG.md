@@ -1,3 +1,23 @@
+## 0.8.0 (2020-01-31)
+
+This release fixes some bugs when using `Config` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.24+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/26 for an example of upgrading the SDK. 
+
+### Breaking Changes
+
+- [#96](https://github.com/terraform-linters/tflint-plugin-sdk/pull/96): Use msgpack to encoding to pass cty.Value in variable default
+- [#98](https://github.com/terraform-linters/tflint-plugin-sdk/pull/98): Use json for transfering cty.Type
+
+### BugFixes
+
+- [#97](https://github.com/terraform-linters/tflint-plugin-sdk/pull/97): Fix heredoc parsing in parseConfig
+
+### Chores
+
+- [#94](https://github.com/terraform-linters/tflint-plugin-sdk/pull/94): Bump github.com/hashicorp/hcl/v2 from 2.8.1 to 2.8.2
+- [#99](https://github.com/terraform-linters/tflint-plugin-sdk/pull/99): Allow use of ${terraform.workspace} in tests
+
 ## 0.7.1 (2020-01-10)
 
 ### BugFixes
