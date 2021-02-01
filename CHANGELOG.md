@@ -1,3 +1,9 @@
+## 0.8.1 (2021-02-02)
+
+### BugFixes
+
+- [#100](https://github.com/terraform-linters/tflint-plugin-sdk/pull/100): tflint: Make sure RuleNames always return all rules
+
 ## 0.8.0 (2021-01-31)
 
 This release fixes some bugs when using `Config` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.24+.
