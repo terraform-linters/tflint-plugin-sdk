@@ -11,6 +11,8 @@ type BuiltinRuleSet struct {
 	Name    string
 	Version string
 	Rules   []Rule
+
+	EnabledRules []Rule
 }
 
 // RuleSetName is the name of the ruleset.
@@ -42,7 +44,7 @@ func (r *BuiltinRuleSet) ApplyConfig(config *Config) error {
 
 // ApplyCommonConfig reflects common configurations regardless of plugins.
 func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
-	rules := []Rule{}
+	r.EnabledRules = []Rule{}
 
 	if config.DisabledByDefault {
 		log.Printf("[DEBUG] Only mode is enabled. Ignoring default plugin rules")
@@ -57,15 +59,14 @@ func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
 		}
 
 		if enabled {
-			rules = append(rules, rule)
+			r.EnabledRules = append(r.EnabledRules, rule)
 		}
 	}
-	r.Rules = rules
 }
 
 // Check runs inspection for each rule by applying Runner.
 func (r *BuiltinRuleSet) Check(runner Runner) error {
-	for _, rule := range r.Rules {
+	for _, rule := range r.EnabledRules {
 		if err := rule.Check(runner); err != nil {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
 		}
