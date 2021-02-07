@@ -188,7 +188,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, wantTy *cty.
 	for _, variable := range r.tfconfig.Module.Variables {
 		variables[variable.Name] = variable.Default
 	}
-	workspace, success := os.LookupEnv("TERRAFORM_WORKSPACE")
+	workspace, success := os.LookupEnv("TF_WORKSPACE")
 	if !success {
 		workspace = "default"
 	}
