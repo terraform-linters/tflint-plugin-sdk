@@ -21,6 +21,6 @@ jobs:
     - name: Run linters
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
-        go install golang.org/x/lint/golint
+        go install golang.org/x/lint/golint@latest
         golint --set_exit_status $(go list ./...)
         go vet ./...
