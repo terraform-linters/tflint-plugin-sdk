@@ -246,7 +246,10 @@ func (c *Client) EvaluateExpr(expr hcl.Expression, ret interface{}, wantType *ct
 	}
 
 	var response EvalExprResponse
-	req := EvalExprRequest{Ret: ret, Type: *wantType}
+	req := EvalExprRequest{Type: *wantType}
+	if req.Type == (cty.Type{}) {
+		req.Ret = ret
+	}
 	req.Expr, req.ExprRange = encodeExpr(file.Bytes, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExpr", req, &response); err != nil {
 		return err
@@ -285,7 +288,10 @@ func (c *Client) EvaluateExprOnRootCtx(expr hcl.Expression, ret interface{}, wan
 	}
 
 	var response EvalExprResponse
-	req := EvalExprRequest{Ret: ret, Type: *wantType}
+	req := EvalExprRequest{Type: *wantType}
+	if req.Type == (cty.Type{}) {
+		req.Ret = ret
+	}
 	req.Expr, req.ExprRange = encodeExpr(file.Bytes, expr)
 	if err := c.rpcClient.Call("Plugin.EvalExprOnRootCtx", req, &response); err != nil {
 		return err
