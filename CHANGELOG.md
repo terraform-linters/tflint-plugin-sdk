@@ -1,3 +1,20 @@
+## 0.8.2 (2021-04-04)
+
+### Changes
+
+- [#101](https://github.com/terraform-linters/tflint-plugin-sdk/pull/101): helper: Use a consistent env var for TF_WORKSPACE
+
+### BugFixes
+
+- [#107](https://github.com/terraform-linters/tflint-plugin-sdk/pull/107): client: Pass only type to EvalExpr when passed detailed types
+
+### Chores
+
+- [#102](https://github.com/terraform-linters/tflint-plugin-sdk/pull/102): Upgrade to Go 1.16
+- [#103](https://github.com/terraform-linters/tflint-plugin-sdk/pull/103) [#106](https://github.com/terraform-linters/tflint-plugin-sdk/pull/106): Bump github.com/hashicorp/hcl/v2 from 2.8.2 to 2.9.1
+- [#105](https://github.com/terraform-linters/tflint-plugin-sdk/pull/105): Bump github.com/google/go-cmp from 0.5.4 to 0.5.5
+- [#108](https://github.com/terraform-linters/tflint-plugin-sdk/pull/108): Bump github.com/zclconf/go-cty from 1.8.0 to 1.8.1
+
 ## 0.8.1 (2021-02-02)
 
 ### BugFixes
