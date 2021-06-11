@@ -11,4 +11,5 @@ type Server interface {
 	Backend(*client.BackendRequest, *client.BackendResponse) error
 	EvalExpr(*client.EvalExprRequest, *client.EvalExprResponse) error
 	EmitIssue(*client.EmitIssueRequest, *interface{}) error
+	Files(*client.FilesRequest, *client.FilesResponse) error
 }

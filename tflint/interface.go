@@ -59,6 +59,10 @@ type Runner interface {
 	// When accessing resources, expressions, etc, it is recommended to use high-level APIs.
 	File(string) (*hcl.File, error)
 
+	// Files returns a map[string]hcl.File object, where the key is the file name.
+	// This is low level API for accessing information such as comments and syntax.
+	Files() (map[string]*hcl.File, error)
+
 	// RootProvider returns the provider configuration in the root module.
 	// It can be used by child modules to access the credentials defined in the root module.
 	RootProvider(name string) (*configs.Provider, error)

@@ -78,6 +78,15 @@ type FileResponse struct {
 	Range hcl.Range
 }
 
+// FilesRequest is a request to the server-side Files method.
+type FilesRequest struct{}
+
+// FilesResponse is a response to the server-side Files method.
+type FilesResponse struct {
+	Files map[string][]byte
+	Err   error
+}
+
 // RootProviderRequest is a request to the server-side RootProvider method.
 type RootProviderRequest struct {
 	Name string

@@ -17,11 +17,28 @@ import (
 
 // Runner is a mock that satisfies the Runner interface for plugin testing.
 type Runner struct {
-	Files  map[string]*hcl.File
+	files  map[string]*hcl.File
 	Issues Issues
 
 	tfconfig *configs.Config
 	config   Config
+}
+
+// NewLocalRunner initialises a new test runner.
+// Internal use only.
+func NewLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
+	return &Runner{files: map[string]*hcl.File{}, Issues: issues}
+}
+
+// AddLocalFile adds a new file to the current mapped files.
+// Internal use only.
+func (r *Runner) AddLocalFile(name string, file *hcl.File) bool {
+	if _, exists := r.files[name]; exists {
+		return false
+	}
+
+	r.files[name] = file
+	return true
 }
 
 // Config is a pseudo TFLint config file object for testing from plugins.
@@ -134,7 +151,12 @@ func (r *Runner) Config() (*configs.Config, error) {
 
 // File returns the hcl.File object
 func (r *Runner) File(filename string) (*hcl.File, error) {
-	return r.Files[filename], nil
+	return r.files[filename], nil
+}
+
+// Files returns a map[string]hcl.File object
+func (r *Runner) Files() (map[string]*hcl.File, error) {
+	return r.files, nil
 }
 
 // RootProvider returns the provider configuration.
@@ -264,7 +286,7 @@ func (r *Runner) initFromFiles() error {
 		},
 	}
 
-	for _, file := range r.Files {
+	for _, file := range r.files {
 		content, diags := file.Body.Content(configFileSchema)
 		if diags.HasErrors() {
 			return diags
