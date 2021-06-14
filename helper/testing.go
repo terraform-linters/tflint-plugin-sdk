@@ -16,7 +16,7 @@ import (
 // TestRunner returns a mock Runner for testing.
 // You can pass the map of file names and their contents in the second argument.
 func TestRunner(t *testing.T, files map[string]string) *Runner {
-	runner := &Runner{Files: map[string]*hcl.File{}, Issues: Issues{}}
+	runner := NewLocalRunner(map[string]*hcl.File{}, Issues{})
 	parser := hclparse.NewParser()
 
 	for name, src := range files {
@@ -32,7 +32,7 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 			}
 			runner.config = config
 		} else {
-			runner.Files[name] = file
+			runner.AddLocalFile(name, file)
 		}
 	}
 

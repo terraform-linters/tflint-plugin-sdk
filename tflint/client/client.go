@@ -186,6 +186,26 @@ func (c *Client) File(filename string) (*hcl.File, error) {
 	return file, nil
 }
 
+// Files calls the server-side Files method and returns a collection of hcl.File object.
+func (c *Client) Files() (map[string]*hcl.File, error) {
+	var response FilesResponse
+	if err := c.rpcClient.Call("Plugin.Files", FilesRequest{}, &response); err != nil {
+		return nil, err
+	}
+
+	files := make(map[string]*hcl.File)
+	for filename, content := range response.Files {
+		file, diags := parseConfig(content, filename, hcl.InitialPos)
+
+		if diags.HasErrors() {
+			return nil, diags
+		}
+
+		files[filename] = file
+	}
+	return files, nil
+}
+
 // RootProvider calls the server-side RootProvider method and returns the provider configuration.
 func (c *Client) RootProvider(name string) (*configs.Provider, error) {
 	log.Printf("[DEBUG] Accessing to the `%s` provider config in the root module", name)

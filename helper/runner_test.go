@@ -471,3 +471,31 @@ func Test_EnsureNoError(t *testing.T) {
 		t.Fatal("Expected to exec the passed proc, but doesn't")
 	}
 }
+
+func Test_Files(t *testing.T) {
+	var sources = map[string]string{
+		"main.tf": `
+			resource "aws_instance" "foo" {
+				instance_type = "t2.micro"
+			}`,
+		"outputs.tf": `
+			output "dummy" {
+				value = "test"
+			}`,
+		"providers.tf": `
+			provider "aws" {
+				region = "us-east-1"
+			}`,
+	}
+
+	runner := TestRunner(t, sources)
+
+	files, err := runner.Files()
+	if err != nil {
+		t.Fatalf("The response has an unexpected error: %s", err)
+	}
+
+	if !cmp.Equal(len(sources), len(files)) {
+		t.Fatalf("Sources and Files differ: %s", cmp.Diff(sources, files))
+	}
+}
