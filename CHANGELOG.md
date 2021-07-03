@@ -1,3 +1,23 @@
+## 0.9.0 (2021-07-03)
+
+This release adds `Files()` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.30+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/37 for an example of upgrading the SDK.
+
+### Breaking Changes
+
+- [#122](https://github.com/terraform-linters/tflint-plugin-sdk/pull/122): Implement Files() method
+- [#124](https://github.com/terraform-linters/tflint-plugin-sdk/pull/124): Bump protocol version
+
+### Chores
+
+- [#109](https://github.com/terraform-linters/tflint-plugin-sdk/pull/109): Bump github.com/hashicorp/go-version from 1.2.1 to 1.3.0
+- [#112](https://github.com/terraform-linters/tflint-plugin-sdk/pull/112): Bump github.com/hashicorp/hcl/v2 from 2.9.1 to 2.10.0
+- [#117](https://github.com/terraform-linters/tflint-plugin-sdk/pull/117): Bump github.com/hashicorp/go-hclog from 0.15.0 to 0.16.1
+- [#120](https://github.com/terraform-linters/tflint-plugin-sdk/pull/120): Bump github.com/google/go-cmp from 0.5.5 to 0.5.6
+- [#121](https://github.com/terraform-linters/tflint-plugin-sdk/pull/121): Bump github.com/hashicorp/go-plugin from 1.4.0 to 1.4.2
+- [#123](https://github.com/terraform-linters/tflint-plugin-sdk/pull/123): Bump github.com/zclconf/go-cty from 1.8.1 to 1.8.4
+
 ## 0.8.2 (2021-04-04)
 
 ### Changes
