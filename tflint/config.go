@@ -29,7 +29,10 @@ type MarshalledConfig struct {
 
 // Unmarshal converts intermediate representations into the Config object.
 func (c *MarshalledConfig) Unmarshal() (*Config, error) {
-	file, diags := hclsyntax.ParseConfig(c.BodyBytes, c.BodyRange.Filename, c.BodyRange.Start)
+	// HACK: Always add a newline to avoid heredoc parse errors.
+	// @see https://github.com/hashicorp/hcl/issues/441
+	src := []byte(string(c.BodyBytes) + "\n")
+	file, diags := hclsyntax.ParseConfig(src, c.BodyRange.Filename, c.BodyRange.Start)
 	if diags.HasErrors() {
 		return nil, diags
 	}
