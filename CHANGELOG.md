@@ -1,3 +1,14 @@
+## 0.9.1 (2021-07-17)
+
+### BugFixes
+
+- [#128](https://github.com/terraform-linters/tflint-plugin-sdk/pull/128): tflint: Add workaround when parsing a config that has a trailing heredoc
+
+### Chores
+
+- [#125](https://github.com/terraform-linters/tflint-plugin-sdk/pull/125): Bump github.com/zclconf/go-cty from 1.8.4 to 1.9.0
+- [#126](https://github.com/terraform-linters/tflint-plugin-sdk/pull/126): Bump github.com/hashicorp/go-hclog from 0.16.1 to 0.16.2
+
 ## 0.9.0 (2021-07-03)
 
 This release adds `Files()` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.30+.
