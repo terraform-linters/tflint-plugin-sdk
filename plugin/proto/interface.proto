@@ -1,0 +1,116 @@
+syntax = "proto3";
+option go_package = "github.com/terraform-linters/tflint-plugin-sdk/plugin/proto";
+
+package proto;
+
+service RuleSet {
+    rpc RuleSetName(RuleSetName.Request) returns (RuleSetName.Response);
+    rpc RuleSetVersion(RuleSetVersion.Request) returns (RuleSetVersion.Response);
+    rpc RuleNames(RuleNames.Request) returns (RuleNames.Response);
+    rpc ConfigSchema(ConfigSchema.Request) returns (ConfigSchema.Response);
+    rpc ApplyConfig(ApplyConfig.Request) returns (ApplyConfig.Response);
+    rpc Check(Check.Request) returns (Check.Response);
+}
+
+message RuleSetName {
+    message Request {}
+    message Response {
+        string name = 1;
+    }
+}
+
+message RuleSetVersion {
+    message Request {}
+    message Response {
+        string version = 1;
+    }
+}
+
+message RuleNames {
+    message Request {}
+    message Response {
+        repeated string names = 1;
+    }
+}
+
+message ConfigSchema {
+    message Request {}
+    message Response {
+        BodySchema body = 1;
+    }
+}
+
+message ApplyConfig {
+    message Request {
+        BodyContent body = 1;
+    }
+    message Response {}
+}
+
+message Check {
+    message Request {
+        uint32 runner = 1;
+    }
+    message Response {}
+}
+
+message BodySchema {
+    message Attribute {
+        string name = 1;
+    }
+    message Block {
+        string type = 1;
+        repeated string label_names = 2;
+        BodySchema body = 3;
+    }
+
+    repeated Attribute attributes = 1;
+    repeated Block blocks = 2;
+}
+
+message BodyContent {
+    message Attribute {
+        string name = 1;
+        bytes expr = 2;
+        Range range = 3;
+        Range name_range = 4;
+    }
+    message Block {
+        string type = 1;
+        repeated string labels = 2;
+        BodyContent body = 3;
+        Range def_range = 4;
+        Range type_range = 5;
+        repeated Range label_ranges = 6;
+    }
+
+    map<string, Attribute> attributes = 1;
+    repeated Block blocks = 2;
+    Range missing_item_range = 3;
+}
+
+message Range {
+    message Pos {
+        int64 line = 1;
+        int64 column = 2;
+        int64 byte = 3;
+    }
+
+    string filename = 1;
+    Pos start = 2;
+    Pos end = 3;
+}
+
+service Runner {
+    rpc ResourceContent(ResourceContent.Request) returns (ResourceContent.Response);
+}
+
+message ResourceContent {
+    message Request {
+        string resource = 1;
+        BodySchema schema = 2;
+    }
+    message Response {
+        BodyContent content = 1;
+    }
+}

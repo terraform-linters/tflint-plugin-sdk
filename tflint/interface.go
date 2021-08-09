@@ -2,6 +2,8 @@ package tflint
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/runner"
+	"github.com/terraform-linters/tflint-plugin-sdk/schema"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -19,14 +21,21 @@ type RuleSet interface {
 	// RuleNames is a list of rule names provided by the plugin. This method is not expected to be overridden.
 	RuleNames() []string
 
+	ConfigSchema() *schema.BodySchema
+
 	// ApplyConfig reflects the configuration to the ruleset.
 	// Custom rulesets can override this method to reflect the plugin's own configuration.
 	// In that case, don't forget to call ApplyCommonConfig.
 	ApplyConfig(*Config) error
 
+	// TODO: Do not pass raw body content?
+	NewApplyConfig(*schema.BodyContent) error
+
 	// Check runs inspection for each rule by applying Runner.
 	// This is a entrypoint for all inspections and can be used as a hook to inject a custom runner.
 	Check(Runner) error
+
+	NewCheck(runner.Runner) error
 }
 
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.

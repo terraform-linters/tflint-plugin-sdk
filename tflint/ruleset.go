@@ -3,6 +3,9 @@ package tflint
 import (
 	"fmt"
 	"log"
+
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/runner"
+	"github.com/terraform-linters/tflint-plugin-sdk/schema"
 )
 
 // BuiltinRuleSet is the basis of the ruleset. Plugins can serve this ruleset directly.
@@ -35,6 +38,10 @@ func (r *BuiltinRuleSet) RuleNames() []string {
 	return names
 }
 
+func (r *BuiltinRuleSet) ConfigSchema() *schema.BodySchema {
+	return nil
+}
+
 // ApplyConfig reflects the configuration to the ruleset.
 // By default, this only applies common configurations.
 func (r *BuiltinRuleSet) ApplyConfig(config *Config) error {
@@ -64,6 +71,10 @@ func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
 	}
 }
 
+func (r *BuiltinRuleSet) NewApplyConfig(body *schema.BodyContent) error {
+	return nil
+}
+
 // Check runs inspection for each rule by applying Runner.
 func (r *BuiltinRuleSet) Check(runner Runner) error {
 	for _, rule := range r.EnabledRules {
@@ -71,5 +82,9 @@ func (r *BuiltinRuleSet) Check(runner Runner) error {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
 		}
 	}
+	return nil
+}
+
+func (r *BuiltinRuleSet) NewCheck(run runner.Runner) error {
 	return nil
 }
