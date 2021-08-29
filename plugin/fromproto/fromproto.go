@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/schema"
+	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
 func BodySchema(body *proto.BodySchema) *schema.BodySchema {
@@ -43,7 +44,7 @@ func BodyContent(body *proto.BodyContent) (*schema.BodyContent, hcl.Diagnostics)
 
 	attributes := schema.Attributes{}
 	for key, attr := range body.Attributes {
-		expr, diags := parseExpression(attr.Expr, attr.Range.Filename, Pos(attr.Range.Start))
+		expr, diags := parseExpression(attr.Expr, attr.ExprRange.Filename, Pos(attr.ExprRange.Start))
 		// TODO: append
 		if diags.HasErrors() {
 			return nil, diags
@@ -54,7 +55,6 @@ func BodyContent(body *proto.BodyContent) (*schema.BodyContent, hcl.Diagnostics)
 			Expr:      expr,
 			Range:     Range(attr.Range),
 			NameRange: Range(attr.NameRange),
-			ExprBytes: attr.Expr,
 		}
 	}
 
@@ -86,6 +86,51 @@ func BodyContent(body *proto.BodyContent) (*schema.BodyContent, hcl.Diagnostics)
 		Blocks:           blocks,
 		MissingItemRange: Range(body.MissingItemRange),
 	}, nil
+}
+
+type Rule struct {
+	Data RuleData
+}
+
+type RuleData struct {
+	Name     string
+	Enabled  bool
+	Severity string // TODO: enum?
+	Link     string
+}
+
+func (r *Rule) Name() string              { return r.Data.Name }
+func (r *Rule) Enabled() bool             { return r.Data.Enabled }
+func (r *Rule) Severity() string          { return r.Data.Severity }
+func (r *Rule) Link() string              { return r.Data.Link }
+func (r *Rule) Check(tflint.Runner) error { return nil }
+
+func EmitIssue_Rule(rule *proto.EmitIssue_Rule) *Rule {
+	if rule == nil {
+		return nil
+	}
+
+	return &Rule{
+		Data: RuleData{
+			Name:     rule.Name,
+			Enabled:  rule.Enabled,
+			Severity: EmitIssue_Severity(rule.Severity),
+			Link:     rule.Link,
+		},
+	}
+}
+
+func EmitIssue_Severity(severity proto.EmitIssue_Severity) string {
+	switch severity {
+	case proto.EmitIssue_ERROR:
+		return tflint.ERROR
+	case proto.EmitIssue_WARNING:
+		return tflint.WARNING
+	case proto.EmitIssue_NOTICE:
+		return tflint.NOTICE
+	}
+
+	return tflint.ERROR
 }
 
 func Range(rng *proto.Range) hcl.Range {

@@ -3,6 +3,7 @@ package tflint
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/schema"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // RuleSet is a list of rules that a plugin should provide.
@@ -36,6 +37,27 @@ type RuleSet interface {
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
 type Runner interface {
 	ResourceContent(string, *schema.BodySchema) (*schema.BodyContent, hcl.Diagnostics)
+
+	// File returns the hcl.File object.
+	// This is low level API for accessing information such as comments and syntax.
+	// When accessing resources, expressions, etc, it is recommended to use high-level APIs.
+	File(string) (*hcl.File, error)
+
+	// Files returns a map[string]hcl.File object, where the key is the file name.
+	// This is low level API for accessing information such as comments and syntax.
+	Files() (map[string]*hcl.File, error)
+
+	// EvaluateExpr evaluates the passed expression and reflects the result in ret.
+	// If you want to ensure the type of ret, you can pass the type as the 3rd argument.
+	// If you pass nil as the type, it will be inferred from the type of ret.
+	// Since this function returns an application error, it is expected to use the EnsureNoError
+	// to determine whether to continue processing.
+	EvaluateExpr(expr hcl.Expression, ret interface{}, wantType *cty.Type) error
+
+	// EmitIssue sends an issue to TFLint. You need to pass the message of the issue and the range.
+	// You should use EmitIssueOnExpr if you want to emit an issue for an expression.
+	// This API provides a lower level interface.
+	EmitIssue(rule Rule, message string, location hcl.Range) error
 }
 
 // Rule is the interface that the plugin's rules should satisfy.

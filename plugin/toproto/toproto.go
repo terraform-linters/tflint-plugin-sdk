@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/schema"
+	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
 func ConfigSchema_Response(body *schema.BodySchema) *proto.ConfigSchema_Response {
@@ -33,18 +34,18 @@ func BodySchema(body *schema.BodySchema) *proto.BodySchema {
 	}
 }
 
-func ApplyConfig_Request(body *schema.BodyContent) *proto.ApplyConfig_Request {
+func ApplyConfig_Request(body *schema.BodyContent, sources map[string][]byte) *proto.ApplyConfig_Request {
 	return &proto.ApplyConfig_Request{
-		Body: ApplyConfig_Request_Body(body),
+		Body: ApplyConfig_Request_Body(body, sources),
 	}
 }
 
-func ApplyConfig_Request_Body(body *schema.BodyContent) *proto.BodyContent {
+func ApplyConfig_Request_Body(body *schema.BodyContent, sources map[string][]byte) *proto.BodyContent {
 	attributes := map[string]*proto.BodyContent_Attribute{}
 	for key, attr := range body.Attributes {
 		attributes[key] = &proto.BodyContent_Attribute{
 			Name:      attr.Name,
-			Expr:      attr.ExprBytes,
+			Expr:      attr.Expr.Range().SliceBytes(sources[attr.Range.Filename]),
 			Range:     Range(attr.Range),
 			NameRange: Range(attr.NameRange),
 		}
@@ -60,7 +61,7 @@ func ApplyConfig_Request_Body(body *schema.BodyContent) *proto.BodyContent {
 		blocks[idx] = &proto.BodyContent_Block{
 			Type:        block.Type,
 			Labels:      block.Labels,
-			Body:        ApplyConfig_Request_Body(block.Body),
+			Body:        ApplyConfig_Request_Body(block.Body, sources),
 			DefRange:    Range(block.DefRange),
 			TypeRange:   Range(block.TypeRange),
 			LabelRanges: labelRanges,
@@ -90,14 +91,15 @@ func Range_Pos(pos hcl.Pos) *proto.Range_Pos {
 	}
 }
 
-func BodyContent(body *schema.BodyContent) *proto.BodyContent {
+func BodyContent(body *schema.BodyContent, sources map[string][]byte) *proto.BodyContent {
 	attributes := map[string]*proto.BodyContent_Attribute{}
 	for idx, attr := range body.Attributes {
 		attributes[idx] = &proto.BodyContent_Attribute{
 			Name:      attr.Name,
-			Expr:      attr.Expr.Range().SliceBytes(attr.ExprBytes),
+			Expr:      attr.Expr.Range().SliceBytes(sources[attr.Range.Filename]),
 			Range:     Range(attr.Range),
 			NameRange: Range(attr.NameRange),
+			ExprRange: Range(attr.Expr.Range()),
 		}
 	}
 
@@ -111,7 +113,7 @@ func BodyContent(body *schema.BodyContent) *proto.BodyContent {
 		blocks[idx] = &proto.BodyContent_Block{
 			Type:        block.Type,
 			Labels:      block.Labels,
-			Body:        BodyContent(block.Body),
+			Body:        BodyContent(block.Body, sources),
 			DefRange:    Range(block.DefRange),
 			TypeRange:   Range(block.TypeRange),
 			LabelRanges: labelRanges,
@@ -122,4 +124,26 @@ func BodyContent(body *schema.BodyContent) *proto.BodyContent {
 		Attributes: attributes,
 		Blocks:     blocks,
 	}
+}
+
+func EmitIssue_Rule(rule tflint.Rule) *proto.EmitIssue_Rule {
+	return &proto.EmitIssue_Rule{
+		Name:     rule.Name(),
+		Enabled:  rule.Enabled(),
+		Severity: EmitIssue_Severity(rule.Severity()),
+		Link:     rule.Link(),
+	}
+}
+
+func EmitIssue_Severity(severity string) proto.EmitIssue_Severity {
+	switch severity {
+	case tflint.ERROR:
+		return proto.EmitIssue_ERROR
+	case tflint.WARNING:
+		return proto.EmitIssue_WARNING
+	case tflint.NOTICE:
+		return proto.EmitIssue_NOTICE
+	}
+
+	return proto.EmitIssue_ERROR
 }

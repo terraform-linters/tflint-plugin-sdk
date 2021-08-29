@@ -74,6 +74,7 @@ message BodyContent {
         bytes expr = 2;
         Range range = 3;
         Range name_range = 4;
+        Range expr_range = 5;
     }
     message Block {
         string type = 1;
@@ -103,6 +104,9 @@ message Range {
 
 service Runner {
     rpc ResourceContent(ResourceContent.Request) returns (ResourceContent.Response);
+    rpc File(File.Request) returns (File.Response);
+    rpc EvaluateExpr(EvaluateExpr.Request) returns (EvaluateExpr.Response);
+    rpc EmitIssue(EmitIssue.Request) returns (EmitIssue.Response);
 }
 
 message ResourceContent {
@@ -113,4 +117,45 @@ message ResourceContent {
     message Response {
         BodyContent content = 1;
     }
+}
+
+message File {
+    message Request {
+        string name = 1;
+    }
+    message Response {
+        bytes file = 1;
+    }
+}
+
+message EvaluateExpr {
+    message Request {
+        bytes expr = 1;
+        Range expr_range = 2;
+        bytes type = 3;
+    }
+    message Response {
+        bytes value = 1;
+    }
+}
+
+message EmitIssue {
+    enum Severity {
+        ERROR = 0;
+        WARNING = 1;
+        NOTICE = 2;
+    }
+    message Rule {
+        string name = 1;
+        bool enabled = 2;
+        Severity severity = 3;
+        string link = 4;
+    }
+
+    message Request {
+        Rule rule = 1;
+        string message = 2;
+        Range range = 3;
+    }
+    message Response {}
 }

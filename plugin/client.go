@@ -109,8 +109,8 @@ func (c *Client) ApplyConfig(config *tflint.MarshalledConfig) error {
 	return c.rpcClient.Call("Plugin.ApplyConfig", config, new(interface{}))
 }
 
-func (c *GRPCClient) ApplyConfig(config *schema.BodyContent) error {
-	_, err := c.client.ApplyConfig(context.Background(), toproto.ApplyConfig_Request(config))
+func (c *GRPCClient) ApplyConfig(config *schema.BodyContent, sources map[string][]byte) error {
+	_, err := c.client.ApplyConfig(context.Background(), toproto.ApplyConfig_Request(config, sources))
 	return err
 }
 
@@ -125,7 +125,7 @@ func (c *Client) Check(server tfserver.Server) error {
 	return c.rpcClient.Call("Plugin.Check", brokerID, new(interface{}))
 }
 
-func (c *GRPCClient) Check(r tflint.Runner) error {
+func (c *GRPCClient) Check(r runner.Host) error {
 	brokerID := c.broker.NextId()
 	go c.broker.AcceptAndServe(brokerID, func(opts []grpc.ServerOption) *grpc.Server {
 		server := grpc.NewServer(opts...)
