@@ -125,7 +125,7 @@ func (c *Client) Check(server tfserver.Server) error {
 	return c.rpcClient.Call("Plugin.Check", brokerID, new(interface{}))
 }
 
-func (c *GRPCClient) Check(r runner.Runner) error {
+func (c *GRPCClient) Check(r tflint.Runner) error {
 	brokerID := c.broker.NextId()
 	go c.broker.AcceptAndServe(brokerID, func(opts []grpc.ServerOption) *grpc.Server {
 		server := grpc.NewServer(opts...)

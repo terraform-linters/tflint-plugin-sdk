@@ -9,7 +9,6 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/runner"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
-	tfclient "github.com/terraform-linters/tflint-plugin-sdk/tflint/client"
 )
 
 // Server is an RPC server acting as a plugin.
@@ -96,15 +95,6 @@ func (s *GRPCServer) ApplyConfig(ctx context.Context, req *proto.ApplyConfig_Req
 
 // Check calls its own plugin implementation with an RPC client that can send
 // requests to the host process.
-func (s *Server) Check(brokerID uint32, resp *interface{}) error {
-	conn, err := s.broker.Dial(brokerID)
-	if err != nil {
-		return err
-	}
-
-	return s.impl.Check(tfclient.NewClient(conn))
-}
-
 func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*proto.Check_Response, error) {
 	conn, err := s.broker.Dial(req.Runner)
 	if err != nil {
@@ -112,7 +102,7 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	}
 	defer conn.Close()
 
-	err = s.impl.NewCheck(&runner.GRPCClient{Client: proto.NewRunnerClient(conn)})
+	err = s.impl.Check(&runner.GRPCClient{Client: proto.NewRunnerClient(conn)})
 
 	return &proto.Check_Response{}, err
 }

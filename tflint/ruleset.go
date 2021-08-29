@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/runner"
 	"github.com/terraform-linters/tflint-plugin-sdk/schema"
 )
 
@@ -82,9 +81,5 @@ func (r *BuiltinRuleSet) Check(runner Runner) error {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
 		}
 	}
-	return nil
-}
-
-func (r *BuiltinRuleSet) NewCheck(run runner.Runner) error {
 	return nil
 }

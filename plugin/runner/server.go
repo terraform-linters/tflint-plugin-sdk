@@ -3,21 +3,16 @@ package runner
 import (
 	"context"
 
-	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
-	"github.com/terraform-linters/tflint-plugin-sdk/schema"
+	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
-
-type Runner interface {
-	ResourceContent(string, *schema.BodySchema) (*schema.BodyContent, hcl.Diagnostics)
-}
 
 type GRPCServer struct {
 	proto.UnimplementedRunnerServer
 
-	Impl Runner
+	Impl tflint.Runner
 }
 
 func (s *GRPCServer) ResourceContent(ctx context.Context, req *proto.ResourceContent_Request) (*proto.ResourceContent_Response, error) {
