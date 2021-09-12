@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hashicorp/hcl/v2 v2.10.0
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734
-	github.com/zclconf/go-cty v1.9.0
+	github.com/zclconf/go-cty v1.9.1
 )
 
 require (
