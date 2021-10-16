@@ -1,0 +1,221 @@
+syntax = "proto3";
+option go_package = "github.com/terraform-linters/tflint-plugin-sdk/plugin/proto";
+
+package proto;
+
+service RuleSet {
+    rpc GetName(GetName.Request) returns (GetName.Response);
+    rpc GetVersion(GetVersion.Request) returns (GetVersion.Response);
+    rpc GetRuleNames(GetRuleNames.Request) returns (GetRuleNames.Response);
+    rpc GetConfigSchema(GetConfigSchema.Request) returns (GetConfigSchema.Response);
+    rpc ApplyGlobalConfig(ApplyGlobalConfig.Request) returns (ApplyGlobalConfig.Response);
+    rpc ApplyConfig(ApplyConfig.Request) returns (ApplyConfig.Response);
+    rpc Check(Check.Request) returns (Check.Response);
+}
+
+message GetName {
+    message Request {}
+    message Response {
+        string name = 1;
+    }
+}
+
+message GetVersion {
+    message Request {}
+    message Response {
+        string version = 1;
+    }
+}
+
+message GetRuleNames {
+    message Request {}
+    message Response {
+        repeated string names = 1;
+    }
+}
+
+message GetConfigSchema {
+    message Request {}
+    message Response {
+        BodySchema schema = 1;
+    }
+}
+
+message ApplyGlobalConfig {
+    message Config {
+        map<string, RuleConfig> rules = 1;
+        bool disabled_by_default = 2;
+    }
+    message RuleConfig {
+        string name = 1;
+        bool enabled = 2;
+    }
+
+    message Request {
+        Config config = 1;
+    }
+    message Response {}
+}
+
+message ApplyConfig {
+    message Request {
+        BodyContent content = 1;
+    }
+    message Response {}
+}
+
+message Check {
+    message Request {
+        uint32 runner = 1;
+    }
+    message Response {}
+}
+
+service Runner {
+    rpc GetModuleContent(GetModuleContent.Request) returns (GetModuleContent.Response);
+    rpc GetFile(GetFile.Request) returns (GetFile.Response);
+    rpc GetRuleConfigContent(GetRuleConfigContent.Request) returns (GetRuleConfigContent.Response);
+    rpc EvaluateExpr(EvaluateExpr.Request) returns (EvaluateExpr.Response);
+    rpc EmitIssue(EmitIssue.Request) returns (EmitIssue.Response);
+}
+
+enum ModuleCtxType {
+    MODULE_CTX_TYPE_UNSPECIFIED = 0;
+    MODULE_CTX_TYPE_SELF = 1;
+    MODULE_CTX_TYPE_ROOT = 2;
+}
+
+message GetModuleContent {
+    message Option {
+        ModuleCtxType module_ctx = 1;
+    }
+
+    message Request {
+        BodySchema schema = 1;
+        Option option = 2;
+    }
+    message Response {
+        BodyContent content = 1;
+    }
+}
+
+message GetFile {
+    message Request {
+        string name = 1;
+    }
+    message Response {
+        bytes file = 1;
+    }
+}
+
+message GetRuleConfigContent {
+    message Request {
+        string name = 1;
+        BodySchema schema = 2;
+    }
+    message Response {
+        BodyContent content = 1;
+    }
+}
+
+message EvaluateExpr {
+    message Option {
+        bytes type = 1;
+        ModuleCtxType module_ctx = 2;
+    }
+
+    message Request {
+        bytes expr = 1;
+        Range expr_range = 2;
+        Option option = 3;
+    }
+    message Response {
+        bytes value = 1;
+    }
+}
+
+message EmitIssue {
+    enum Severity {
+        SEVERITY_UNSPECIFIED = 0;
+        SEVERITY_ERROR = 1;
+        SEVERITY_WARNING = 2;
+        SEVERITY_NOTICE = 3;
+    }
+    message Rule {
+        string name = 1;
+        bool enabled = 2;
+        Severity severity = 3;
+        string link = 4;
+    }
+
+    message Request {
+        Rule rule = 1;
+        string message = 2;
+        Range range = 3;
+    }
+    message Response {}
+}
+
+message BodySchema {
+    message Attribute {
+        string name = 1;
+        bool required = 2;
+    }
+    message Block {
+        string type = 1;
+        repeated string label_names = 2;
+        BodySchema body = 3;
+    }
+
+    repeated Attribute attributes = 1;
+    repeated Block blocks = 2;
+}
+
+message BodyContent {
+    message Attribute {
+        string name = 1;
+        bytes expr = 2;
+        Range expr_range = 3;
+        Range range = 4;
+        Range name_range = 5;
+    }
+    message Block {
+        string type = 1;
+        repeated string labels = 2;
+        BodyContent body = 3;
+        Range def_range = 4;
+        Range type_range = 5;
+        repeated Range label_ranges = 6;
+    }
+
+    map<string, Attribute> attributes = 1;
+    repeated Block blocks = 2;
+}
+
+message Range {
+    message Pos {
+        int64 line = 1;
+        int64 column = 2;
+        int64 byte = 3;
+    }
+
+    string filename = 1;
+    Pos start = 2;
+    Pos end = 3;
+}
+
+enum ErrorCode {
+    ERROR_CODE_UNSPECIFIED = 0;
+    ERROR_CODE_FAILED_TO_EVAL = 1;
+    ERROR_CODE_UNKNOWN_VALUE = 2;
+    ERROR_CODE_NULL_VALUE = 3;
+    ERROR_CODE_TYPE_CONVERSION = 4;
+    ERROR_CODE_TYPE_MISMATCH = 5;
+    ERROR_CODE_UNEVALUABLE = 6;
+    ERROR_CODE_UNEXPECTED_ATTRIBUTE = 7;
+}
+
+message ErrorDetail {
+    ErrorCode code = 1;
+    string message = 2;
+}

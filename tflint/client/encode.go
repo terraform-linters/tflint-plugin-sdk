@@ -34,7 +34,7 @@ func (r *Rule) Severity() string { return r.Data.Severity }
 // Link is a reference method to internal data.
 func (r *Rule) Link() string { return r.Data.Link }
 
-func encodeRule(rule tflint.Rule) *Rule {
+func encodeRule(rule tflint.RPCRule) *Rule {
 	return &Rule{
 		Data: &RuleObject{
 			Name:     rule.Name(),

@@ -1,0 +1,267 @@
+package fromproto
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/hashicorp/hcl/v2"
+	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+// BodySchema converts proto.BodySchema to hclext.BodySchema
+func BodySchema(body *proto.BodySchema) *hclext.BodySchema {
+	if body == nil {
+		return nil
+	}
+
+	attributes := make([]hclext.AttributeSchema, len(body.Attributes))
+	for idx, attr := range body.Attributes {
+		attributes[idx] = hclext.AttributeSchema{Name: attr.Name, Required: attr.Required}
+	}
+
+	blocks := make([]hclext.BlockSchema, len(body.Blocks))
+	for idx, block := range body.Blocks {
+		blocks[idx] = hclext.BlockSchema{
+			Type:       block.Type,
+			LabelNames: block.LabelNames,
+			Body:       BodySchema(block.Body),
+		}
+	}
+
+	return &hclext.BodySchema{
+		Attributes: attributes,
+		Blocks:     blocks,
+	}
+}
+
+// BodyContent converts proto.BodyContent to hclext.BodyContent
+func BodyContent(body *proto.BodyContent) (*hclext.BodyContent, hcl.Diagnostics) {
+	if body == nil {
+		return nil, nil
+	}
+	diags := hcl.Diagnostics{}
+
+	attributes := hclext.Attributes{}
+	for key, attr := range body.Attributes {
+		expr, exprDiags := hclext.ParseExpression(attr.Expr, attr.ExprRange.Filename, Pos(attr.ExprRange.Start))
+		diags = diags.Extend(exprDiags)
+
+		attributes[key] = &hclext.Attribute{
+			Name:      attr.Name,
+			Expr:      expr,
+			Range:     Range(attr.Range),
+			NameRange: Range(attr.NameRange),
+		}
+	}
+
+	blocks := make(hclext.Blocks, len(body.Blocks))
+	for idx, block := range body.Blocks {
+		blockBody, contentDiags := BodyContent(block.Body)
+		diags = diags.Extend(contentDiags)
+
+		labelRanges := make([]hcl.Range, len(block.LabelRanges))
+		for idx, labelRange := range block.LabelRanges {
+			labelRanges[idx] = Range(labelRange)
+		}
+
+		blocks[idx] = &hclext.Block{
+			Type:        block.Type,
+			Labels:      block.Labels,
+			Body:        blockBody,
+			DefRange:    Range(block.DefRange),
+			TypeRange:   Range(block.TypeRange),
+			LabelRanges: labelRanges,
+		}
+	}
+
+	return &hclext.BodyContent{
+		Attributes: attributes,
+		Blocks:     blocks,
+	}, diags
+}
+
+// RuleObject is an intermediate representation that satisfies the Rule interface.
+type RuleObject struct {
+	tflint.DefaultRule
+	Data struct {
+		Name     string
+		Enabled  bool
+		Severity string
+		Link     string
+	}
+}
+
+// Name returns the rule name
+func (r *RuleObject) Name() string { return r.Data.Name }
+
+// Enabled returns whether the rule is enabled
+func (r *RuleObject) Enabled() bool { return r.Data.Enabled }
+
+// Severity returns the severify of the rule
+func (r *RuleObject) Severity() string { return r.Data.Severity }
+
+// Link returns the link of the rule documentation if exists
+func (r *RuleObject) Link() string { return r.Data.Link }
+
+// Check does nothing. This is just a method to satisfy the interface
+func (r *RuleObject) Check(tflint.Runner) error { return nil }
+
+// Rule converts proto.EmitIssue_Rule to RuleObject
+func Rule(rule *proto.EmitIssue_Rule) *RuleObject {
+	if rule == nil {
+		return nil
+	}
+
+	return &RuleObject{
+		Data: struct {
+			Name     string
+			Enabled  bool
+			Severity string
+			Link     string
+		}{
+			Name:     rule.Name,
+			Enabled:  rule.Enabled,
+			Severity: Severity(rule.Severity),
+			Link:     rule.Link,
+		},
+	}
+}
+
+// Severity converts proto.EmitIssue_Severity to severity
+func Severity(severity proto.EmitIssue_Severity) string {
+	switch severity {
+	case proto.EmitIssue_SEVERITY_ERROR:
+		return tflint.ERROR
+	case proto.EmitIssue_SEVERITY_WARNING:
+		return tflint.WARNING
+	case proto.EmitIssue_SEVERITY_NOTICE:
+		return tflint.NOTICE
+	}
+
+	return tflint.ERROR
+}
+
+// Range converts proto.Range to hcl.Range
+func Range(rng *proto.Range) hcl.Range {
+	if rng == nil {
+		return hcl.Range{}
+	}
+
+	return hcl.Range{
+		Filename: rng.Filename,
+		Start:    Pos(rng.Start),
+		End:      Pos(rng.End),
+	}
+}
+
+// Pos converts proto.Range_Pos to hcl.Pos
+func Pos(pos *proto.Range_Pos) hcl.Pos {
+	if pos == nil {
+		return hcl.Pos{}
+	}
+
+	return hcl.Pos{
+		Line:   int(pos.Line),
+		Column: int(pos.Column),
+		Byte:   int(pos.Byte),
+	}
+}
+
+// Config converts proto.ApplyGlobalConfig_Config to tflint.Config
+func Config(config *proto.ApplyGlobalConfig_Config) *tflint.Config {
+	rules := map[string]*tflint.RuleConfig{}
+	for name, rule := range config.Rules {
+		rules[name] = &tflint.RuleConfig{Name: rule.Name, Enabled: rule.Enabled}
+	}
+	return &tflint.Config{Rules: rules, DisabledByDefault: config.DisabledByDefault}
+}
+
+// ModuleCtxType converts proto.ModuleCtxType to tflint.ModuleCtxType
+func ModuleCtxType(ty proto.ModuleCtxType) tflint.ModuleCtxType {
+	switch ty {
+	case proto.ModuleCtxType_MODULE_CTX_TYPE_UNSPECIFIED:
+		return tflint.SelfModuleCtxType
+	case proto.ModuleCtxType_MODULE_CTX_TYPE_SELF:
+		return tflint.SelfModuleCtxType
+	case proto.ModuleCtxType_MODULE_CTX_TYPE_ROOT:
+		return tflint.RootModuleCtxType
+	default:
+		panic(fmt.Sprintf("invalid ModuleCtxType: %s", ty))
+	}
+}
+
+// Error converts gRPC error status to tflint.Error
+func Error(err error) error {
+	st, ok := status.FromError(err)
+	if !ok {
+		return err
+	}
+
+	// If the error status has no details, retrieve an error from the gRPC error status.
+	// Remove the status code because some statuses are expected and should not be shown to users.
+	if len(st.Details()) == 0 {
+		switch st.Code() {
+		case codes.InvalidArgument:
+			fallthrough
+		case codes.Aborted:
+			return errors.New(st.Message())
+		default:
+			return err
+		}
+	}
+
+	// It is not supposed to have multiple details. The detail have an error code and are converted to tflint.Error
+	switch t := st.Details()[0].(type) {
+	case *proto.ErrorDetail:
+		switch t.Code {
+		case proto.ErrorCode_ERROR_CODE_FAILED_TO_EVAL:
+			return &tflint.Error{
+				Code:    tflint.EvaluationError,
+				Level:   tflint.ErrorLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE:
+			return &tflint.Error{
+				Code:    tflint.UnknownValueError,
+				Level:   tflint.WarningLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_NULL_VALUE:
+			return &tflint.Error{
+				Code:    tflint.NullValueError,
+				Level:   tflint.WarningLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_TYPE_CONVERSION:
+			return &tflint.Error{
+				Code:    tflint.TypeConversionError,
+				Level:   tflint.ErrorLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_TYPE_MISMATCH:
+			return &tflint.Error{
+				Code:    tflint.TypeMismatchError,
+				Level:   tflint.ErrorLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
+			return &tflint.Error{
+				Code:    tflint.UnevaluableError,
+				Level:   tflint.WarningLevel,
+				Message: st.Message(),
+			}
+		case proto.ErrorCode_ERROR_CODE_UNEXPECTED_ATTRIBUTE:
+			return &tflint.Error{
+				Code:    tflint.UnexpectedAttributeError,
+				Level:   tflint.ErrorLevel,
+				Message: st.Message(),
+			}
+		}
+	}
+
+	return err
+}

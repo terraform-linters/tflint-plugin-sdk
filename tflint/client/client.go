@@ -356,7 +356,7 @@ func (c *Client) IsNullExpr(expr hcl.Expression) (bool, error) {
 }
 
 // EmitIssueOnExpr calls the server-side EmitIssue method with the passed expression.
-func (c *Client) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expression) error {
+func (c *Client) EmitIssueOnExpr(rule tflint.RPCRule, message string, expr hcl.Expression) error {
 	file, err := c.File(expr.Range().Filename)
 	if err != nil {
 		return err
@@ -378,7 +378,7 @@ func (c *Client) EmitIssueOnExpr(rule tflint.Rule, message string, expr hcl.Expr
 // EmitIssue calls the server-side EmitIssue method with the passed rule and range.
 // You should use EmitIssueOnExpr if you want to emit an issue for an expression.
 // This API provides a lower level interface.
-func (c *Client) EmitIssue(rule tflint.Rule, message string, location hcl.Range) error {
+func (c *Client) EmitIssue(rule tflint.RPCRule, message string, location hcl.Range) error {
 	req := &EmitIssueRequest{
 		Rule:     encodeRule(rule),
 		Message:  message,
