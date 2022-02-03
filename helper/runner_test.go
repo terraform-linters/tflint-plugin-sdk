@@ -296,6 +296,218 @@ resource "aws_s3_bucket" "bar" {
 	}
 }
 
+func Test_WalkResourcesAll(t *testing.T) {
+	src := `
+resource "aws_instance" "foo" {
+  provider = aws.west
+
+  count = 1
+  for_each = {
+    foo = "bar"
+  }
+
+  instance_type = "t2.micro"
+  
+  connection {
+    type = "ssh"
+  }
+
+  provisioner "local-exec" {
+    command    = "chmod 600 ssh-key.pem"
+    when       = destroy
+    on_failure = continue
+
+    connection {
+      type = "ssh"
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy       = true
+    ignore_changes        = all
+  }
+}
+
+resource "aws_s3_bucket" "bar" {
+  bucket = "my-tf-test-bucket"
+  acl    = "private"
+}`
+
+	runner := TestRunner(t, map[string]string{"main.tf": src})
+
+	walked := []*configs.Resource{}
+	walker := func(resource *configs.Resource) error {
+		walked = append(walked, resource)
+		return nil
+	}
+
+	if err := runner.WalkResources("", walker); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []*configs.Resource{
+		{
+			Mode: addrs.ManagedResourceMode,
+			Name: "foo",
+			Type: "aws_instance",
+			Config: parseBody(
+				t,
+				`provider = aws.west
+
+  count = 1
+  for_each = {
+    foo = "bar"
+  }
+
+  instance_type = "t2.micro"
+
+  connection {
+    type = "ssh"
+  }
+
+  provisioner "local-exec" {
+    command    = "chmod 600 ssh-key.pem"
+    when       = destroy
+    on_failure = continue
+
+    connection {
+      type = "ssh"
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy       = true
+    ignore_changes        = all
+  }`, "main.tf",
+				hcl.Pos{Line: 3, Column: 3},
+				hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 2, Column: 31}, End: hcl.Pos{Line: 31, Column: 2}},
+				hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 31, Column: 2}, End: hcl.Pos{Line: 31, Column: 2}},
+			),
+			Count: parseExpression(t, `1`, "main.tf", hcl.Pos{Line: 5, Column: 11}),
+			ForEach: parseExpression(t, `{
+    foo = "bar"
+  }`, "main.tf", hcl.Pos{Line: 6, Column: 14}),
+
+			ProviderConfigRef: &configs.ProviderConfigRef{
+				Name:       "aws",
+				NameRange:  hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 14}, End: hcl.Pos{Line: 3, Column: 17}},
+				Alias:      "west",
+				AliasRange: &hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 17}, End: hcl.Pos{Line: 3, Column: 22}},
+			},
+
+			Managed: &configs.ManagedResource{
+				Connection: &configs.Connection{
+					Config: parseBody(
+						t,
+						`type = "ssh"`,
+						"main.tf",
+						hcl.Pos{Line: 13, Column: 5},
+						hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 12, Column: 14}, End: hcl.Pos{Line: 14, Column: 4}},
+						hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 14, Column: 4}, End: hcl.Pos{Line: 14, Column: 4}},
+					),
+					DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 12, Column: 3}, End: hcl.Pos{Line: 12, Column: 13}},
+				},
+				Provisioners: []*configs.Provisioner{
+					{
+						Type: "local-exec",
+						Config: parseBody(
+							t,
+							`command    = "chmod 600 ssh-key.pem"
+    when       = destroy
+    on_failure = continue
+
+    connection {
+      type = "ssh"
+    }`,
+							"main.tf",
+							hcl.Pos{Line: 17, Column: 5},
+							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 28}, End: hcl.Pos{Line: 24, Column: 4}},
+							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 24, Column: 4}, End: hcl.Pos{Line: 24, Column: 4}},
+						),
+						Connection: &configs.Connection{
+							Config: parseBody(
+								t,
+								`type = "ssh"`,
+								"main.tf",
+								hcl.Pos{Line: 22, Column: 7},
+								hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 21, Column: 16}, End: hcl.Pos{Line: 23, Column: 6}},
+								hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 23, Column: 6}, End: hcl.Pos{Line: 23, Column: 6}},
+							),
+							DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 21, Column: 5}, End: hcl.Pos{Line: 21, Column: 15}},
+						},
+						When:      configs.ProvisionerWhenDestroy,
+						OnFailure: configs.ProvisionerOnFailureContinue,
+						DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 3}, End: hcl.Pos{Line: 16, Column: 27}},
+						TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 16, Column: 15}, End: hcl.Pos{Line: 16, Column: 27}},
+					},
+				},
+
+				CreateBeforeDestroy:    true,
+				PreventDestroy:         true,
+				IgnoreAllChanges:       true,
+				CreateBeforeDestroySet: true,
+				PreventDestroySet:      true,
+			},
+			DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 2, Column: 1}, End: hcl.Pos{Line: 2, Column: 30}},
+			TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 2, Column: 10}, End: hcl.Pos{Line: 2, Column: 24}},
+		},
+		{
+			Mode: addrs.ManagedResourceMode,
+			Name: "bar",
+			Type: "aws_s3_bucket",
+			Config: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"acl": {
+						Name: "acl",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 35, Column: 13}, End: hcl.Pos{Line: 35, Column: 20}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 35, Column: 12}, End: hcl.Pos{Line: 35, Column: 21}},
+						},
+						SrcRange:    hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 35, Column: 3}, End: hcl.Pos{Line: 35, Column: 21}},
+						NameRange:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 35, Column: 3}, End: hcl.Pos{Line: 35, Column: 6}},
+						EqualsRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 35, Column: 10}, End: hcl.Pos{Line: 35, Column: 11}},
+					},
+					"bucket": {
+						Name: "bucket",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 34, Column: 13}, End: hcl.Pos{Line: 34, Column: 30}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 34, Column: 12}, End: hcl.Pos{Line: 34, Column: 31}},
+						},
+						SrcRange:    hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 34, Column: 3}, End: hcl.Pos{Line: 34, Column: 31}},
+						NameRange:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 34, Column: 3}, End: hcl.Pos{Line: 34, Column: 9}},
+						EqualsRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 34, Column: 10}, End: hcl.Pos{Line: 34, Column: 11}},
+					},
+				},
+				Blocks:   hclsyntax.Blocks{},
+				SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 33, Column: 32}, End: hcl.Pos{Line: 36, Column: 2}},
+				EndRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 36, Column: 2}, End: hcl.Pos{Line: 36, Column: 2}},
+			},
+			Managed:   &configs.ManagedResource{},
+			DeclRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 33, Column: 1}, End: hcl.Pos{Line: 33, Column: 31}},
+			TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 33, Column: 10}, End: hcl.Pos{Line: 33, Column: 25}},
+		},
+	}
+
+	opts := cmp.Options{
+		cmpopts.IgnoreFields(hclsyntax.LiteralValueExpr{}, "Val"),
+		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+		cmpopts.IgnoreUnexported(hcl.TraverseRoot{}, hcl.TraverseAttr{}, hclsyntax.Body{}),
+	}
+	if !cmp.Equal(expected, walked, opts...) {
+		t.Fatalf("Diff: %s", cmp.Diff(expected, walked, opts...))
+	}
+}
+
 func parseBody(t *testing.T, src string, filename string, pos hcl.Pos, srcRange hcl.Range, endRange hcl.Range) hcl.Body {
 	file, diags := hclsyntax.ParseConfig([]byte(src), filename, pos)
 	if diags.HasErrors() {

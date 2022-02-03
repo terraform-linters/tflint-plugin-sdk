@@ -114,7 +114,7 @@ func (r *Runner) WalkResourceBlocks(resourceType, blockType string, walker func(
 // WalkResources visits all specified resources from Files.
 func (r *Runner) WalkResources(resourceType string, walker func(*configs.Resource) error) error {
 	for _, resource := range r.tfconfig.Module.ManagedResources {
-		if resource.Type != resourceType {
+		if resourceType != "" && resource.Type != resourceType {
 			continue
 		}
 
