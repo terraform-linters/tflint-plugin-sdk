@@ -43,7 +43,7 @@ func NewClient(opts *ClientOpts) *plugin.Client {
 func (c *GRPCClient) RuleSetName() (string, error) {
 	resp, err := c.client.GetName(context.Background(), &proto.GetName_Request{})
 	if err != nil {
-		return "", err
+		return "", fromproto.Error(err)
 	}
 	return resp.Name, nil
 }
@@ -52,7 +52,7 @@ func (c *GRPCClient) RuleSetName() (string, error) {
 func (c *GRPCClient) RuleSetVersion() (string, error) {
 	resp, err := c.client.GetVersion(context.Background(), &proto.GetVersion_Request{})
 	if err != nil {
-		return "", err
+		return "", fromproto.Error(err)
 	}
 	return resp.Version, nil
 }
@@ -61,7 +61,7 @@ func (c *GRPCClient) RuleSetVersion() (string, error) {
 func (c *GRPCClient) RuleNames() ([]string, error) {
 	resp, err := c.client.GetRuleNames(context.Background(), &proto.GetRuleNames_Request{})
 	if err != nil {
-		return []string{}, err
+		return []string{}, fromproto.Error(err)
 	}
 	return resp.Names, nil
 }
@@ -70,7 +70,7 @@ func (c *GRPCClient) RuleNames() ([]string, error) {
 func (c *GRPCClient) ConfigSchema() (*hclext.BodySchema, error) {
 	resp, err := c.client.GetConfigSchema(context.Background(), &proto.GetConfigSchema_Request{})
 	if err != nil {
-		return nil, err
+		return nil, fromproto.Error(err)
 	}
 	return fromproto.BodySchema(resp.Schema), nil
 }

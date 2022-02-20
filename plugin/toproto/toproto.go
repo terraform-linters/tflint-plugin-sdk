@@ -1,6 +1,7 @@
 package toproto
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/hcl/v2"
@@ -45,9 +46,14 @@ func BodyContent(body *hclext.BodyContent, sources map[string][]byte) *proto.Bod
 
 	attributes := map[string]*proto.BodyContent_Attribute{}
 	for idx, attr := range body.Attributes {
+		bytes, ok := sources[attr.Range.Filename]
+		if !ok {
+			panic(fmt.Sprintf("failed to encode to protocol buffers: source code not available: name=%s", attr.Range.Filename))
+		}
+
 		attributes[idx] = &proto.BodyContent_Attribute{
 			Name:      attr.Name,
-			Expr:      attr.Expr.Range().SliceBytes(sources[attr.Range.Filename]),
+			Expr:      attr.Expr.Range().SliceBytes(bytes),
 			Range:     Range(attr.Range),
 			NameRange: Range(attr.NameRange),
 			ExprRange: Range(attr.Expr.Range()),
@@ -79,6 +85,9 @@ func BodyContent(body *hclext.BodyContent, sources map[string][]byte) *proto.Bod
 
 // Rule converts tflint.Rule to proto.EmitIssue_Rule
 func Rule(rule tflint.Rule) *proto.EmitIssue_Rule {
+	if rule == nil {
+		panic("failed to encode to protocol buffers: rule should not be nil")
+	}
 	return &proto.EmitIssue_Rule{
 		Name:     rule.Name(),
 		Enabled:  rule.Enabled(),
@@ -121,6 +130,10 @@ func Pos(pos hcl.Pos) *proto.Range_Pos {
 
 // Config converts tflint.Config to proto.ApplyGlobalConfig_Config
 func Config(config *tflint.Config) *proto.ApplyGlobalConfig_Config {
+	if config == nil {
+		return &proto.ApplyGlobalConfig_Config{Rules: make(map[string]*proto.ApplyGlobalConfig_RuleConfig)}
+	}
+
 	rules := map[string]*proto.ApplyGlobalConfig_RuleConfig{}
 	for name, rule := range config.Rules {
 		rules[name] = &proto.ApplyGlobalConfig_RuleConfig{Name: rule.Name, Enabled: rule.Enabled}
@@ -140,37 +153,29 @@ func ModuleCtxType(ty tflint.ModuleCtxType) proto.ModuleCtxType {
 	}
 }
 
-// Error converts tflint.Error to gRPC error status with details
-func Error(code codes.Code, raw error) error {
-	appErr, ok := raw.(tflint.Error)
-	if !ok {
-		return status.Error(code, raw.Error())
+// Error converts error to gRPC error status with details
+func Error(code codes.Code, err error) error {
+	if err == nil {
+		return nil
 	}
 
 	var errCode proto.ErrorCode
-	switch appErr.Code {
-	case tflint.EvaluationError:
-		errCode = proto.ErrorCode_ERROR_CODE_FAILED_TO_EVAL
-	case tflint.UnknownValueError:
+	if errors.Is(err, tflint.ErrUnknownValue) {
 		errCode = proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE
-	case tflint.NullValueError:
+	} else if errors.Is(err, tflint.ErrNullValue) {
 		errCode = proto.ErrorCode_ERROR_CODE_NULL_VALUE
-	case tflint.TypeConversionError:
-		errCode = proto.ErrorCode_ERROR_CODE_TYPE_CONVERSION
-	case tflint.TypeMismatchError:
-		errCode = proto.ErrorCode_ERROR_CODE_TYPE_MISMATCH
-	case tflint.UnevaluableError:
+	} else if errors.Is(err, tflint.ErrUnevaluable) {
 		errCode = proto.ErrorCode_ERROR_CODE_UNEVALUABLE
-	case tflint.UnexpectedAttributeError:
-		errCode = proto.ErrorCode_ERROR_CODE_UNEXPECTED_ATTRIBUTE
-	default:
-		return status.Error(code, appErr.Error())
 	}
 
-	st := status.New(code, appErr.Error())
+	if errCode == proto.ErrorCode_ERROR_CODE_UNSPECIFIED {
+		return status.Error(code, err.Error())
+	}
+
+	st := status.New(code, err.Error())
 	dt, err := st.WithDetails(&proto.ErrorDetail{Code: errCode})
 	if err != nil {
-		return status.Error(codes.Unknown, fmt.Sprintf("Failed to add ErrorDetail: code=%d error=%s", code, appErr.Error()))
+		return status.Error(codes.Unknown, fmt.Sprintf("Failed to add ErrorDetail: code=%d error=%s", code, err.Error()))
 	}
 
 	return dt.Err()

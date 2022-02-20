@@ -1,6 +1,9 @@
 package tflint
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // List of error types and levels in an application error.
 // It's possible to get this error from a plugin, but the basic error handling
@@ -31,6 +34,12 @@ const (
 	ErrorLevel string = "Error"
 	// WarningLevel is a user-level warning. Although it is an error, it has no effect on execution.
 	WarningLevel string = "Warning"
+)
+
+var (
+	ErrUnknownValue = errors.New("")
+	ErrNullValue    = errors.New("")
+	ErrUnevaluable  = errors.New("")
 )
 
 // Error is an application error object. It has own error code

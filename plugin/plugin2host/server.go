@@ -50,7 +50,10 @@ func (s *GRPCServer) GetModuleContent(ctx context.Context, req *proto.GetModuleC
 	moduleCtx := fromproto.ModuleCtxType(req.Option.ModuleCtx)
 	body, diags := s.Impl.GetModuleContent(fromproto.BodySchema(req.Schema), tflint.GetModuleContentOption{ModuleCtx: moduleCtx})
 	if diags.HasErrors() {
-		return nil, toproto.Error(codes.InvalidArgument, diags)
+		return nil, toproto.Error(codes.FailedPrecondition, diags)
+	}
+	if body == nil {
+		return nil, status.Error(codes.FailedPrecondition, "response body is empty")
 	}
 
 	sources := map[string][]byte{}
@@ -64,9 +67,12 @@ func (s *GRPCServer) GetModuleContent(ctx context.Context, req *proto.GetModuleC
 
 // GetFile returns bytes of hcl.File based on the passed file name.
 func (s *GRPCServer) GetFile(ctx context.Context, req *proto.GetFile_Request) (*proto.GetFile_Response, error) {
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name should not be empty")
+	}
 	file, err := s.Impl.GetFile(req.Name)
 	if err != nil {
-		return nil, toproto.Error(codes.InvalidArgument, err)
+		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 	if file == nil {
 		return nil, status.Error(codes.NotFound, "file not found")
@@ -85,13 +91,13 @@ func (s *GRPCServer) GetRuleConfigContent(ctx context.Context, req *proto.GetRul
 
 	body, file, err := s.Impl.GetRuleConfigContent(req.Name, fromproto.BodySchema(req.Schema))
 	if err != nil {
-		return nil, toproto.Error(codes.InvalidArgument, err)
+		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
-	if body == nil && file == nil {
-		return &proto.GetRuleConfigContent_Response{Content: &proto.BodyContent{}}, nil
+	if body == nil {
+		return nil, status.Error(codes.FailedPrecondition, "response body is empty")
 	}
-	if body != nil && file == nil {
-		return nil, status.Error(codes.Internal, "body is not null, but file not found")
+	if file == nil {
+		return nil, status.Error(codes.NotFound, "config file not found")
 	}
 
 	content := toproto.BodyContent(body, map[string][]byte{file.Body.MissingItemRange().Filename: file.Bytes})
@@ -121,11 +127,11 @@ func (s *GRPCServer) EvaluateExpr(ctx context.Context, req *proto.EvaluateExpr_R
 
 	value, err := s.Impl.EvaluateExpr(expr, tflint.EvaluateExprOption{WantType: &ty, ModuleCtx: fromproto.ModuleCtxType(req.Option.ModuleCtx)})
 	if err != nil {
-		return nil, toproto.Error(codes.InvalidArgument, err)
+		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 	val, err := msgpack.Marshal(value, ty)
 	if err != nil {
-		return nil, toproto.Error(codes.InvalidArgument, err)
+		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 
 	return &proto.EvaluateExpr_Response{Value: val}, nil
@@ -142,7 +148,7 @@ func (s *GRPCServer) EmitIssue(ctx context.Context, req *proto.EmitIssue_Request
 
 	err := s.Impl.EmitIssue(fromproto.Rule(req.Rule), req.Message, fromproto.Range(req.Range))
 	if err != nil {
-		return nil, toproto.Error(codes.InvalidArgument, err)
+		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 	return &proto.EmitIssue_Response{}, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -173,6 +172,10 @@ func Pos(pos *proto.Range_Pos) hcl.Pos {
 
 // Config converts proto.ApplyGlobalConfig_Config to tflint.Config
 func Config(config *proto.ApplyGlobalConfig_Config) *tflint.Config {
+	if config == nil {
+		return &tflint.Config{Rules: make(map[string]*tflint.RuleConfig)}
+	}
+
 	rules := map[string]*tflint.RuleConfig{}
 	for name, rule := range config.Rules {
 		rules[name] = &tflint.RuleConfig{Name: rule.Name, Enabled: rule.Enabled}
@@ -194,8 +197,12 @@ func ModuleCtxType(ty proto.ModuleCtxType) tflint.ModuleCtxType {
 	}
 }
 
-// Error converts gRPC error status to tflint.Error
+// Error converts gRPC error status to wrapped error
 func Error(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	st, ok := status.FromError(err)
 	if !ok {
 		return err
@@ -204,62 +211,19 @@ func Error(err error) error {
 	// If the error status has no details, retrieve an error from the gRPC error status.
 	// Remove the status code because some statuses are expected and should not be shown to users.
 	if len(st.Details()) == 0 {
-		switch st.Code() {
-		case codes.InvalidArgument:
-			fallthrough
-		case codes.Aborted:
-			return errors.New(st.Message())
-		default:
-			return err
-		}
+		return errors.New(st.Message())
 	}
 
-	// It is not supposed to have multiple details. The detail have an error code and are converted to tflint.Error
+	// It is not supposed to have multiple details. The detail have an error code and will be wrapped as an error.
 	switch t := st.Details()[0].(type) {
 	case *proto.ErrorDetail:
 		switch t.Code {
-		case proto.ErrorCode_ERROR_CODE_FAILED_TO_EVAL:
-			return &tflint.Error{
-				Code:    tflint.EvaluationError,
-				Level:   tflint.ErrorLevel,
-				Message: st.Message(),
-			}
 		case proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE:
-			return &tflint.Error{
-				Code:    tflint.UnknownValueError,
-				Level:   tflint.WarningLevel,
-				Message: st.Message(),
-			}
+			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnknownValue)
 		case proto.ErrorCode_ERROR_CODE_NULL_VALUE:
-			return &tflint.Error{
-				Code:    tflint.NullValueError,
-				Level:   tflint.WarningLevel,
-				Message: st.Message(),
-			}
-		case proto.ErrorCode_ERROR_CODE_TYPE_CONVERSION:
-			return &tflint.Error{
-				Code:    tflint.TypeConversionError,
-				Level:   tflint.ErrorLevel,
-				Message: st.Message(),
-			}
-		case proto.ErrorCode_ERROR_CODE_TYPE_MISMATCH:
-			return &tflint.Error{
-				Code:    tflint.TypeMismatchError,
-				Level:   tflint.ErrorLevel,
-				Message: st.Message(),
-			}
+			return fmt.Errorf("%s%w", st.Message(), tflint.ErrNullValue)
 		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
-			return &tflint.Error{
-				Code:    tflint.UnevaluableError,
-				Level:   tflint.WarningLevel,
-				Message: st.Message(),
-			}
-		case proto.ErrorCode_ERROR_CODE_UNEXPECTED_ATTRIBUTE:
-			return &tflint.Error{
-				Code:    tflint.UnexpectedAttributeError,
-				Level:   tflint.ErrorLevel,
-				Message: st.Message(),
-			}
+			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnevaluable)
 		}
 	}
 

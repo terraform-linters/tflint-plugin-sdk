@@ -2,6 +2,7 @@ package plugin2host
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -141,7 +142,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		case cty.Value, *cty.Value:
 			ty = cty.DynamicPseudoType
 		default:
-			return fmt.Errorf("unsupported result type: %T", ret)
+			panic(fmt.Sprintf("unsupported result type: %T", ret))
 		}
 	}
 	tyby, err := json.MarshalType(ty)
@@ -190,16 +191,8 @@ func (*GRPCClient) EnsureNoError(err error, proc func() error) error {
 		return proc()
 	}
 
-	if appErr, ok := err.(*tflint.Error); ok {
-		switch appErr.Level {
-		case tflint.WarningLevel:
-			return nil
-		case tflint.ErrorLevel:
-			return appErr
-		default:
-			panic(appErr)
-		}
-	} else {
-		return err
+	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) {
+		return nil
 	}
+	return err
 }

@@ -72,7 +72,10 @@ func (s *GRPCServer) ApplyGlobalConfig(ctx context.Context, req *proto.ApplyGlob
 	}
 
 	config := fromproto.Config(req.Config)
-	return &proto.ApplyGlobalConfig_Response{}, s.impl.ApplyGlobalConfig(config)
+	if err := s.impl.ApplyGlobalConfig(config); err != nil {
+		return nil, toproto.Error(codes.FailedPrecondition, err)
+	}
+	return &proto.ApplyGlobalConfig_Response{}, nil
 }
 
 // ApplyConfig applies the plugin config retrieved from the host to the plugin.
@@ -85,7 +88,10 @@ func (s *GRPCServer) ApplyConfig(ctx context.Context, req *proto.ApplyConfig_Req
 	if diags.HasErrors() {
 		return nil, toproto.Error(codes.InvalidArgument, diags)
 	}
-	return &proto.ApplyConfig_Response{}, s.impl.ApplyConfig(content)
+	if err := s.impl.ApplyConfig(content); err != nil {
+		return nil, toproto.Error(codes.FailedPrecondition, err)
+	}
+	return &proto.ApplyConfig_Response{}, nil
 }
 
 // Check calls its own plugin implementation with an gRPC client that can send
@@ -93,14 +99,14 @@ func (s *GRPCServer) ApplyConfig(ctx context.Context, req *proto.ApplyConfig_Req
 func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*proto.Check_Response, error) {
 	conn, err := s.broker.Dial(req.Runner)
 	if err != nil {
-		return nil, err
+		return nil, toproto.Error(codes.InvalidArgument, err)
 	}
 	defer conn.Close()
 
 	err = s.impl.Check(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)})
 
 	if err != nil {
-		return nil, status.Error(codes.Aborted, err.Error())
+		return nil, toproto.Error(codes.Aborted, err)
 	}
 	return &proto.Check_Response{}, nil
 }
