@@ -19,9 +19,11 @@ func init() {
 	}
 
 	logger = hclog.New(&hclog.LoggerOptions{
-		Level:      hclog.LevelFromString(level),
-		Output:     os.Stderr,
-		JSONFormat: true,
+		Level:                    hclog.LevelFromString(level),
+		Output:                   os.Stderr,
+		TimeFormat:               "15:04:05",
+		IncludeLocation:          true,
+		AdditionalLocationOffset: 1,
 	})
 }
 

@@ -37,9 +37,12 @@ const (
 )
 
 var (
+	// ErrUnknownValue is an error when an unknown value is referenced
 	ErrUnknownValue = errors.New("")
-	ErrNullValue    = errors.New("")
-	ErrUnevaluable  = errors.New("")
+	// ErrNullValue is an error when null value is referenced
+	ErrNullValue = errors.New("")
+	// ErrUnevaluable is an error when a received expression has unevaluable references.
+	ErrUnevaluable = errors.New("")
 )
 
 // Error is an application error object. It has own error code

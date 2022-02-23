@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/interceptor"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/plugin2host"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
@@ -39,9 +41,10 @@ func Serve(opts *ServeOpts) {
 			"ruleset": &RuleSetPlugin{impl: opts.RuleSet},
 		},
 		GRPCServer: func(opts []grpc.ServerOption) *grpc.Server {
-			opts = append(opts, grpc.UnaryInterceptor(loggingInterceptor(pluginServiceType)))
+			opts = append(opts, grpc.UnaryInterceptor(interceptor.RequestLogging("host2plugin")))
 			return grpc.NewServer(opts...)
 		},
+		Logger: logger.Logger(),
 	})
 }
 
