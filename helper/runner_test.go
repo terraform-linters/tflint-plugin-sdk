@@ -280,7 +280,7 @@ type dummyRule struct {
 
 func (r *dummyRule) Name() string              { return "dummy_rule" }
 func (r *dummyRule) Enabled() bool             { return true }
-func (r *dummyRule) Severity() string          { return tflint.ERROR }
+func (r *dummyRule) Severity() tflint.Severity { return tflint.ERROR }
 func (r *dummyRule) Check(tflint.Runner) error { return nil }
 
 func Test_EmitIssueOnExpr(t *testing.T) {

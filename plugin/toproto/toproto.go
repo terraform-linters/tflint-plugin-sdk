@@ -97,7 +97,7 @@ func Rule(rule tflint.Rule) *proto.EmitIssue_Rule {
 }
 
 // Severity converts severity to proto.EmitIssue_Severity
-func Severity(severity string) proto.EmitIssue_Severity {
+func Severity(severity tflint.Severity) proto.EmitIssue_Severity {
 	switch severity {
 	case tflint.ERROR:
 		return proto.EmitIssue_SEVERITY_ERROR

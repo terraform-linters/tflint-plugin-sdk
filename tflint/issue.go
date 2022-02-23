@@ -1,11 +1,27 @@
 package tflint
 
-// List of issue severity levels. The rules implemented by a plugin can be set to any severity.
+// Severity indicates the severity of the issue.
+type Severity int32
+
 const (
 	// ERROR is possible errors
-	ERROR = "Error"
+	ERROR Severity = iota
 	// WARNING doesn't cause problem immediately, but not good
-	WARNING = "Warning"
+	WARNING
 	// NOTICE is not important, it's mentioned
-	NOTICE = "Notice"
+	NOTICE
 )
+
+// String returns the string representation of the severity.
+func (s Severity) String() string {
+	switch s {
+	case ERROR:
+		return "Error"
+	case WARNING:
+		return "Warning"
+	case NOTICE:
+		return "Notice"
+	}
+
+	return "Unknown"
+}

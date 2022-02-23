@@ -26,5 +26,5 @@ type embedDefaultRule struct {
 
 func (r *embedDefaultRule) Name() string              { return "" }
 func (r *embedDefaultRule) Enabled() bool             { return true }
-func (r *embedDefaultRule) Severity() string          { return ERROR }
+func (r *embedDefaultRule) Severity() Severity        { return ERROR }
 func (r *embedDefaultRule) Check(runner Runner) error { return nil }

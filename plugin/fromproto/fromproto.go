@@ -89,7 +89,7 @@ type RuleObject struct {
 	Data struct {
 		Name     string
 		Enabled  bool
-		Severity string
+		Severity tflint.Severity
 		Link     string
 	}
 }
@@ -101,7 +101,7 @@ func (r *RuleObject) Name() string { return r.Data.Name }
 func (r *RuleObject) Enabled() bool { return r.Data.Enabled }
 
 // Severity returns the severify of the rule
-func (r *RuleObject) Severity() string { return r.Data.Severity }
+func (r *RuleObject) Severity() tflint.Severity { return r.Data.Severity }
 
 // Link returns the link of the rule documentation if exists
 func (r *RuleObject) Link() string { return r.Data.Link }
@@ -119,7 +119,7 @@ func Rule(rule *proto.EmitIssue_Rule) *RuleObject {
 		Data: struct {
 			Name     string
 			Enabled  bool
-			Severity string
+			Severity tflint.Severity
 			Link     string
 		}{
 			Name:     rule.Name,
@@ -131,7 +131,7 @@ func Rule(rule *proto.EmitIssue_Rule) *RuleObject {
 }
 
 // Severity converts proto.EmitIssue_Severity to severity
-func Severity(severity proto.EmitIssue_Severity) string {
+func Severity(severity proto.EmitIssue_Severity) tflint.Severity {
 	switch severity {
 	case proto.EmitIssue_SEVERITY_ERROR:
 		return tflint.ERROR

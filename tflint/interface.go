@@ -63,7 +63,7 @@ type Rule interface {
 	Enabled() bool
 
 	// Severity indicates the severity of the rule.
-	Severity() string
+	Severity() Severity
 
 	// Link allows you to add a reference link to the rule.
 	Link() string
