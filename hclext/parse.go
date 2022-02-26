@@ -28,7 +28,7 @@ func ParseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression
 		{
 			Severity: hcl.DiagError,
 			Summary:  "Unexpected file extension",
-			Detail:   fmt.Sprintf("The file name `%s` is a file with an unexpected extension. Valid extensions are `.tf` and `.tf.json`.", filename),
+			Detail:   fmt.Sprintf("The file name `%s` is a file with an unexpected extension. Valid extensions are `.tf`, `.tf.json`, and `.hcl`.", filename),
 		},
 	}
 }

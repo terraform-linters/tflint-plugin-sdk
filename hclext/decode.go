@@ -3,18 +3,21 @@ package hclext
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 )
 
 // DecodeBody is a derivative of gohcl.DecodeBody the receives hclext.BodyContent instead of hcl.Body.
-// Since hcl.Body and interfaces are hard to send over a wire protocol, it is needed to support BodyContent.
+// Since hcl.Body is hard to send over a wire protocol, it is needed to support BodyContent.
 // This method differs from gohcl.DecodeBody in several ways:
 //
-// - Does not support decoding to map.
-// - Does not support decoding to hcl.Body, hcl.Expression, etc.
-// - Does not support `body` and `remain` tag.
+// - Does not support decoding to map, cty.Value, hcl.Body, hcl.Expression.
+// - Does not support `body` and `remain` tags.
+//   - Extraneous attributes are always ignored.
+//
+// @see https://github.com/hashicorp/hcl/blob/v2.11.1/gohcl/decode.go
 func DecodeBody(body *BodyContent, ctx *hcl.EvalContext, val interface{}) hcl.Diagnostics {
 	rv := reflect.ValueOf(val)
 	if rv.Kind() != reflect.Ptr {
@@ -25,6 +28,10 @@ func DecodeBody(body *BodyContent, ctx *hcl.EvalContext, val interface{}) hcl.Di
 }
 
 func decodeBody(body *BodyContent, ctx *hcl.EvalContext, val reflect.Value) hcl.Diagnostics {
+	if body == nil {
+		return nil
+	}
+
 	et := val.Type()
 	switch et.Kind() {
 	case reflect.Struct:
@@ -42,6 +49,15 @@ func decodeBodyToStruct(body *BodyContent, ctx *hcl.EvalContext, val reflect.Val
 	for name, fieldIdx := range tags.Attributes {
 		attr, exists := body.Attributes[name]
 		if !exists {
+			if tags.Optional[name] || val.Type().Field(fieldIdx).Type.Kind() == reflect.Ptr {
+				// noop
+			} else {
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Summary:  fmt.Sprintf("Missing %s attribute", name),
+					Detail:   fmt.Sprintf("%s is required, but not defined here", name),
+				})
+			}
 			continue
 		}
 		diags = diags.Extend(gohcl.DecodeExpression(attr.Expr, ctx, val.Field(fieldIdx).Addr().Interface()))
@@ -152,12 +168,36 @@ func decodeBodyToStruct(body *BodyContent, ctx *hcl.EvalContext, val reflect.Val
 func decodeBlockToValue(block *Block, ctx *hcl.EvalContext, v reflect.Value) hcl.Diagnostics {
 	diags := decodeBody(block.Body, ctx, v)
 
-	if len(block.Labels) > 0 {
-		blockTags := getFieldTags(v.Type())
-		for li, lv := range block.Labels {
-			lfieldIdx := blockTags.Labels[li].FieldIndex
-			v.Field(lfieldIdx).Set(reflect.ValueOf(lv))
+	blockTags := getFieldTags(v.Type())
+
+	if len(block.Labels) > len(blockTags.Labels) {
+		expectedLabels := make([]string, len(blockTags.Labels))
+		for i, label := range blockTags.Labels {
+			expectedLabels[i] = label.Name
 		}
+		return append(diags, &hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  fmt.Sprintf("Extraneous label for %s", block.Type),
+			Detail:   fmt.Sprintf("Only %d labels (%s) are expected for %s blocks.", len(blockTags.Labels), strings.Join(expectedLabels, ", "), block.Type),
+			Subject:  &block.DefRange,
+		})
+	}
+	if len(block.Labels) < len(blockTags.Labels) {
+		expectedLabels := make([]string, len(blockTags.Labels))
+		for i, label := range blockTags.Labels {
+			expectedLabels[i] = label.Name
+		}
+		return append(diags, &hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  fmt.Sprintf("Missing label for %s", block.Type),
+			Detail:   fmt.Sprintf("All %s blocks must be have %d labels (%s).", block.Type, len(blockTags.Labels), strings.Join(expectedLabels, ", ")),
+			Subject:  &block.DefRange,
+		})
+	}
+
+	for li, lv := range block.Labels {
+		lfieldIdx := blockTags.Labels[li].FieldIndex
+		v.Field(lfieldIdx).Set(reflect.ValueOf(lv))
 	}
 
 	return diags

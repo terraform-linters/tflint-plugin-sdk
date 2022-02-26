@@ -36,8 +36,10 @@ type BlockSchema struct {
 // Unlike gohcl.ImpliedBodySchema, it produces nested schemas.
 // This method differs from gohcl.DecodeBody in several ways:
 //
-// - Does not support `body` and `remain` tag.
+// - Does not support `body` and `remain` tags.
 // - Does not support partial schema.
+//
+// @see https://github.com/hashicorp/hcl/blob/v2.11.1/gohcl/schema.go
 func ImpliedBodySchema(val interface{}) *BodySchema {
 	return impliedBodySchema(reflect.TypeOf(val))
 }

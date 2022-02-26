@@ -1,6 +1,8 @@
 package hclext
 
 import (
+	"reflect"
+
 	"github.com/hashicorp/hcl/v2"
 )
 
@@ -49,6 +51,13 @@ type Attribute struct {
 // Convert hclext.BodySchema to hcl.BodySchema, and convert hcl.BodyContent
 // to hclext.BodyContent. It processes the nested body recursively.
 func Content(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagnostics) {
+	if reflect.ValueOf(body).IsNil() {
+		return &BodyContent{}, hcl.Diagnostics{}
+	}
+	if schema == nil {
+		schema = &BodySchema{}
+	}
+
 	hclS := &hcl.BodySchema{
 		Attributes: make([]hcl.AttributeSchema, len(schema.Attributes)),
 		Blocks:     make([]hcl.BlockHeaderSchema, len(schema.Blocks)),
@@ -98,6 +107,13 @@ func Content(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagnostics) 
 // to hclext.BodyContent. It processes the nested body recursively.
 // Unlike hcl.PartialContent, it does not return the rest of the body.
 func PartialContent(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagnostics) {
+	if reflect.ValueOf(body).IsNil() {
+		return &BodyContent{}, hcl.Diagnostics{}
+	}
+	if schema == nil {
+		schema = &BodySchema{}
+	}
+
 	hclS := &hcl.BodySchema{
 		Attributes: make([]hcl.AttributeSchema, len(schema.Attributes)),
 		Blocks:     make([]hcl.BlockHeaderSchema, len(schema.Blocks)),
