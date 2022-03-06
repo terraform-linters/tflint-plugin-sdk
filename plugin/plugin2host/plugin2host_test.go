@@ -36,10 +36,10 @@ type mockServer struct {
 type mockServerImpl struct {
 	getModuleContent     func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	getFile              func(string) (*hcl.File, error)
+	getFiles             func() map[string]*hcl.File
 	getRuleConfigContent func(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
 	evaluateExpr         func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	emitIssue            func(tflint.Rule, string, hcl.Range) error
-	getFiles             func() map[string]*hcl.File
 }
 
 func newMockServer(impl mockServerImpl) *mockServer {
@@ -58,6 +58,13 @@ func (s *mockServer) GetFile(filename string) (*hcl.File, error) {
 		return s.impl.getFile(filename)
 	}
 	return nil, nil
+}
+
+func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string]*hcl.File {
+	if s.impl.getFiles != nil {
+		return s.impl.getFiles()
+	}
+	return map[string]*hcl.File{}
 }
 
 func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
@@ -79,13 +86,6 @@ func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Ra
 		return s.impl.emitIssue(rule, message, location)
 	}
 	return nil
-}
-
-func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string]*hcl.File {
-	if s.impl.getFiles != nil {
-		return s.impl.getFiles()
-	}
-	return map[string]*hcl.File{}
 }
 
 // @see https://github.com/google/go-cmp/issues/40
@@ -581,6 +581,134 @@ resource "aws_instance" "foo" {
 
 			if got != test.Want {
 				t.Errorf("got: %s", got)
+			}
+		})
+	}
+}
+
+func TestGetFiles(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+
+	// test util functions
+	hclFile := func(filename string, code string) *hcl.File {
+		file, diags := hclsyntax.ParseConfig([]byte(code), filename, hcl.InitialPos)
+		if diags.HasErrors() {
+			panic(diags)
+		}
+		return file
+	}
+	jsonFile := func(filename string, code string) *hcl.File {
+		file, diags := json.Parse([]byte(code), filename)
+		if diags.HasErrors() {
+			panic(diags)
+		}
+		return file
+	}
+
+	tests := []struct {
+		Name       string
+		ServerImpl func() map[string]*hcl.File
+		Want       map[string]*hcl.File
+		ErrCheck   func(error) bool
+	}{
+		{
+			Name: "HCL files",
+			ServerImpl: func() map[string]*hcl.File {
+				return map[string]*hcl.File{
+					"test1.tf": hclFile("test1.tf", `
+resource "aws_instance" "foo" {
+	instance_type = "t2.micro"
+}`),
+					"test2.tf": hclFile("test2.tf", `
+resource "aws_s3_bucket" "bar" {
+	bucket = "baz"
+}`),
+				}
+			},
+			Want: map[string]*hcl.File{
+				"test1.tf": hclFile("test1.tf", `
+resource "aws_instance" "foo" {
+	instance_type = "t2.micro"
+}`),
+				"test2.tf": hclFile("test2.tf", `
+resource "aws_s3_bucket" "bar" {
+	bucket = "baz"
+}`),
+			},
+			ErrCheck: neverHappend,
+		},
+		{
+			Name: "JSON files",
+			ServerImpl: func() map[string]*hcl.File {
+				return map[string]*hcl.File{
+					"test1.tf.json": jsonFile("test1.tf.json", `
+{
+  "resource": {
+    "aws_instance": {
+      "foo": {
+        "instance_type": "t2.micro"
+      }
+    }
+  }
+}`),
+					"test2.tf.json": jsonFile("test2.tf.json", `
+{
+  "resource": {
+    "aws_s3_bucket": {
+      "bar": {
+        "bucket": "baz"
+      }
+    }
+  }
+}`),
+				}
+			},
+			Want: map[string]*hcl.File{
+				"test1.tf.json": jsonFile("test1.tf.json", `
+{
+  "resource": {
+    "aws_instance": {
+      "foo": {
+        "instance_type": "t2.micro"
+      }
+    }
+  }
+}`),
+				"test2.tf.json": jsonFile("test2.tf.json", `
+{
+  "resource": {
+    "aws_s3_bucket": {
+      "bar": {
+        "bucket": "baz"
+      }
+    }
+  }
+}`),
+			},
+			ErrCheck: neverHappend,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{getFiles: test.ServerImpl}))
+
+			files, err := client.GetFiles()
+			if test.ErrCheck(err) {
+				t.Fatalf("failed to call GetFiles: %s", err)
+			}
+
+			opts := cmp.Options{
+				cmp.Comparer(func(x, y cty.Value) bool {
+					return x.GoString() == y.GoString()
+				}),
+				cmp.AllowUnexported(hclsyntax.Body{}),
+				cmpopts.IgnoreFields(hcl.File{}, "Nav"),
+				allowAllUnexported,
+			}
+			if diff := cmp.Diff(files, test.Want, opts); diff != "" {
+				t.Errorf("diff: %s", diff)
 			}
 		})
 	}

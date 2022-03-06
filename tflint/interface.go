@@ -46,6 +46,7 @@ type Runner interface {
 	GetResourceContent(string, *hclext.BodySchema, *GetModuleContentOption) (*hclext.BodyContent, error)
 	GetModuleContent(*hclext.BodySchema, *GetModuleContentOption) (*hclext.BodyContent, error)
 	GetFile(string) (*hcl.File, error)
+	GetFiles() (map[string]*hcl.File, error)
 	DecodeRuleConfig(name string, ret interface{}) error
 	EvaluateExpr(hcl.Expression, interface{}, *EvaluateExprOption) error
 	EmitIssue(Rule, string, hcl.Range) error

@@ -30,12 +30,10 @@ var _ proto.RunnerServer = &GRPCServer{}
 type Server interface {
 	GetModuleContent(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	GetFile(string) (*hcl.File, error)
+	GetFiles(tflint.ModuleCtxType) map[string]*hcl.File
 	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
-
-	// TODO: Pass option instead of type
-	GetFiles(tflint.ModuleCtxType) map[string]*hcl.File
 }
 
 // GetModuleContent gets the contents of the module based on the schema.
@@ -78,6 +76,17 @@ func (s *GRPCServer) GetFile(ctx context.Context, req *proto.GetFile_Request) (*
 		return nil, status.Error(codes.NotFound, "file not found")
 	}
 	return &proto.GetFile_Response{File: file.Bytes}, nil
+}
+
+// GetFiles returns bytes of hcl.File in the self module context.
+func (s *GRPCServer) GetFiles(ctx context.Context, req *proto.GetFiles_Request) (*proto.GetFiles_Response, error) {
+	files := s.Impl.GetFiles(tflint.SelfModuleCtxType)
+
+	resp := map[string][]byte{}
+	for name, file := range files {
+		resp[name] = file.Bytes
+	}
+	return &proto.GetFiles_Response{Files: resp}, nil
 }
 
 // GetRuleConfigContent returns BodyContent based on the rule name and config schema.

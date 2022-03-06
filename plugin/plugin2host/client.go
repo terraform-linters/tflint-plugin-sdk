@@ -94,6 +94,34 @@ func (c *GRPCClient) GetFile(file string) (*hcl.File, error) {
 	return f, err
 }
 
+// GetFiles returns bytes of hcl.File in the self module context.
+func (c *GRPCClient) GetFiles() (map[string]*hcl.File, error) {
+	resp, err := c.Client.GetFiles(context.Background(), &proto.GetFiles_Request{})
+	if err != nil {
+		return nil, fromproto.Error(err)
+	}
+
+	files := map[string]*hcl.File{}
+	var f *hcl.File
+	var diags hcl.Diagnostics
+	for name, bytes := range resp.Files {
+		var d hcl.Diagnostics
+		if strings.HasSuffix(name, ".tf") {
+			f, d = hclsyntax.ParseConfig(bytes, name, hcl.InitialPos)
+		} else {
+			f, d = hcljson.Parse(bytes, name)
+		}
+		diags = diags.Extend(d)
+
+		files[name] = f
+	}
+
+	if diags.HasErrors() {
+		return files, diags
+	}
+	return files, nil
+}
+
 // DecodeRuleConfig guesses the schema of the rule config from the passed interface and sends the schema to GRPC server.
 // Content retrieved based on the schema is decoded into the passed interface.
 func (c *GRPCClient) DecodeRuleConfig(name string, ret interface{}) error {

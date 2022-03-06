@@ -74,6 +74,7 @@ message Check {
 service Runner {
     rpc GetModuleContent(GetModuleContent.Request) returns (GetModuleContent.Response);
     rpc GetFile(GetFile.Request) returns (GetFile.Response);
+    rpc GetFiles(GetFiles.Request) returns (GetFiles.Response);
     rpc GetRuleConfigContent(GetRuleConfigContent.Request) returns (GetRuleConfigContent.Response);
     rpc EvaluateExpr(EvaluateExpr.Request) returns (EvaluateExpr.Response);
     rpc EmitIssue(EmitIssue.Request) returns (EmitIssue.Response);
@@ -105,6 +106,14 @@ message GetFile {
     }
     message Response {
         bytes file = 1;
+    }
+}
+
+message GetFiles {
+    message Request {
+    }
+    message Response {
+        map<string, bytes> files = 1;
     }
 }
 

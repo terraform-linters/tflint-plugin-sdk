@@ -322,6 +322,7 @@ var RuleSet_ServiceDesc = grpc.ServiceDesc{
 type RunnerClient interface {
 	GetModuleContent(ctx context.Context, in *GetModuleContent_Request, opts ...grpc.CallOption) (*GetModuleContent_Response, error)
 	GetFile(ctx context.Context, in *GetFile_Request, opts ...grpc.CallOption) (*GetFile_Response, error)
+	GetFiles(ctx context.Context, in *GetFiles_Request, opts ...grpc.CallOption) (*GetFiles_Response, error)
 	GetRuleConfigContent(ctx context.Context, in *GetRuleConfigContent_Request, opts ...grpc.CallOption) (*GetRuleConfigContent_Response, error)
 	EvaluateExpr(ctx context.Context, in *EvaluateExpr_Request, opts ...grpc.CallOption) (*EvaluateExpr_Response, error)
 	EmitIssue(ctx context.Context, in *EmitIssue_Request, opts ...grpc.CallOption) (*EmitIssue_Response, error)
@@ -347,6 +348,15 @@ func (c *runnerClient) GetModuleContent(ctx context.Context, in *GetModuleConten
 func (c *runnerClient) GetFile(ctx context.Context, in *GetFile_Request, opts ...grpc.CallOption) (*GetFile_Response, error) {
 	out := new(GetFile_Response)
 	err := c.cc.Invoke(ctx, "/proto.Runner/GetFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *runnerClient) GetFiles(ctx context.Context, in *GetFiles_Request, opts ...grpc.CallOption) (*GetFiles_Response, error) {
+	out := new(GetFiles_Response)
+	err := c.cc.Invoke(ctx, "/proto.Runner/GetFiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -386,6 +396,7 @@ func (c *runnerClient) EmitIssue(ctx context.Context, in *EmitIssue_Request, opt
 type RunnerServer interface {
 	GetModuleContent(context.Context, *GetModuleContent_Request) (*GetModuleContent_Response, error)
 	GetFile(context.Context, *GetFile_Request) (*GetFile_Response, error)
+	GetFiles(context.Context, *GetFiles_Request) (*GetFiles_Response, error)
 	GetRuleConfigContent(context.Context, *GetRuleConfigContent_Request) (*GetRuleConfigContent_Response, error)
 	EvaluateExpr(context.Context, *EvaluateExpr_Request) (*EvaluateExpr_Response, error)
 	EmitIssue(context.Context, *EmitIssue_Request) (*EmitIssue_Response, error)
@@ -401,6 +412,9 @@ func (UnimplementedRunnerServer) GetModuleContent(context.Context, *GetModuleCon
 }
 func (UnimplementedRunnerServer) GetFile(context.Context, *GetFile_Request) (*GetFile_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedRunnerServer) GetFiles(context.Context, *GetFiles_Request) (*GetFiles_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFiles not implemented")
 }
 func (UnimplementedRunnerServer) GetRuleConfigContent(context.Context, *GetRuleConfigContent_Request) (*GetRuleConfigContent_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRuleConfigContent not implemented")
@@ -456,6 +470,24 @@ func _Runner_GetFile_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RunnerServer).GetFile(ctx, req.(*GetFile_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Runner_GetFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFiles_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RunnerServer).GetFiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Runner/GetFiles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RunnerServer).GetFiles(ctx, req.(*GetFiles_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -528,6 +560,10 @@ var Runner_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFile",
 			Handler:    _Runner_GetFile_Handler,
+		},
+		{
+			MethodName: "GetFiles",
+			Handler:    _Runner_GetFiles_Handler,
 		},
 		{
 			MethodName: "GetRuleConfigContent",

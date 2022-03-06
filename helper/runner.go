@@ -84,6 +84,11 @@ func (r *Runner) GetFile(filename string) (*hcl.File, error) {
 	return r.files[filename], nil
 }
 
+// GetFiles returns all hcl.File
+func (r *Runner) GetFiles() (map[string]*hcl.File, error) {
+	return r.files, nil
+}
+
 // DecodeRuleConfig extracts the rule's configuration into the given value
 func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
 	schema := hclext.ImpliedBodySchema(ret)
