@@ -27,4 +27,4 @@ This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFL
 
 On the other hand, the plugin sends various requests to a server (TFLint) to get detailed runtime contexts (e.g. variables and expressions). This means that TFLint and plugins can act as both a server and a client.
 
-These implementations are included in the [plugin/host2plugin](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/host2plugin) and [plugin/plugin2host]((https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/plugin2host)) packages.
+These implementations are included in the [plugin/host2plugin](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/host2plugin) and [plugin/plugin2host](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/plugin2host) packages.
