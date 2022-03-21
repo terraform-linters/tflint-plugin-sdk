@@ -10,7 +10,7 @@ NOTE: This plugin system is experimental. This means that API compatibility is f
 
 ## Requirements
 
-- TFLint v0.30+
+- TFLint v0.35+
 - Go v1.18
 
 ## Usage
@@ -23,6 +23,8 @@ For more details on the API, see [tflint](https://pkg.go.dev/github.com/terrafor
 
 ![architecture](architecture.png)
 
-This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFLint launches the plugin as a sub-process and communicates with the plugin over RPC. The plugin acts as a server, while TFLint acts as a client that sends inspection requests to the plugin.
+This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFLint launches the plugin as a sub-process and communicates with the plugin over gRPC. The plugin acts as a server, while TFLint acts as a client that sends inspection requests to the plugin.
 
 On the other hand, the plugin sends various requests to a server (TFLint) to get detailed runtime contexts (e.g. variables and expressions). This means that TFLint and plugins can act as both a server and a client.
+
+These implementations are included in the [plugin/host2plugin](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/host2plugin) and [plugin/plugin2host]((https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/plugin2host)) packages.

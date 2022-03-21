@@ -1,7 +1,7 @@
 // Package tflint contains implementations and interfaces for
 // plugin developers.
 //
-// Each rule can use the RPC client that satisfies the Runner
+// Each rule can use the gRPC client that satisfies the Runner
 // interface as an argument. Through this client, developers
 // can get attributes, blocks, and resources to be analyzed
 // and send issues to TFLint.
