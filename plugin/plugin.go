@@ -6,6 +6,9 @@ import (
 
 	plugin "github.com/hashicorp/go-plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+
+	// Import this package to initialize the global logger
+	_ "github.com/terraform-linters/tflint-plugin-sdk/logger"
 )
 
 // handShakeConfig is used for UX. ProcotolVersion will be updated by incompatible changes.
@@ -17,7 +20,7 @@ var handshakeConfig = plugin.HandshakeConfig{
 
 // RuleSetPlugin is a wrapper to satisfy the interface of go-plugin.
 type RuleSetPlugin struct {
-	impl tflint.RuleSet
+	impl tflint.RPCRuleSet
 }
 
 // Server returns an RPC server acting as a plugin.

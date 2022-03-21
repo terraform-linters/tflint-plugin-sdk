@@ -359,11 +359,11 @@ func Test_EvaluateExpr(t *testing.T) {
 
 type testRule struct{}
 
-func (*testRule) Name() string              { return "test" }
-func (*testRule) Enabled() bool             { return true }
-func (*testRule) Severity() string          { return "Error" }
-func (*testRule) Link() string              { return "" }
-func (*testRule) Check(tflint.Runner) error { return nil }
+func (*testRule) Name() string                 { return "test" }
+func (*testRule) Enabled() bool                { return true }
+func (*testRule) Severity() string             { return "Error" }
+func (*testRule) Link() string                 { return "" }
+func (*testRule) Check(tflint.RPCRunner) error { return nil }
 
 func Test_EmitIssueOnExpr(t *testing.T) {
 	client, server := startMockServer(t)

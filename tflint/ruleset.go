@@ -3,7 +3,11 @@ package tflint
 import (
 	"fmt"
 	"log"
+
+	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 )
+
+var _ RuleSet = &BuiltinRuleSet{}
 
 // BuiltinRuleSet is the basis of the ruleset. Plugins can serve this ruleset directly.
 // You can serve a custom ruleset by embedding this ruleset if you need special extensions.
@@ -28,17 +32,48 @@ func (r *BuiltinRuleSet) RuleSetVersion() string {
 
 // RuleNames is a list of rule names provided by the plugin.
 func (r *BuiltinRuleSet) RuleNames() []string {
-	names := []string{}
-	for _, rule := range r.Rules {
-		names = append(names, rule.Name())
+	names := make([]string, len(r.Rules))
+	for idx, rule := range r.Rules {
+		names[idx] = rule.Name()
 	}
 	return names
 }
 
-// ApplyConfig reflects the configuration to the ruleset.
-// By default, this only applies common configurations.
-func (r *BuiltinRuleSet) ApplyConfig(config *Config) error {
-	r.ApplyCommonConfig(config)
+// ApplyGlobalConfig applies the common config to the ruleset.
+// This is not supposed to be overridden from custom rulesets.
+// Override the ApplyConfig if you want to apply the plugin's own configuration.
+func (r *BuiltinRuleSet) ApplyGlobalConfig(config *Config) error {
+	r.EnabledRules = []Rule{}
+
+	if config.DisabledByDefault {
+		log.Printf("[DEBUG] Only mode is enabled. Ignoring default plugin rules")
+	}
+
+	for _, rule := range r.Rules {
+		enabled := rule.Enabled()
+		if cfg := config.Rules[rule.Name()]; cfg != nil {
+			enabled = cfg.Enabled
+		} else if config.DisabledByDefault {
+			enabled = false
+		}
+
+		if enabled {
+			r.EnabledRules = append(r.EnabledRules, rule)
+		}
+	}
+	return nil
+}
+
+// ConfigSchema returns the ruleset plugin config schema.
+// This schema should be a schema inside of "plugin" block.
+// Custom rulesets can override this method to return the plugin's own config schema.
+func (r *BuiltinRuleSet) ConfigSchema() *hclext.BodySchema {
+	return nil
+}
+
+// ApplyConfig applies the configuration to the ruleset.
+// Custom rulesets can override this method to reflect the plugin's own configuration.
+func (r *BuiltinRuleSet) ApplyConfig(content *hclext.BodyContent) error {
 	return nil
 }
 
@@ -73,3 +108,5 @@ func (r *BuiltinRuleSet) Check(runner Runner) error {
 	}
 	return nil
 }
+
+func (r *BuiltinRuleSet) mustEmbedBuiltinRuleSet() {}
