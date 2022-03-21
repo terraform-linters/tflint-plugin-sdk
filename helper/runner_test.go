@@ -283,7 +283,7 @@ func (r *dummyRule) Enabled() bool             { return true }
 func (r *dummyRule) Severity() tflint.Severity { return tflint.ERROR }
 func (r *dummyRule) Check(tflint.Runner) error { return nil }
 
-func Test_EmitIssueOnExpr(t *testing.T) {
+func Test_EmitIssue(t *testing.T) {
 	src := `
 resource "aws_instance" "foo" {
   instance_type = "t2.micro"

@@ -1,38 +1,15 @@
 package plugin
 
 import (
-	"encoding/gob"
-	"net/rpc"
-
-	plugin "github.com/hashicorp/go-plugin"
-	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/host2plugin"
 
 	// Import this package to initialize the global logger
 	_ "github.com/terraform-linters/tflint-plugin-sdk/logger"
 )
 
-// handShakeConfig is used for UX. ProcotolVersion will be updated by incompatible changes.
-var handshakeConfig = plugin.HandshakeConfig{
-	ProtocolVersion:  9,
-	MagicCookieKey:   "TFLINT_RULESET_PLUGIN",
-	MagicCookieValue: "5adSn1bX8nrDfgBqiAqqEkC6OE1h3iD8SqbMc5UUONx8x3xCF0KlPDsBRNDjoYDP",
-}
+// ServeOpts is an option for serving a plugin.
+// Each plugin can pass a RuleSet that represents its own functionality.
+type ServeOpts = host2plugin.ServeOpts
 
-// RuleSetPlugin is a wrapper to satisfy the interface of go-plugin.
-type RuleSetPlugin struct {
-	impl tflint.RPCRuleSet
-}
-
-// Server returns an RPC server acting as a plugin.
-func (p *RuleSetPlugin) Server(b *plugin.MuxBroker) (interface{}, error) {
-	return &Server{impl: p.impl, broker: b}, nil
-}
-
-// Client returns an RPC client for the host.
-func (RuleSetPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
-	return &Client{rpcClient: c, broker: b}, nil
-}
-
-func init() {
-	gob.Register(tflint.Error{})
-}
+// Serve is a wrapper of plugin.Serve. This is entrypoint of all plugins.
+var Serve = host2plugin.Serve

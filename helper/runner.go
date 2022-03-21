@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/convert"
@@ -15,11 +14,18 @@ import (
 
 // Runner is a mock that satisfies the Runner interface for plugin testing.
 type Runner struct {
-	files  map[string]*hcl.File
 	Issues Issues
 
-	tfconfig *configs.Config
-	config   Config
+	files     map[string]*hcl.File
+	config    Config
+	variables map[string]*Variable
+}
+
+// Variable is an implementation of variables in Terraform language
+type Variable struct {
+	Name      string
+	Default   cty.Value
+	DeclRange hcl.Range
 }
 
 // Config is a pseudo TFLint config file object for testing from plugins.
@@ -141,7 +147,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint
 	}
 
 	variables := map[string]cty.Value{}
-	for _, variable := range r.tfconfig.Module.Variables {
+	for _, variable := range r.variables {
 		variables[variable.Name] = variable.Default
 	}
 	workspace, success := os.LookupEnv("TF_WORKSPACE")
@@ -203,12 +209,6 @@ func (r *Runner) AddLocalFile(name string, file *hcl.File) bool {
 }
 
 func (r *Runner) initFromFiles() error {
-	r.tfconfig = &configs.Config{
-		Module: &configs.Module{
-			Variables: map[string]*configs.Variable{},
-		},
-	}
-
 	for _, file := range r.files {
 		content, _, diags := file.Body.PartialContent(configFileSchema)
 		if diags.HasErrors() {
@@ -218,11 +218,11 @@ func (r *Runner) initFromFiles() error {
 		for _, block := range content.Blocks {
 			switch block.Type {
 			case "variable":
-				variable, diags := simpleDecodeVariableBlock(block)
+				variable, diags := decodeVariableBlock(block)
 				if diags.HasErrors() {
 					return diags
 				}
-				r.tfconfig.Module.Variables[variable.Name] = variable
+				r.variables[variable.Name] = variable
 			default:
 				continue
 			}
@@ -232,8 +232,8 @@ func (r *Runner) initFromFiles() error {
 	return nil
 }
 
-func simpleDecodeVariableBlock(block *hcl.Block) (*configs.Variable, hcl.Diagnostics) {
-	v := &configs.Variable{
+func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
+	v := &Variable{
 		Name:      block.Labels[0],
 		DeclRange: block.DefRange,
 	}
