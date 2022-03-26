@@ -30,7 +30,8 @@ var _ proto.RunnerServer = &GRPCServer{}
 type Server interface {
 	GetModuleContent(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	GetFile(string) (*hcl.File, error)
-	GetFiles(tflint.ModuleCtxType) map[string]*hcl.File
+	// For performance, GetFiles returns map[string][]bytes instead of map[string]*hcl.File.
+	GetFiles(tflint.ModuleCtxType) map[string][]byte
 	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
@@ -45,8 +46,8 @@ func (s *GRPCServer) GetModuleContent(ctx context.Context, req *proto.GetModuleC
 		return nil, status.Error(codes.InvalidArgument, "option should not be null")
 	}
 
-	moduleCtx := fromproto.ModuleCtxType(req.Option.ModuleCtx)
-	body, diags := s.Impl.GetModuleContent(fromproto.BodySchema(req.Schema), tflint.GetModuleContentOption{ModuleCtx: moduleCtx})
+	opts := fromproto.GetModuleContentOption(req.Option)
+	body, diags := s.Impl.GetModuleContent(fromproto.BodySchema(req.Schema), opts)
 	if diags.HasErrors() {
 		return nil, toproto.Error(codes.FailedPrecondition, diags)
 	}
@@ -54,11 +55,7 @@ func (s *GRPCServer) GetModuleContent(ctx context.Context, req *proto.GetModuleC
 		return nil, status.Error(codes.FailedPrecondition, "response body is empty")
 	}
 
-	sources := map[string][]byte{}
-	for name, file := range s.Impl.GetFiles(moduleCtx) {
-		sources[name] = file.Bytes
-	}
-	content := toproto.BodyContent(body, sources)
+	content := toproto.BodyContent(body, s.Impl.GetFiles(opts.ModuleCtx))
 
 	return &proto.GetModuleContent_Response{Content: content}, nil
 }
@@ -80,13 +77,7 @@ func (s *GRPCServer) GetFile(ctx context.Context, req *proto.GetFile_Request) (*
 
 // GetFiles returns bytes of hcl.File in the self module context.
 func (s *GRPCServer) GetFiles(ctx context.Context, req *proto.GetFiles_Request) (*proto.GetFiles_Response, error) {
-	files := s.Impl.GetFiles(tflint.SelfModuleCtxType)
-
-	resp := map[string][]byte{}
-	for name, file := range files {
-		resp[name] = file.Bytes
-	}
-	return &proto.GetFiles_Response{Files: resp}, nil
+	return &proto.GetFiles_Response{Files: s.Impl.GetFiles(tflint.SelfModuleCtxType)}, nil
 }
 
 // GetRuleConfigContent returns BodyContent based on the rule name and config schema.

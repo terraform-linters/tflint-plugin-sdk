@@ -486,8 +486,8 @@ func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Ra
 	return nil
 }
 
-func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string]*hcl.File {
-	return map[string]*hcl.File{}
+func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string][]byte {
+	return map[string][]byte{}
 }
 
 func TestCheck(t *testing.T) {
