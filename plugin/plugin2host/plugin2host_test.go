@@ -36,7 +36,7 @@ type mockServer struct {
 type mockServerImpl struct {
 	getModuleContent     func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	getFile              func(string) (*hcl.File, error)
-	getFiles             func() map[string]*hcl.File
+	getFiles             func() map[string][]byte
 	getRuleConfigContent func(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
 	evaluateExpr         func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	emitIssue            func(tflint.Rule, string, hcl.Range) error
@@ -60,11 +60,11 @@ func (s *mockServer) GetFile(filename string) (*hcl.File, error) {
 	return nil, nil
 }
 
-func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string]*hcl.File {
+func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string][]byte {
 	if s.impl.getFiles != nil {
 		return s.impl.getFiles()
 	}
-	return map[string]*hcl.File{}
+	return map[string][]byte{}
 }
 
 func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
@@ -96,8 +96,8 @@ func TestGetResourceContent(t *testing.T) {
 	neverHappend := func(err error) bool { return err != nil }
 
 	// default getFileImpl function
-	files := map[string]*hcl.File{}
-	fileExists := func() map[string]*hcl.File {
+	files := map[string][]byte{}
+	fileExists := func() map[string][]byte {
 		return files
 	}
 
@@ -107,7 +107,7 @@ func TestGetResourceContent(t *testing.T) {
 		if diags.HasErrors() {
 			panic(diags)
 		}
-		files[filename] = file
+		files[filename] = file.Bytes
 		return file
 	}
 	jsonFile := func(filename string, code string) *hcl.File {
@@ -115,7 +115,7 @@ func TestGetResourceContent(t *testing.T) {
 		if diags.HasErrors() {
 			panic(diags)
 		}
-		files[filename] = file
+		files[filename] = file.Bytes
 		return file
 	}
 
@@ -215,6 +215,34 @@ resource "aws_instance" "foo" {
 			},
 			ErrCheck: neverHappend,
 		},
+		{
+			Name: "get content with options",
+			Args: func() (string, *hclext.BodySchema, *tflint.GetModuleContentOption) {
+				return "aws_instance", &hclext.BodySchema{}, &tflint.GetModuleContentOption{
+					ModuleCtx: tflint.RootModuleCtxType,
+				}
+			},
+			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				if opts.ModuleCtx != tflint.RootModuleCtxType {
+					return &hclext.BodyContent{}, hcl.Diagnostics{
+						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected moduleCtx options"},
+					}
+				}
+				if opts.Hint.ResourceType != "aws_instance" {
+					return &hclext.BodyContent{}, hcl.Diagnostics{
+						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected hint options"},
+					}
+				}
+				return &hclext.BodyContent{}, hcl.Diagnostics{}
+			},
+			Want: func(resource string, schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				return &hclext.BodyContent{
+					Attributes: hclext.Attributes{},
+					Blocks:     hclext.Blocks{},
+				}, hcl.Diagnostics{}
+			},
+			ErrCheck: neverHappend,
+		},
 	}
 
 	for _, test := range tests {
@@ -252,8 +280,8 @@ func TestGetModuleContent(t *testing.T) {
 	neverHappend := func(err error) bool { return err != nil }
 
 	// default getFileImpl function
-	files := map[string]*hcl.File{}
-	fileExists := func() map[string]*hcl.File {
+	files := map[string][]byte{}
+	fileExists := func() map[string][]byte {
 		return files
 	}
 
@@ -263,7 +291,7 @@ func TestGetModuleContent(t *testing.T) {
 		if diags.HasErrors() {
 			panic(diags)
 		}
-		files[filename] = file
+		files[filename] = file.Bytes
 		return file
 	}
 	jsonFile := func(filename string, code string) *hcl.File {
@@ -271,7 +299,7 @@ func TestGetModuleContent(t *testing.T) {
 		if diags.HasErrors() {
 			panic(diags)
 		}
-		files[filename] = file
+		files[filename] = file.Bytes
 		return file
 	}
 
@@ -359,12 +387,20 @@ resource "aws_instance" "foo" {
 		{
 			Name: "get content with options",
 			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
-				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{ModuleCtx: tflint.RootModuleCtxType}
+				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{
+					ModuleCtx: tflint.RootModuleCtxType,
+					Hint:      tflint.GetModuleContentHint{ResourceType: "aws_instance"},
+				}
 			},
 			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
 				if opts.ModuleCtx != tflint.RootModuleCtxType {
 					return &hclext.BodyContent{}, hcl.Diagnostics{
-						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected options"},
+						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected moduleCtx options"},
+					}
+				}
+				if opts.Hint.ResourceType != "aws_instance" {
+					return &hclext.BodyContent{}, hcl.Diagnostics{
+						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected hint options"},
 					}
 				}
 				return &hclext.BodyContent{}, hcl.Diagnostics{}
@@ -608,19 +644,19 @@ func TestGetFiles(t *testing.T) {
 
 	tests := []struct {
 		Name       string
-		ServerImpl func() map[string]*hcl.File
+		ServerImpl func() map[string][]byte
 		Want       map[string]*hcl.File
 		ErrCheck   func(error) bool
 	}{
 		{
 			Name: "HCL files",
-			ServerImpl: func() map[string]*hcl.File {
-				return map[string]*hcl.File{
-					"test1.tf": hclFile("test1.tf", `
+			ServerImpl: func() map[string][]byte {
+				return map[string][]byte{
+					"test1.tf": []byte(`
 resource "aws_instance" "foo" {
 	instance_type = "t2.micro"
 }`),
-					"test2.tf": hclFile("test2.tf", `
+					"test2.tf": []byte(`
 resource "aws_s3_bucket" "bar" {
 	bucket = "baz"
 }`),
@@ -640,9 +676,9 @@ resource "aws_s3_bucket" "bar" {
 		},
 		{
 			Name: "JSON files",
-			ServerImpl: func() map[string]*hcl.File {
-				return map[string]*hcl.File{
-					"test1.tf.json": jsonFile("test1.tf.json", `
+			ServerImpl: func() map[string][]byte {
+				return map[string][]byte{
+					"test1.tf.json": []byte(`
 {
   "resource": {
     "aws_instance": {
@@ -652,7 +688,7 @@ resource "aws_s3_bucket" "bar" {
     }
   }
 }`),
-					"test2.tf.json": jsonFile("test2.tf.json", `
+					"test2.tf.json": []byte(`
 {
   "resource": {
     "aws_s3_bucket": {

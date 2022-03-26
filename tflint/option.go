@@ -17,6 +17,13 @@ const (
 type GetModuleContentOption struct {
 	// Specify the module to be acquired.
 	ModuleCtx ModuleCtxType
+	// Hint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
+	Hint GetModuleContentHint
+}
+
+// GetModuleContentHint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
+type GetModuleContentHint struct {
+	ResourceType string
 }
 
 // EvaluateExprOption is an option that controls the behavior when evaluating an expression.

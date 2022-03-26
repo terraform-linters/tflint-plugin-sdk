@@ -30,6 +30,11 @@ var _ tflint.Runner = &GRPCClient{}
 // GetResourceContent gets the contents of resources based on the schema.
 // This is shorthand of GetModuleContent for resources
 func (c *GRPCClient) GetResourceContent(name string, inner *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
+	if opts == nil {
+		opts = &tflint.GetModuleContentOption{}
+	}
+	opts.Hint.ResourceType = name
+
 	body, err := c.GetModuleContent(&hclext.BodySchema{
 		Blocks: []hclext.BlockSchema{
 			{Type: "resource", LabelNames: []string{"type", "name"}, Body: inner},
@@ -59,7 +64,7 @@ func (c *GRPCClient) GetModuleContent(schema *hclext.BodySchema, opts *tflint.Ge
 
 	req := &proto.GetModuleContent_Request{
 		Schema: toproto.BodySchema(schema),
-		Option: &proto.GetModuleContent_Option{ModuleCtx: toproto.ModuleCtxType(opts.ModuleCtx)},
+		Option: toproto.GetModuleContentOption(opts),
 	}
 	resp, err := c.Client.GetModuleContent(context.Background(), req)
 	if err != nil {

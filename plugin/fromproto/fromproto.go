@@ -183,6 +183,18 @@ func Config(config *proto.ApplyGlobalConfig_Config) *tflint.Config {
 	return &tflint.Config{Rules: rules, DisabledByDefault: config.DisabledByDefault}
 }
 
+// GetModuleContentOption converts proto.GetModuleContent_Option to tflint.GetModuleContentOption
+func GetModuleContentOption(opts *proto.GetModuleContent_Option) tflint.GetModuleContentOption {
+	if opts == nil {
+		return tflint.GetModuleContentOption{}
+	}
+
+	return tflint.GetModuleContentOption{
+		ModuleCtx: ModuleCtxType(opts.ModuleCtx),
+		Hint:      GetModuleContentHint(opts.Hint),
+	}
+}
+
 // ModuleCtxType converts proto.ModuleCtxType to tflint.ModuleCtxType
 func ModuleCtxType(ty proto.ModuleCtxType) tflint.ModuleCtxType {
 	switch ty {
@@ -194,6 +206,17 @@ func ModuleCtxType(ty proto.ModuleCtxType) tflint.ModuleCtxType {
 		return tflint.RootModuleCtxType
 	default:
 		panic(fmt.Sprintf("invalid ModuleCtxType: %s", ty))
+	}
+}
+
+// GetModuleContentHint converts proto.GetModuleContent_Hint to tflint.GetModuleContentHint
+func GetModuleContentHint(hint *proto.GetModuleContent_Hint) tflint.GetModuleContentHint {
+	if hint == nil {
+		return tflint.GetModuleContentHint{}
+	}
+
+	return tflint.GetModuleContentHint{
+		ResourceType: hint.ResourceType,
 	}
 }
 

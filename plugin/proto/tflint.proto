@@ -87,8 +87,12 @@ enum ModuleCtxType {
 }
 
 message GetModuleContent {
+    message Hint {
+        string resource_type = 1;
+    }
     message Option {
         ModuleCtxType module_ctx = 1;
+        Hint hint = 2;
     }
 
     message Request {
