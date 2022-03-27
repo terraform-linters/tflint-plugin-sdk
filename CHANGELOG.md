@@ -16,8 +16,7 @@ The API also contains many incompatible changes. See https://github.com/terrafor
 - [#138](https://github.com/terraform-linters/tflint-plugin-sdk/pull/138): Bump github.com/hashicorp/hcl/v2 from 2.10.0 to 2.11.1
 - [#139](https://github.com/terraform-linters/tflint-plugin-sdk/pull/139): Bump github.com/hashicorp/go-version from 1.3.0 to 1.4.0
 - [#141](https://github.com/terraform-linters/tflint-plugin-sdk/pull/141): Bump github.com/google/go-cmp from 0.5.6 to 0.5.7
-- [#143](https://github.com/terraform-linters/tflint-plugin-sdk/pull/143): 
-Bump actions/checkout from 2 to 3
+- [#143](https://github.com/terraform-linters/tflint-plugin-sdk/pull/143): Bump actions/checkout from 2 to 3
 - [#144](https://github.com/terraform-linters/tflint-plugin-sdk/pull/144): Bump github.com/hashicorp/go-hclog from 0.16.2 to 1.2.0
 
 ## 0.9.1 (2021-07-17)
