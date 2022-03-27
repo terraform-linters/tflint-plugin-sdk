@@ -194,7 +194,7 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 // NewLocalRunner initialises a new test runner.
 // Internal use only.
 func NewLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
-	return &Runner{files: map[string]*hcl.File{}, Issues: issues}
+	return &Runner{files: map[string]*hcl.File{}, variables: map[string]*Variable{}, Issues: issues}
 }
 
 // AddLocalFile adds a new file to the current mapped files.

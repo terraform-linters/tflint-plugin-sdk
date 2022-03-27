@@ -248,29 +248,55 @@ terraform {
 }
 
 func Test_EvaluateExpr(t *testing.T) {
-	src := `
+	tests := []struct {
+		Name string
+		Src  string
+		Want string
+	}{
+		{
+			Name: "string literal",
+			Src: `
 resource "aws_instance" "foo" {
   instance_type = "t2.micro"
-}`
+}`,
+			Want: "t2.micro",
+		},
+		{
+			Name: "string interpolation",
+			Src: `
+variable "instance_type" {
+  default = "t2.micro"
+}
 
-	runner := TestRunner(t, map[string]string{"main.tf": src})
-
-	resources, err := runner.GetResourceContent("aws_instance", &hclext.BodySchema{
-		Attributes: []hclext.AttributeSchema{{Name: "instance_type"}},
-	}, nil)
-	if err != nil {
-		t.Fatal(err)
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: "t2.micro",
+		},
 	}
 
-	for _, resource := range resources.Blocks {
-		var instanceType string
-		if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, &instanceType, nil); err != nil {
-			t.Fatal(err)
-		}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{"main.tf": test.Src})
 
-		if instanceType != "t2.micro" {
-			t.Fatalf(`expected value is "t2.micro", but got "%s"`, instanceType)
-		}
+			resources, err := runner.GetResourceContent("aws_instance", &hclext.BodySchema{
+				Attributes: []hclext.AttributeSchema{{Name: "instance_type"}},
+			}, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, resource := range resources.Blocks {
+				var instanceType string
+				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, &instanceType, nil); err != nil {
+					t.Fatal(err)
+				}
+
+				if instanceType != test.Want {
+					t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType)
+				}
+			}
+		})
 	}
 }
 
