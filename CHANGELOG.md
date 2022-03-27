@@ -1,3 +1,25 @@
+## 0.10.0 (2022-03-27)
+
+This release contains a major update to the plugin system. Previously, this SDK uses traditional net/rpc + gob, but now it uses gRPC + Protocol Buffers.
+
+The API also contains many incompatible changes. See https://github.com/terraform-linters/tflint-ruleset-template/pull/48 for how to migrate. TFLint v0.35+ is required to work with new plugin systems.
+
+### Breaking Changes
+
+- [#135](https://github.com/terraform-linters/tflint-plugin-sdk/pull/135) [#146](https://github.com/terraform-linters/tflint-plugin-sdk/pull/146) [#147](https://github.com/terraform-linters/tflint-plugin-sdk/pull/147) [#148](https://github.com/terraform-linters/tflint-plugin-sdk/pull/148) [#149](https://github.com/terraform-linters/tflint-plugin-sdk/pull/149): plugin: gRPC-based new plugin system
+
+### Chores
+
+- [#133](https://github.com/terraform-linters/tflint-plugin-sdk/pull/133) [#145](https://github.com/terraform-linters/tflint-plugin-sdk/pull/145): build: Go 1.18
+- [#134](https://github.com/terraform-linters/tflint-plugin-sdk/pull/134): Bump github.com/hashicorp/go-plugin from 1.4.2 to 1.4.3
+- [#136](https://github.com/terraform-linters/tflint-plugin-sdk/pull/136): Bump github.com/zclconf/go-cty from 1.9.0 to 1.10.0
+- [#138](https://github.com/terraform-linters/tflint-plugin-sdk/pull/138): Bump github.com/hashicorp/hcl/v2 from 2.10.0 to 2.11.1
+- [#139](https://github.com/terraform-linters/tflint-plugin-sdk/pull/139): Bump github.com/hashicorp/go-version from 1.3.0 to 1.4.0
+- [#141](https://github.com/terraform-linters/tflint-plugin-sdk/pull/141): Bump github.com/google/go-cmp from 0.5.6 to 0.5.7
+- [#143](https://github.com/terraform-linters/tflint-plugin-sdk/pull/143): 
+Bump actions/checkout from 2 to 3
+- [#144](https://github.com/terraform-linters/tflint-plugin-sdk/pull/144): Bump github.com/hashicorp/go-hclog from 0.16.2 to 1.2.0
+
 ## 0.9.1 (2021-07-17)
 
 ### BugFixes
