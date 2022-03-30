@@ -238,7 +238,7 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 		DeclRange: block.DefRange,
 	}
 
-	content, diags := block.Body.Content(&hcl.BodySchema{
+	content, _, diags := block.Body.PartialContent(&hcl.BodySchema{
 		Attributes: []hcl.AttributeSchema{
 			{
 				Name: "default",
