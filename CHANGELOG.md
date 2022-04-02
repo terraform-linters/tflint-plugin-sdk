@@ -1,3 +1,9 @@
+## 0.10.1 (2022-04-02)
+
+### BugFixes
+
+- [#153](https://github.com/terraform-linters/tflint-plugin-sdk/pull/153): helper: Skip un-used variable block attributes
+
 ## 0.10.0 (2022-03-27)
 
 This release contains a major update to the plugin system. Previously, this SDK uses traditional net/rpc + gob, but now it uses gRPC + Protocol Buffers.
