@@ -32,7 +32,7 @@ type Server interface {
 	GetFile(string) (*hcl.File, error)
 	// For performance, GetFiles returns map[string][]bytes instead of map[string]*hcl.File.
 	GetFiles(tflint.ModuleCtxType) map[string][]byte
-	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
+	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
 }
@@ -89,18 +89,18 @@ func (s *GRPCServer) GetRuleConfigContent(ctx context.Context, req *proto.GetRul
 		return nil, status.Error(codes.InvalidArgument, "schema should not be null")
 	}
 
-	body, file, err := s.Impl.GetRuleConfigContent(req.Name, fromproto.BodySchema(req.Schema))
+	body, sources, err := s.Impl.GetRuleConfigContent(req.Name, fromproto.BodySchema(req.Schema))
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 	if body == nil {
 		return nil, status.Error(codes.FailedPrecondition, "response body is empty")
 	}
-	if file == nil {
+	if len(sources) == 0 {
 		return nil, status.Error(codes.NotFound, "config file not found")
 	}
 
-	content := toproto.BodyContent(body, map[string][]byte{file.Body.MissingItemRange().Filename: file.Bytes})
+	content := toproto.BodyContent(body, sources)
 	return &proto.GetRuleConfigContent_Response{Content: content}, nil
 }
 
