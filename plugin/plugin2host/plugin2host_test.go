@@ -37,7 +37,7 @@ type mockServerImpl struct {
 	getModuleContent     func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	getFile              func(string) (*hcl.File, error)
 	getFiles             func() map[string][]byte
-	getRuleConfigContent func(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
+	getRuleConfigContent func(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	evaluateExpr         func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	emitIssue            func(tflint.Rule, string, hcl.Range) error
 }
@@ -67,11 +67,11 @@ func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string][]byte {
 	return map[string][]byte{}
 }
 
-func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
+func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
 	if s.impl.getRuleConfigContent != nil {
 		return s.impl.getRuleConfigContent(name, schema)
 	}
-	return &hclext.BodyContent{}, &hcl.File{}, nil
+	return &hclext.BodyContent{}, map[string][]byte{}, nil
 }
 
 func (s *mockServer) EvaluateExpr(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
@@ -763,7 +763,7 @@ func TestDecodeRuleConfig(t *testing.T) {
 		Name       string
 		RuleName   string
 		Target     interface{}
-		ServerImpl func(string, *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error)
+		ServerImpl func(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 		Want       interface{}
 		ErrCheck   func(error) bool
 	}{
@@ -771,27 +771,35 @@ func TestDecodeRuleConfig(t *testing.T) {
 			Name:     "decode to struct",
 			RuleName: "test_rule",
 			Target:   &ruleConfig{},
-			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
+			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
 				if name != "test_rule" {
-					return &hclext.BodyContent{}, &hcl.File{}, errors.New("unexpected file name")
+					return &hclext.BodyContent{}, map[string][]byte{}, errors.New("unexpected file name")
 				}
 
-				// Should return code inside of "rule" block
-				//
-				// rule "test_rule" {
-				//   name = "foo"
-				// }
-				code := `name = "foo"`
-				file, diags := hclsyntax.ParseConfig([]byte(code), ".tflint.hcl", hcl.InitialPos)
-				if diags.HasErrors() {
-					return &hclext.BodyContent{}, &hcl.File{}, diags
+				sources := map[string][]byte{
+					".tflint.hcl": []byte(`
+rule "test_rule" {
+	name = "foo"
+}`),
 				}
 
-				body, diags := hclext.Content(file.Body, schema)
+				file, diags := hclsyntax.ParseConfig(sources[".tflint.hcl"], ".tflint.hcl", hcl.InitialPos)
 				if diags.HasErrors() {
-					return &hclext.BodyContent{}, &hcl.File{}, diags
+					return &hclext.BodyContent{}, sources, diags
 				}
-				return body, file, nil
+
+				content, diags := file.Body.Content(&hcl.BodySchema{
+					Blocks: []hcl.BlockHeaderSchema{{Type: "rule", LabelNames: []string{"name"}}},
+				})
+				if diags.HasErrors() {
+					return &hclext.BodyContent{}, sources, diags
+				}
+
+				body, diags := hclext.Content(content.Blocks[0].Body, schema)
+				if diags.HasErrors() {
+					return &hclext.BodyContent{}, sources, diags
+				}
+				return body, sources, nil
 			},
 			Want:     &ruleConfig{Name: "foo"},
 			ErrCheck: neverHappend,
@@ -800,8 +808,8 @@ func TestDecodeRuleConfig(t *testing.T) {
 			Name:     "server returns an error",
 			RuleName: "test_rule",
 			Target:   &ruleConfig{},
-			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
-				return nil, nil, errors.New("unexpected error")
+			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
+				return nil, map[string][]byte{}, errors.New("unexpected error")
 			},
 			Want: &ruleConfig{},
 			ErrCheck: func(err error) bool {
@@ -812,8 +820,8 @@ func TestDecodeRuleConfig(t *testing.T) {
 			Name:     "response body is empty",
 			RuleName: "test_rule",
 			Target:   &ruleConfig{},
-			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
-				return nil, nil, nil
+			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
+				return nil, map[string][]byte{}, nil
 			},
 			Want: &ruleConfig{},
 			ErrCheck: func(err error) bool {
@@ -824,7 +832,7 @@ func TestDecodeRuleConfig(t *testing.T) {
 			Name:     "config not found",
 			RuleName: "not_found",
 			Target:   &ruleConfig{},
-			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
+			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
 				return &hclext.BodyContent{}, nil, nil
 			},
 			Want: &ruleConfig{},

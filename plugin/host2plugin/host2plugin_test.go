@@ -474,8 +474,8 @@ func (s *mockServer) GetFile(filename string) (*hcl.File, error) {
 	return nil, nil
 }
 
-func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, *hcl.File, error) {
-	return &hclext.BodyContent{}, &hcl.File{}, nil
+func (s *mockServer) GetRuleConfigContent(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
+	return &hclext.BodyContent{}, map[string][]byte{}, nil
 }
 
 func (s *mockServer) EvaluateExpr(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
