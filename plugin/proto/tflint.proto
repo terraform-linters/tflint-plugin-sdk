@@ -93,6 +93,7 @@ message GetModuleContent {
     message Option {
         ModuleCtxType module_ctx = 1;
         Hint hint = 2;
+        bool include_not_created = 3;
     }
 
     message Request {

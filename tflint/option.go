@@ -17,6 +17,8 @@ const (
 type GetModuleContentOption struct {
 	// Specify the module to be acquired.
 	ModuleCtx ModuleCtxType
+	// Whether it includes resources that are not created, for example because count is 0 or unknown.
+	IncludeNotCreated bool
 	// Hint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
 	Hint GetModuleContentHint
 }

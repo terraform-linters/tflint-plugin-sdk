@@ -148,8 +148,9 @@ func GetModuleContentOption(opts *tflint.GetModuleContentOption) *proto.GetModul
 	}
 
 	return &proto.GetModuleContent_Option{
-		ModuleCtx: ModuleCtxType(opts.ModuleCtx),
-		Hint:      GetModuleContentHint(opts.Hint),
+		ModuleCtx:         ModuleCtxType(opts.ModuleCtx),
+		IncludeNotCreated: opts.IncludeNotCreated,
+		Hint:              GetModuleContentHint(opts.Hint),
 	}
 }
 
