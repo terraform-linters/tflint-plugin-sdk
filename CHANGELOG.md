@@ -1,3 +1,19 @@
+## 0.11.0 (2022-05-05)
+
+### Enhancements
+
+- [#160](https://github.com/terraform-linters/tflint-plugin-sdk/pull/160): tflint: Add IncludeNotCreated option to GetModuleContent
+
+### Chores
+
+- [#150](https://github.com/terraform-linters/tflint-plugin-sdk/pull/150): Bump google.golang.org/protobuf from 1.27.1 to 1.28.0
+- [#154](https://github.com/terraform-linters/tflint-plugin-sdk/pull/154): Bump actions/setup-go from 2 to 3
+- [#155](https://github.com/terraform-linters/tflint-plugin-sdk/pull/155): Bump google.golang.org/grpc from 1.45.0 to 1.46.0
+- [#156](https://github.com/terraform-linters/tflint-plugin-sdk/pull/156): Bump github.com/hashicorp/hcl/v2 from 2.11.1 to 2.12.0
+- [#157](https://github.com/terraform-linters/tflint-plugin-sdk/pull/157): plugin2host: Return sources instead of `*hcl.File` in GetRuleConfigContent
+- [#158](https://github.com/terraform-linters/tflint-plugin-sdk/pull/158): Bump github.com/google/go-cmp from 0.5.7 to 0.5.8
+- [#159](https://github.com/terraform-linters/tflint-plugin-sdk/pull/159): Bump github/codeql-action from 1 to 2
+
 ## 0.10.1 (2022-04-02)
 
 ### BugFixes
