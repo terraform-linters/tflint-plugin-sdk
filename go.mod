@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/go-plugin v1.4.3
 	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/zclconf/go-cty v1.10.0
-	google.golang.org/grpc v1.46.0
+	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
 
