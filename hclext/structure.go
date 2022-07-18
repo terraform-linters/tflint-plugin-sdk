@@ -158,6 +158,25 @@ func PartialContent(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagno
 	return ret, diags
 }
 
+// AsNative returns self as hcl.Attributes
+func (as Attributes) AsNative() hcl.Attributes {
+	ret := hcl.Attributes{}
+	for name, attr := range as {
+		ret[name] = attr.AsNative()
+	}
+	return ret
+}
+
+// AsNative returns self as hcl.Attribute
+func (a *Attribute) AsNative() *hcl.Attribute {
+	return &hcl.Attribute{
+		Name:      a.Name,
+		Expr:      a.Expr,
+		Range:     a.Range,
+		NameRange: a.NameRange,
+	}
+}
+
 // OfType filters the receiving block sequence by block type name,
 // returning a new block sequence including only the blocks of the
 // requested type.
