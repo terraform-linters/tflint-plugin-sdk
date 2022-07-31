@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc"
@@ -34,6 +35,7 @@ type mockServer struct {
 }
 
 type mockServerImpl struct {
+	getModulePath        func() []string
 	getModuleContent     func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	getFile              func(string) (*hcl.File, error)
 	getFiles             func() map[string][]byte
@@ -44,6 +46,13 @@ type mockServerImpl struct {
 
 func newMockServer(impl mockServerImpl) *mockServer {
 	return &mockServer{impl: impl}
+}
+
+func (s *mockServer) GetModulePath() []string {
+	if s.impl.getModulePath != nil {
+		return s.impl.getModulePath()
+	}
+	return []string{}
 }
 
 func (s *mockServer) GetModuleContent(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
@@ -90,6 +99,43 @@ func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Ra
 
 // @see https://github.com/google/go-cmp/issues/40
 var allowAllUnexported = cmp.Exporter(func(reflect.Type) bool { return true })
+
+func TestGetModulePath(t *testing.T) {
+	tests := []struct {
+		Name       string
+		ServerImpl func() []string
+		Want       addrs.Module
+	}{
+		{
+			Name: "get root module path",
+			ServerImpl: func() []string {
+				return []string{}
+			},
+			Want: nil,
+		},
+		{
+			Name: "get child module path",
+			ServerImpl: func() []string {
+				return []string{"child1", "child2"}
+			},
+			Want: []string{"child1", "child2"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{getModulePath: test.ServerImpl}))
+
+			got, err := client.GetModulePath()
+			if err != nil {
+				t.Fatalf("failed to call GetModulePath: %s", err)
+			}
+			if diff := cmp.Diff(got, test.Want); diff != "" {
+				t.Errorf("diff: %s", diff)
+			}
+		})
+	}
+}
 
 func TestGetResourceContent(t *testing.T) {
 	// default error check helper

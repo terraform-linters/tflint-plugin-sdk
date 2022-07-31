@@ -13,6 +13,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -26,6 +27,15 @@ type GRPCClient struct {
 }
 
 var _ tflint.Runner = &GRPCClient{}
+
+// GetModulePath gets the current module path address.
+func (c *GRPCClient) GetModulePath() (addrs.Module, error) {
+	resp, err := c.Client.GetModulePath(context.Background(), &proto.GetModulePath_Request{})
+	if err != nil {
+		return nil, fromproto.Error(err)
+	}
+	return resp.Path, err
+}
 
 // GetResourceContent gets the contents of resources based on the schema.
 // This is shorthand of GetModuleContent for resources

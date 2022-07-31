@@ -3,6 +3,7 @@ package tflint
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 )
 
 // RuleSet is a list of rules that a plugin should provide.
@@ -71,6 +72,9 @@ type RuleSet interface {
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
 // The actual implementation can be found in plugin/plugin2host.GRPCClient.
 type Runner interface {
+	// GetModulePath returns the current module path address.
+	GetModulePath() (addrs.Module, error)
+
 	// GetResourceContent retrieves the content of resources based on the passed schema.
 	// The schema allows you to specify attributes and blocks that describe the structure needed for the inspection:
 	//
