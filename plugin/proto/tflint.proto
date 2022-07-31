@@ -72,6 +72,7 @@ message Check {
 }
 
 service Runner {
+    rpc GetModulePath(GetModulePath.Request) returns (GetModulePath.Response);
     rpc GetModuleContent(GetModuleContent.Request) returns (GetModuleContent.Response);
     rpc GetFile(GetFile.Request) returns (GetFile.Response);
     rpc GetFiles(GetFiles.Request) returns (GetFiles.Response);
@@ -84,6 +85,13 @@ enum ModuleCtxType {
     MODULE_CTX_TYPE_UNSPECIFIED = 0;
     MODULE_CTX_TYPE_SELF = 1;
     MODULE_CTX_TYPE_ROOT = 2;
+}
+
+message GetModulePath {
+    message Request {}
+    message Response {
+        repeated string path = 1;
+    }
 }
 
 message GetModuleContent {

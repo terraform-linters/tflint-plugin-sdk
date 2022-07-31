@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/convert"
@@ -41,6 +42,11 @@ type RuleConfig struct {
 }
 
 var _ tflint.Runner = &Runner{}
+
+// GetModulePath always returns the root module path address
+func (r *Runner) GetModulePath() (addrs.Module, error) {
+	return []string{}, nil
+}
 
 // GetModuleContent gets a content of the current module
 func (r *Runner) GetModuleContent(schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {

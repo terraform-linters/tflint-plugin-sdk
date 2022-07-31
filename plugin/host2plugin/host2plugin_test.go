@@ -463,6 +463,10 @@ type mockServerImpl struct {
 	getFile func(string) (*hcl.File, error)
 }
 
+func (s *mockServer) GetModulePath() []string {
+	return []string{}
+}
+
 func (s *mockServer) GetModuleContent(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
 	return &hclext.BodyContent{}, hcl.Diagnostics{}
 }

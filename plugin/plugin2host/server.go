@@ -28,6 +28,7 @@ var _ proto.RunnerServer = &GRPCServer{}
 
 // Server is the interface that the host should implement when a plugin communicates with the host.
 type Server interface {
+	GetModulePath() []string
 	GetModuleContent(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	GetFile(string) (*hcl.File, error)
 	// For performance, GetFiles returns map[string][]bytes instead of map[string]*hcl.File.
@@ -35,6 +36,11 @@ type Server interface {
 	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
+}
+
+// GetModulePath gets the current module path address.
+func (s *GRPCServer) GetModulePath(ctx context.Context, req *proto.GetModulePath_Request) (*proto.GetModulePath_Response, error) {
+	return &proto.GetModulePath_Response{Path: s.Impl.GetModulePath()}, nil
 }
 
 // GetModuleContent gets the contents of the module based on the schema.
