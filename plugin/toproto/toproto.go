@@ -186,6 +186,8 @@ func Error(code codes.Code, err error) error {
 		errCode = proto.ErrorCode_ERROR_CODE_NULL_VALUE
 	} else if errors.Is(err, tflint.ErrUnevaluable) {
 		errCode = proto.ErrorCode_ERROR_CODE_UNEVALUABLE
+	} else if errors.Is(err, tflint.ErrSensitive) {
+		errCode = proto.ErrorCode_ERROR_CODE_SENSITIVE
 	}
 
 	if errCode == proto.ErrorCode_ERROR_CODE_UNSPECIFIED {

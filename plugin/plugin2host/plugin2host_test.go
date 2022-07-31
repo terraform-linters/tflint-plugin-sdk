@@ -1383,6 +1383,19 @@ func TestEvaluateExpr(t *testing.T) {
 				return !errors.Is(err, tflint.ErrUnevaluable)
 			},
 		},
+		{
+			Name:       "server returns a sensitive error",
+			Expr:       hclExpr(`1`),
+			TargetType: reflect.TypeOf(0),
+			ServerImpl: func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.Value{}, fmt.Errorf("sensitive%w", tflint.ErrSensitive)
+			},
+			Want:        0,
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrSensitive)
+			},
+		},
 	}
 
 	for _, test := range tests {

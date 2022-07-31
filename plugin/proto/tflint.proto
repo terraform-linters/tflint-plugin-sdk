@@ -231,6 +231,7 @@ enum ErrorCode {
     ERROR_CODE_UNKNOWN_VALUE = 1;
     ERROR_CODE_NULL_VALUE = 2;
     ERROR_CODE_UNEVALUABLE = 3;
+    ERROR_CODE_SENSITIVE = 4;
 }
 
 message ErrorDetail {

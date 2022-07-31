@@ -14,4 +14,6 @@ var (
 	ErrNullValue = errors.New("")
 	// ErrUnevaluable is an error when a received expression has unevaluable references.
 	ErrUnevaluable = errors.New("")
+	// ErrSensitive is an error when a received expression contains a sensitive value.
+	ErrSensitive = errors.New("")
 )
