@@ -91,8 +91,12 @@ type Runner interface {
 	// ```
 	GetResourceContent(resourceName string, schema *hclext.BodySchema, option *GetModuleContentOption) (*hclext.BodyContent, error)
 
+	// GetProviderContent retrieves the content of providers based on the passed schema.
+	// This method is GetResourceContent for providers.
+	GetProviderContent(providerName string, schema *hclext.BodySchema, option *GetModuleContentOption) (*hclext.BodyContent, error)
+
 	// GetModuleContent retrieves the content of the module based on the passed schema.
-	// GetResourceContent is syntactic sugar for GetModuleContent, which you can use to access structures other than resources.
+	// GetResourceContent/GetProviderContent are syntactic sugar for GetModuleContent, which you can use to access other structures.
 	GetModuleContent(schema *hclext.BodySchema, option *GetModuleContentOption) (*hclext.BodyContent, error)
 
 	// GetFile returns the hcl.File object.

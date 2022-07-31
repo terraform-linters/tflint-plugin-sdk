@@ -321,6 +321,103 @@ resource "aws_instance" "foo" {
 	}
 }
 
+func TestGetProviderContent(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+
+	// default getFileImpl function
+	files := map[string][]byte{}
+	fileExists := func() map[string][]byte {
+		return files
+	}
+
+	// test util functions
+	hclFile := func(filename string, code string) *hcl.File {
+		file, diags := hclsyntax.ParseConfig([]byte(code), filename, hcl.InitialPos)
+		if diags.HasErrors() {
+			panic(diags)
+		}
+		files[filename] = file.Bytes
+		return file
+	}
+
+	tests := []struct {
+		Name       string
+		Args       func() (string, *hclext.BodySchema, *tflint.GetModuleContentOption)
+		ServerImpl func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
+		Want       func(string, *hclext.BodySchema, *tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
+		ErrCheck   func(error) bool
+	}{
+		{
+			Name: "get HCL content",
+			Args: func() (string, *hclext.BodySchema, *tflint.GetModuleContentOption) {
+				return "aws", &hclext.BodySchema{
+					Attributes: []hclext.AttributeSchema{{Name: "region"}},
+				}, nil
+			},
+			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				file := hclFile("test.tf", `
+provider "aws" {
+  region = "us-east-1"
+}
+
+provider "google" {
+  region = "us-central1"
+}`)
+				return hclext.PartialContent(file.Body, schema)
+			},
+			Want: func(resource string, schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				// Removed "google" provider
+				file := hclFile("test.tf", `
+provider "aws" {
+  region = "us-east-1"
+}`)
+				return hclext.Content(file.Body, &hclext.BodySchema{
+					Blocks: []hclext.BlockSchema{
+						{
+							Type:       "provider",
+							LabelNames: []string{"name"},
+							Body: &hclext.BodySchema{
+								Attributes: []hclext.AttributeSchema{{Name: "region"}},
+							},
+						},
+					},
+				})
+			},
+			ErrCheck: neverHappend,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{getModuleContent: test.ServerImpl, getFiles: fileExists}))
+
+			got, err := client.GetProviderContent(test.Args())
+			if test.ErrCheck(err) {
+				t.Fatalf("failed to call GetProviderContent: %s", err)
+			}
+			want, diags := test.Want(test.Args())
+			if diags.HasErrors() {
+				t.Fatalf("failed to get want: %d diagsnotics", len(diags))
+				for _, diag := range diags {
+					t.Logf("  - %s", diag.Error())
+				}
+			}
+
+			opts := cmp.Options{
+				cmp.Comparer(func(x, y cty.Value) bool {
+					return x.GoString() == y.GoString()
+				}),
+				cmpopts.EquateEmpty(),
+				allowAllUnexported,
+			}
+			if diff := cmp.Diff(got, want, opts); diff != "" {
+				t.Errorf("diff: %s", diff)
+			}
+		})
+	}
+}
+
 func TestGetModuleContent(t *testing.T) {
 	// default error check helper
 	neverHappend := func(err error) bool { return err != nil }
