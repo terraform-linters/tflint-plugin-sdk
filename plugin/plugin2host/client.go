@@ -262,7 +262,7 @@ func (*GRPCClient) EnsureNoError(err error, proc func() error) error {
 		return proc()
 	}
 
-	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) {
+	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrSensitive) {
 		return nil
 	}
 	return err

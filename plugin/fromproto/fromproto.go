@@ -248,6 +248,8 @@ func Error(err error) error {
 			return fmt.Errorf("%s%w", st.Message(), tflint.ErrNullValue)
 		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
 			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnevaluable)
+		case proto.ErrorCode_ERROR_CODE_SENSITIVE:
+			return fmt.Errorf("%s%w", st.Message(), tflint.ErrSensitive)
 		}
 	}
 
