@@ -91,6 +91,29 @@ func (r *Runner) GetResourceContent(name string, schema *hclext.BodySchema, opts
 	return content, nil
 }
 
+// GetProviderContent gets a provider content of the current module
+func (r *Runner) GetProviderContent(name string, schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
+	body, err := r.GetModuleContent(&hclext.BodySchema{
+		Blocks: []hclext.BlockSchema{
+			{Type: "provider", LabelNames: []string{"name"}, Body: schema},
+		},
+	}, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
+	for _, provider := range body.Blocks {
+		if provider.Labels[0] != name {
+			continue
+		}
+
+		content.Blocks = append(content.Blocks, provider)
+	}
+
+	return content, nil
+}
+
 // GetFile returns the hcl.File object
 func (r *Runner) GetFile(filename string) (*hcl.File, error) {
 	return r.files[filename], nil

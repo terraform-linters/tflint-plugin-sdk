@@ -66,6 +66,34 @@ func (c *GRPCClient) GetResourceContent(name string, inner *hclext.BodySchema, o
 	return content, nil
 }
 
+// GetProviderContent gets the contents of providers based on the schema.
+// This is shorthand of GetModuleContent for providers
+func (c *GRPCClient) GetProviderContent(name string, inner *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
+	if opts == nil {
+		opts = &tflint.GetModuleContentOption{}
+	}
+
+	body, err := c.GetModuleContent(&hclext.BodySchema{
+		Blocks: []hclext.BlockSchema{
+			{Type: "provider", LabelNames: []string{"name"}, Body: inner},
+		},
+	}, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
+	for _, provider := range body.Blocks {
+		if provider.Labels[0] != name {
+			continue
+		}
+
+		content.Blocks = append(content.Blocks, provider)
+	}
+
+	return content, nil
+}
+
 // GetModuleContent gets the contents of the module based on the schema.
 func (c *GRPCClient) GetModuleContent(schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
 	if opts == nil {
