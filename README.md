@@ -11,7 +11,7 @@ NOTE: This plugin system is experimental. This means that API compatibility is f
 ## Requirements
 
 - TFLint v0.35+
-- Go v1.18
+- Go v1.19
 
 ## Usage
 
