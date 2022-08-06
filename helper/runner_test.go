@@ -247,6 +247,39 @@ terraform {
 	}
 }
 
+func Test_GetModuleContent_json(t *testing.T) {
+	files := map[string]string{
+		"main.tf.json": `{"variable": {"foo": {"type": "string"}}}`,
+	}
+
+	runner := TestRunner(t, files)
+
+	schema := &hclext.BodySchema{
+		Blocks: []hclext.BlockSchema{
+			{
+				Type: "variable",
+				Body: &hclext.BodySchema{
+					Blocks: []hclext.BlockSchema{
+						{
+							Type:       "type",
+							LabelNames: []string{"name"},
+							Body:       &hclext.BodySchema{},
+						},
+					},
+				},
+			},
+		},
+	}
+	got, err := runner.GetModuleContent(schema, nil)
+	if err != nil {
+		t.Error(err)
+	} else {
+		if len(got.Blocks) != 1 {
+			t.Errorf("got %d blocks, but 1 block is expected", len(got.Blocks))
+		}
+	}
+}
+
 func Test_EvaluateExpr(t *testing.T) {
 	tests := []struct {
 		Name string
