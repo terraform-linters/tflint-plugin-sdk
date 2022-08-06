@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -20,7 +21,13 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 	parser := hclparse.NewParser()
 
 	for name, src := range files {
-		file, diags := parser.ParseHCL([]byte(src), name)
+		var file *hcl.File
+		var diags hcl.Diagnostics
+		if strings.HasSuffix(name, ".json") {
+			file, diags = parser.ParseJSON([]byte(src), name)
+		} else {
+			file, diags = parser.ParseHCL([]byte(src), name)
+		}
 		if diags.HasErrors() {
 			t.Fatal(diags)
 		}
