@@ -158,6 +158,14 @@ func PartialContent(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagno
 	return ret, diags
 }
 
+// IsEmpty returns whether the body content is empty
+func (b *BodyContent) IsEmpty() bool {
+	if b == nil {
+		return true
+	}
+	return len(b.Attributes) == 0 && len(b.Blocks) == 0
+}
+
 // AsNative returns self as hcl.Attributes
 func (as Attributes) AsNative() hcl.Attributes {
 	ret := hcl.Attributes{}

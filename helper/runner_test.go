@@ -280,6 +280,46 @@ func Test_GetModuleContent_json(t *testing.T) {
 	}
 }
 
+func Test_DecodeRuleConfig(t *testing.T) {
+	files := map[string]string{
+		".tflint.hcl": `
+rule "test" {
+  enabled = true
+  foo     = "bar"
+}`,
+	}
+
+	runner := TestRunner(t, files)
+
+	type ruleConfig struct {
+		Foo string `hclext:"foo"`
+	}
+	target := &ruleConfig{}
+	if err := runner.DecodeRuleConfig("test", target); err != nil {
+		t.Fatal(err)
+	}
+
+	if target.Foo != "bar" {
+		t.Errorf("target.Foo should be `bar`, but got `%s`", target.Foo)
+	}
+}
+
+func Test_DecodeRuleConfig_config_not_found(t *testing.T) {
+	runner := TestRunner(t, map[string]string{})
+
+	type ruleConfig struct {
+		Foo string `hclext:"foo"`
+	}
+	target := &ruleConfig{}
+	if err := runner.DecodeRuleConfig("test", target); err != nil {
+		t.Fatal(err)
+	}
+
+	if target.Foo != "" {
+		t.Errorf("target.Foo should be empty, but got `%s`", target.Foo)
+	}
+}
+
 func Test_EvaluateExpr(t *testing.T) {
 	tests := []struct {
 		Name string
