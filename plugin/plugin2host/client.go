@@ -180,6 +180,10 @@ func (c *GRPCClient) DecodeRuleConfig(name string, ret interface{}) error {
 	if diags.HasErrors() {
 		return diags
 	}
+	if content.IsEmpty() {
+		return nil
+	}
+
 	diags = hclext.DecodeBody(content, nil, ret)
 	if diags.HasErrors() {
 		return diags

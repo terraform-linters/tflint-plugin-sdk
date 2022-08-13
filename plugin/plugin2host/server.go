@@ -102,7 +102,7 @@ func (s *GRPCServer) GetRuleConfigContent(ctx context.Context, req *proto.GetRul
 	if body == nil {
 		return nil, status.Error(codes.FailedPrecondition, "response body is empty")
 	}
-	if len(sources) == 0 {
+	if len(sources) == 0 && !body.IsEmpty() {
 		return nil, status.Error(codes.NotFound, "config file not found")
 	}
 

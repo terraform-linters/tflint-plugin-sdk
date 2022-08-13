@@ -984,6 +984,16 @@ rule "test_rule" {
 			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
 				return &hclext.BodyContent{}, nil, nil
 			},
+			Want:     &ruleConfig{},
+			ErrCheck: neverHappend,
+		},
+		{
+			Name:     "config not found with non-empty config",
+			RuleName: "not_found",
+			Target:   &ruleConfig{},
+			ServerImpl: func(name string, schema *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error) {
+				return &hclext.BodyContent{Attributes: hclext.Attributes{"foo": &hclext.Attribute{}}}, nil, nil
+			},
 			Want: &ruleConfig{},
 			ErrCheck: func(err error) bool {
 				return err == nil || err.Error() != "config file not found"

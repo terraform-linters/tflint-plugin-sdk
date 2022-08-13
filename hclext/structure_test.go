@@ -695,3 +695,44 @@ func TestContent_PartialContent(t *testing.T) {
 		})
 	}
 }
+
+func Test_IsEmpty(t *testing.T) {
+	tests := []struct {
+		name string
+		body *BodyContent
+		want bool
+	}{
+		{
+			name: "body is not empty",
+			body: &BodyContent{
+				Attributes: Attributes{
+					"foo": &Attribute{Name: "foo"},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "body has empty attributes and empty blocks",
+			body: &BodyContent{Attributes: Attributes{}, Blocks: Blocks{}},
+			want: true,
+		},
+		{
+			name: "body has nil attributes and nil blocks",
+			body: &BodyContent{},
+			want: true,
+		},
+		{
+			name: "body is nil",
+			body: nil,
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.body.IsEmpty() != test.want {
+				t.Errorf("%t is expected, but got %t", test.want, test.body.IsEmpty())
+			}
+		})
+	}
+}

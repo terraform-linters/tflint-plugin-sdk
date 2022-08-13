@@ -141,7 +141,7 @@ func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
 		}
 	}
 
-	return fmt.Errorf("rule `%s` not found", name)
+	return nil
 }
 
 // EvaluateExpr returns a value of the passed expression.
