@@ -3,6 +3,7 @@ package tflint
 import "github.com/zclconf/go-cty/cty"
 
 // ModuleCtxType represents target module.
+//
 //go:generate stringer -type=ModuleCtxType
 type ModuleCtxType int32
 
