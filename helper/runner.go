@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
@@ -122,6 +123,52 @@ func (r *Runner) GetFile(filename string) (*hcl.File, error) {
 // GetFiles returns all hcl.File
 func (r *Runner) GetFiles() (map[string]*hcl.File, error) {
 	return r.files, nil
+}
+
+type nativeWalker struct {
+	walker tflint.ExprWalker
+}
+
+func (w *nativeWalker) Enter(node hclsyntax.Node) hcl.Diagnostics {
+	if expr, ok := node.(hcl.Expression); ok {
+		return w.walker.Enter(expr)
+	}
+	return nil
+}
+
+func (w *nativeWalker) Exit(node hclsyntax.Node) hcl.Diagnostics {
+	if expr, ok := node.(hcl.Expression); ok {
+		return w.walker.Exit(expr)
+	}
+	return nil
+}
+
+// WalkExpressions traverses expressions in all files by the passed walker.
+func (r *Runner) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
+	diags := hcl.Diagnostics{}
+	for _, file := range r.files {
+		if body, ok := file.Body.(*hclsyntax.Body); ok {
+			walkDiags := hclsyntax.Walk(body, &nativeWalker{walker: walker})
+			diags = diags.Extend(walkDiags)
+			continue
+		}
+
+		// In JSON syntax, everything can be walked as an attribute.
+		attrs, jsonDiags := file.Body.JustAttributes()
+		if jsonDiags.HasErrors() {
+			diags = diags.Extend(jsonDiags)
+			continue
+		}
+
+		for _, attr := range attrs {
+			enterDiags := walker.Enter(attr.Expr)
+			diags = diags.Extend(enterDiags)
+			exitDiags := walker.Exit(attr.Expr)
+			diags = diags.Extend(exitDiags)
+		}
+	}
+
+	return diags
 }
 
 // DecodeRuleConfig extracts the rule's configuration into the given value

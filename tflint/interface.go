@@ -108,6 +108,28 @@ type Runner interface {
 	// This is low level API for accessing information such as comments and syntax.
 	GetFiles() (map[string]*hcl.File, error)
 
+	// WalkExpressions traverses expressions in all files by the passed walker.
+	// The walker can be passed any structure that satisfies the `tflint.ExprWalker`
+	// interface, or a `tflint.ExprWalkFunc`. Example of passing function:
+	//
+	// ```
+	// runner.WalkExpressions(tflint.ExprWalkFunc(func (expr hcl.Expression) hcl.Diagnostics {
+	//   // Write code here
+	// }))
+	// ```
+	//
+	// If you pass ExprWalkFunc, the function will be called for every expression.
+	// Note that it behaves differently in native HCL syntax and JSON syntax.
+	//
+	// In the HCL syntax, `var.foo` and `var.bar` in `[var.foo, var.bar]` are
+	// also passed to the walker. In other words, it traverses expressions recursively.
+	// To avoid redundant checks, the walker should check the kind of expression.
+	//
+	// In the JSON syntax, only an expression of an attribute seen from the top
+	// level of the file is passed. In other words, it doesn't traverse expressions
+	// recursively. This is a limitation of JSON syntax.
+	WalkExpressions(walker ExprWalker) hcl.Diagnostics
+
 	// DecodeRuleConfig fetches the rule's configuration and reflects the result in the 2nd argument.
 	// The argument is expected to be a pointer to a structure tagged with hclext:
 	//
