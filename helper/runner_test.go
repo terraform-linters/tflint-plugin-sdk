@@ -280,6 +280,221 @@ func Test_GetModuleContent_json(t *testing.T) {
 	}
 }
 
+func TestWalkExpressions(t *testing.T) {
+	tests := []struct {
+		name   string
+		files  map[string]string
+		walked []hcl.Range
+	}{
+		{
+			name: "resource",
+			files: map[string]string{
+				"resource.tf": `
+resource "null_resource" "test" {
+  key = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 9}, End: hcl.Pos{Line: 3, Column: 14}},
+				{Start: hcl.Pos{Line: 3, Column: 10}, End: hcl.Pos{Line: 3, Column: 13}},
+			},
+		},
+		{
+			name: "data source",
+			files: map[string]string{
+				"data.tf": `
+data "null_dataresource" "test" {
+  key = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 9}, End: hcl.Pos{Line: 3, Column: 14}},
+				{Start: hcl.Pos{Line: 3, Column: 10}, End: hcl.Pos{Line: 3, Column: 13}},
+			},
+		},
+		{
+			name: "module call",
+			files: map[string]string{
+				"module.tf": `
+module "m" {
+  source = "./module"
+  key    = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 12}, End: hcl.Pos{Line: 3, Column: 22}},
+				{Start: hcl.Pos{Line: 3, Column: 13}, End: hcl.Pos{Line: 3, Column: 21}},
+				{Start: hcl.Pos{Line: 4, Column: 12}, End: hcl.Pos{Line: 4, Column: 17}},
+				{Start: hcl.Pos{Line: 4, Column: 13}, End: hcl.Pos{Line: 4, Column: 16}},
+			},
+		},
+		{
+			name: "provider config",
+			files: map[string]string{
+				"provider.tf": `
+provider "p" {
+  key = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 9}, End: hcl.Pos{Line: 3, Column: 14}},
+				{Start: hcl.Pos{Line: 3, Column: 10}, End: hcl.Pos{Line: 3, Column: 13}},
+			},
+		},
+		{
+			name: "locals",
+			files: map[string]string{
+				"locals.tf": `
+locals {
+  key = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 9}, End: hcl.Pos{Line: 3, Column: 14}},
+				{Start: hcl.Pos{Line: 3, Column: 10}, End: hcl.Pos{Line: 3, Column: 13}},
+			},
+		},
+		{
+			name: "output",
+			files: map[string]string{
+				"output.tf": `
+output "o" {
+  value = "foo"
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 11}, End: hcl.Pos{Line: 3, Column: 16}},
+				{Start: hcl.Pos{Line: 3, Column: 12}, End: hcl.Pos{Line: 3, Column: 15}},
+			},
+		},
+		{
+			name: "resource with block",
+			files: map[string]string{
+				"resource.tf": `
+resource "null_resource" "test" {
+  key = "foo"
+
+  lifecycle {
+    ignore_changes = [key]
+  }
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 9}, End: hcl.Pos{Line: 3, Column: 14}},
+				{Start: hcl.Pos{Line: 3, Column: 10}, End: hcl.Pos{Line: 3, Column: 13}},
+				{Start: hcl.Pos{Line: 6, Column: 22}, End: hcl.Pos{Line: 6, Column: 27}},
+				{Start: hcl.Pos{Line: 6, Column: 23}, End: hcl.Pos{Line: 6, Column: 26}},
+			},
+		},
+		{
+			name: "resource json",
+			files: map[string]string{
+				"resource.tf.json": `
+{
+  "resource": {
+    "null_resource": {
+      "test": {
+        "key": "foo",
+        "nested": {
+          "key": "foo"
+        },
+        "list": [{
+          "key": "foo"
+        }]
+      }
+    }
+  }
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 15}, End: hcl.Pos{Line: 15, Column: 4}},
+			},
+		},
+		{
+			name: "multiple files",
+			files: map[string]string{
+				"main.tf": `
+provider "aws" {
+  region = "us-east-1"
+
+  assume_role {
+    role_arn = "arn:aws:iam::123412341234:role/ExampleRole"
+  }
+}`,
+				"main_override.tf": `
+provider "aws" {
+  region = "us-east-1"
+
+  assume_role {
+    role_arn = null
+  }
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 12}, End: hcl.Pos{Line: 3, Column: 23}, Filename: "main.tf"},
+				{Start: hcl.Pos{Line: 3, Column: 13}, End: hcl.Pos{Line: 3, Column: 22}, Filename: "main.tf"},
+				{Start: hcl.Pos{Line: 6, Column: 16}, End: hcl.Pos{Line: 6, Column: 60}, Filename: "main.tf"},
+				{Start: hcl.Pos{Line: 6, Column: 17}, End: hcl.Pos{Line: 6, Column: 59}, Filename: "main.tf"},
+				{Start: hcl.Pos{Line: 3, Column: 12}, End: hcl.Pos{Line: 3, Column: 23}, Filename: "main_override.tf"},
+				{Start: hcl.Pos{Line: 3, Column: 13}, End: hcl.Pos{Line: 3, Column: 22}, Filename: "main_override.tf"},
+				{Start: hcl.Pos{Line: 6, Column: 16}, End: hcl.Pos{Line: 6, Column: 20}, Filename: "main_override.tf"},
+			},
+		},
+		{
+			name: "nested attributes",
+			files: map[string]string{
+				"data.tf": `
+data "terraform_remote_state" "remote_state" {
+  backend = "remote"
+
+  config = {
+    organization = "Organization"
+    workspaces = {
+      name = "${var.environment}"
+    }
+  }
+}`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 13}, End: hcl.Pos{Line: 3, Column: 21}},
+				{Start: hcl.Pos{Line: 3, Column: 14}, End: hcl.Pos{Line: 3, Column: 20}},
+				{Start: hcl.Pos{Line: 5, Column: 12}, End: hcl.Pos{Line: 10, Column: 4}},
+				{Start: hcl.Pos{Line: 6, Column: 5}, End: hcl.Pos{Line: 6, Column: 17}},
+				{Start: hcl.Pos{Line: 6, Column: 20}, End: hcl.Pos{Line: 6, Column: 34}},
+				{Start: hcl.Pos{Line: 6, Column: 21}, End: hcl.Pos{Line: 6, Column: 33}},
+				{Start: hcl.Pos{Line: 7, Column: 5}, End: hcl.Pos{Line: 7, Column: 15}},
+				{Start: hcl.Pos{Line: 7, Column: 18}, End: hcl.Pos{Line: 9, Column: 6}},
+				{Start: hcl.Pos{Line: 8, Column: 7}, End: hcl.Pos{Line: 8, Column: 11}},
+				{Start: hcl.Pos{Line: 8, Column: 14}, End: hcl.Pos{Line: 8, Column: 34}},
+				{Start: hcl.Pos{Line: 8, Column: 17}, End: hcl.Pos{Line: 8, Column: 32}},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			runner := TestRunner(t, test.files)
+
+			walked := []hcl.Range{}
+			diags := runner.WalkExpressions(tflint.ExprWalkFunc(func(expr hcl.Expression) hcl.Diagnostics {
+				walked = append(walked, expr.Range())
+				return nil
+			}))
+			if diags.HasErrors() {
+				t.Fatal(diags)
+			}
+			opts := cmp.Options{
+				cmpopts.IgnoreFields(hcl.Range{}, "Filename"),
+				cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+				cmpopts.SortSlices(func(x, y hcl.Range) bool { return x.String() > y.String() }),
+			}
+			if diff := cmp.Diff(walked, test.walked, opts); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
 func Test_DecodeRuleConfig(t *testing.T) {
 	files := map[string]string{
 		".tflint.hcl": `

@@ -165,6 +165,72 @@ func (c *GRPCClient) GetFiles() (map[string]*hcl.File, error) {
 	return files, nil
 }
 
+type nativeWalker struct {
+	walker tflint.ExprWalker
+}
+
+func (w *nativeWalker) Enter(node hclsyntax.Node) hcl.Diagnostics {
+	if expr, ok := node.(hcl.Expression); ok {
+		return w.walker.Enter(expr)
+	}
+	return nil
+}
+
+func (w *nativeWalker) Exit(node hclsyntax.Node) hcl.Diagnostics {
+	if expr, ok := node.(hcl.Expression); ok {
+		return w.walker.Exit(expr)
+	}
+	return nil
+}
+
+// WalkExpressions traverses expressions in all files by the passed walker.
+// Note that it behaves differently in native HCL syntax and JSON syntax.
+//
+// In the HCL syntax, `var.foo` and `var.bar` in `[var.foo, var.bar]` are
+// also passed to the walker. In other words, it traverses expressions recursively.
+// To avoid redundant checks, the walker should check the kind of expression.
+//
+// In the JSON syntax, only an expression of an attribute seen from the top
+// level of the file is passed. In other words, it doesn't traverse expressions
+// recursively. This is a limitation of JSON syntax.
+func (c *GRPCClient) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
+	files, err := c.GetFiles()
+	if err != nil {
+		return hcl.Diagnostics{
+			{
+				Severity: hcl.DiagError,
+				Summary:  "failed to call GetFiles()",
+				Detail:   err.Error(),
+			},
+		}
+	}
+
+	diags := hcl.Diagnostics{}
+	for _, file := range files {
+		if body, ok := file.Body.(*hclsyntax.Body); ok {
+			walkDiags := hclsyntax.Walk(body, &nativeWalker{walker: walker})
+			diags = diags.Extend(walkDiags)
+			continue
+		}
+
+		// In JSON syntax, everything can be walked as an attribute.
+		attrs, jsonDiags := file.Body.JustAttributes()
+		if jsonDiags.HasErrors() {
+			diags = diags.Extend(jsonDiags)
+			continue
+		}
+
+		for _, attr := range attrs {
+			enterDiags := walker.Enter(attr.Expr)
+			diags = diags.Extend(enterDiags)
+			exitDiags := walker.Exit(attr.Expr)
+			diags = diags.Extend(exitDiags)
+		}
+	}
+
+	return diags
+}
+
 // DecodeRuleConfig guesses the schema of the rule config from the passed interface and sends the schema to GRPC server.
 // Content retrieved based on the schema is decoded into the passed interface.
 func (c *GRPCClient) DecodeRuleConfig(name string, ret interface{}) error {
