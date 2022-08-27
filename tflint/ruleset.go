@@ -77,28 +77,6 @@ func (r *BuiltinRuleSet) ApplyConfig(content *hclext.BodyContent) error {
 	return nil
 }
 
-// ApplyCommonConfig reflects common configurations regardless of plugins.
-func (r *BuiltinRuleSet) ApplyCommonConfig(config *Config) {
-	r.EnabledRules = []Rule{}
-
-	if config.DisabledByDefault {
-		log.Printf("[DEBUG] Only mode is enabled. Ignoring default plugin rules")
-	}
-
-	for _, rule := range r.Rules {
-		enabled := rule.Enabled()
-		if cfg := config.Rules[rule.Name()]; cfg != nil {
-			enabled = cfg.Enabled
-		} else if config.DisabledByDefault {
-			enabled = false
-		}
-
-		if enabled {
-			r.EnabledRules = append(r.EnabledRules, rule)
-		}
-	}
-}
-
 // Check runs inspection for each rule by applying Runner.
 func (r *BuiltinRuleSet) Check(runner Runner) error {
 	for _, rule := range r.EnabledRules {
