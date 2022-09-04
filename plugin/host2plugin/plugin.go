@@ -11,7 +11,7 @@ import (
 
 // handShakeConfig is used for UX. ProcotolVersion will be updated by incompatible changes.
 var handshakeConfig = plugin.HandshakeConfig{
-	ProtocolVersion:  10,
+	ProtocolVersion:  11,
 	MagicCookieKey:   "TFLINT_RULESET_PLUGIN",
 	MagicCookieValue: "5adSn1bX8nrDfgBqiAqqEkC6OE1h3iD8SqbMc5UUONx8x3xCF0KlPDsBRNDjoYDP",
 }
