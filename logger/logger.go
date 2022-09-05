@@ -6,6 +6,12 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
+// internalLogger is intended to be called via the public methods of the package.
+// So the output line will be the caller of this package.
+var internalLogger hclog.Logger
+
+// logger is inteded to be called directly.
+// It is mainly assumed to be used by go-plugin.
 var logger hclog.Logger
 
 // Use the init process to set the global logger.
@@ -18,56 +24,62 @@ func init() {
 		level = "off"
 	}
 
-	logger = hclog.New(&hclog.LoggerOptions{
+	internalLogger = hclog.New(&hclog.LoggerOptions{
 		Level:                    hclog.LevelFromString(level),
 		Output:                   os.Stderr,
 		TimeFormat:               "15:04:05",
 		IncludeLocation:          true,
 		AdditionalLocationOffset: 1,
 	})
+	logger = hclog.New(&hclog.LoggerOptions{
+		Level:           hclog.LevelFromString(level),
+		Output:          os.Stderr,
+		TimeFormat:      "15:04:05",
+		IncludeLocation: true,
+	})
 }
 
-// Logger returns hcl.Logger as it is
+// Logger returns hcl.Logger
 func Logger() hclog.Logger {
 	return logger
 }
 
 // Trace emits a message at the TRACE level
 func Trace(msg string, args ...interface{}) {
-	if logger == nil {
+	if internalLogger == nil {
 		return
 	}
-	logger.Trace(msg, args...)
+	internalLogger.Trace(msg, args...)
 }
 
 // Debug emits a message at the DEBUG level
 func Debug(msg string, args ...interface{}) {
-	if logger == nil {
+	if internalLogger == nil {
 		return
 	}
-	logger.Debug(msg, args...)
+	internalLogger.Debug(msg, args...)
 }
 
 // Info emits a message at the INFO level
 func Info(msg string, args ...interface{}) {
-	if logger == nil {
+	if internalLogger == nil {
 		return
 	}
-	logger.Info(msg, args...)
+	internalLogger.Info(msg, args...)
 }
 
 // Warn emits a message at the WARN level
 func Warn(msg string, args ...interface{}) {
-	if logger == nil {
+	if internalLogger == nil {
 		return
 	}
-	logger.Warn(msg, args...)
+	internalLogger.Warn(msg, args...)
 }
 
 // Error emits a message at the ERROR level
 func Error(msg string, args ...interface{}) {
-	if logger == nil {
+	if internalLogger == nil {
 		return
 	}
-	logger.Error(msg, args...)
+	internalLogger.Error(msg, args...)
 }
