@@ -1,3 +1,43 @@
+## 0.12.0 (2022-09-07)
+
+This release adds `GetModulePath()` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.40+.
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/62 for an example of upgrading the SDK.
+
+### Breaking Changes
+
+- [#171](https://github.com/terraform-linters/tflint-plugin-sdk/pull/171): Add GetModulePath method
+- [#188](https://github.com/terraform-linters/tflint-plugin-sdk/pull/188): Bump protocol version
+
+### Enhancements
+
+- [#169](https://github.com/terraform-linters/tflint-plugin-sdk/pull/169): hclext: Add hclext.Blocks's OfType helper
+- [#170](https://github.com/terraform-linters/tflint-plugin-sdk/pull/170): hclext: Add AsNative helper
+- [#172](https://github.com/terraform-linters/tflint-plugin-sdk/pull/172): tflint: Add GetProviderContent helper
+- [#174](https://github.com/terraform-linters/tflint-plugin-sdk/pull/174): tflint: Add tflint.ErrSensitive
+- [#177](https://github.com/terraform-linters/tflint-plugin-sdk/pull/177): helper: Add support for JSON syntax in TestRunner
+- [#178](https://github.com/terraform-linters/tflint-plugin-sdk/pull/178): Allow calling DecodeRuleConfig without rule config
+- [#180](https://github.com/terraform-linters/tflint-plugin-sdk/pull/180): terraform: Add `lang.ReferencesInExpr`
+- [#181](https://github.com/terraform-linters/tflint-plugin-sdk/pull/181): tflint: Add WalkExpressions function
+
+### BugFixes
+
+- [#190](https://github.com/terraform-linters/tflint-plugin-sdk/pull/190): logger: Do not set location offset in go-plugin
+
+### Chores
+
+- [#161](https://github.com/terraform-linters/tflint-plugin-sdk/pull/161) [#182](https://github.com/terraform-linters/tflint-plugin-sdk/pull/182): Bump github.com/hashicorp/go-plugin from 1.4.3 to 1.4.5
+- [#166](https://github.com/terraform-linters/tflint-plugin-sdk/pull/166) [#194](https://github.com/terraform-linters/tflint-plugin-sdk/pull/194): Bump github.com/hashicorp/hcl/v2 from 2.12.0 to 2.14.0
+- [#168](https://github.com/terraform-linters/tflint-plugin-sdk/pull/168) [#187](https://github.com/terraform-linters/tflint-plugin-sdk/pull/187): Bump google.golang.org/grpc from 1.46.0 to 1.49.0
+- [#173](https://github.com/terraform-linters/tflint-plugin-sdk/pull/173) [#195](https://github.com/terraform-linters/tflint-plugin-sdk/pull/195): Bump github.com/hashicorp/go-hclog from 1.2.0 to 1.3.0
+- [#175](https://github.com/terraform-linters/tflint-plugin-sdk/pull/175): Bump google.golang.org/protobuf from 1.28.0 to 1.28.1
+- [#176](https://github.com/terraform-linters/tflint-plugin-sdk/pull/176): build: go 1.19
+- [#179](https://github.com/terraform-linters/tflint-plugin-sdk/pull/179): build: Use `go-version-file` instead of `go-version`
+- [#183](https://github.com/terraform-linters/tflint-plugin-sdk/pull/183): Bump golang.org/x/tools from 0.1.11 to 0.1.12
+- [#184](https://github.com/terraform-linters/tflint-plugin-sdk/pull/184): Bump github.com/go-test/deep from 1.0.3 to 1.0.8
+- [#185](https://github.com/terraform-linters/tflint-plugin-sdk/pull/185): Remove unused ruleset function
+- [#186](https://github.com/terraform-linters/tflint-plugin-sdk/pull/186): Bump github.com/zclconf/go-cty from 1.10.0 to 1.11.0
+
 ## 0.11.0 (2022-05-05)
 
 ### Enhancements
