@@ -45,6 +45,7 @@ message ApplyGlobalConfig {
     message Config {
         map<string, RuleConfig> rules = 1;
         bool disabled_by_default = 2;
+        repeated string only = 3;
     }
     message RuleConfig {
         string name = 1;

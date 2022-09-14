@@ -299,6 +299,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 					"test2": {Name: "test2", Enabled: false},
 				},
 				DisabledByDefault: true,
+				Only:              []string{"test_rule1", "test_rule2"},
 			},
 			ServerImpl: func(config *tflint.Config) error {
 				want := &tflint.Config{
@@ -307,6 +308,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 						"test2": {Name: "test2", Enabled: false},
 					},
 					DisabledByDefault: true,
+					Only:              []string{"test_rule1", "test_rule2"},
 				}
 
 				if diff := cmp.Diff(config, want); diff != "" {

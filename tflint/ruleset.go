@@ -2,9 +2,9 @@ package tflint
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 )
 
 var _ RuleSet = &BuiltinRuleSet{}
@@ -42,16 +42,30 @@ func (r *BuiltinRuleSet) RuleNames() []string {
 // ApplyGlobalConfig applies the common config to the ruleset.
 // This is not supposed to be overridden from custom rulesets.
 // Override the ApplyConfig if you want to apply the plugin's own configuration.
+//
+// The priority of rule configs is as follows:
+//
+// 1. --only option
+// 2. Rule config declared in each "rule" block
+// 3. The `disabled_by_default` declared in global "config" block
 func (r *BuiltinRuleSet) ApplyGlobalConfig(config *Config) error {
 	r.EnabledRules = []Rule{}
+	only := map[string]bool{}
 
-	if config.DisabledByDefault {
-		log.Printf("[DEBUG] Only mode is enabled. Ignoring default plugin rules")
+	if len(config.Only) > 0 {
+		logger.Debug("Only mode is enabled. Ignoring default plugin rules")
+		for _, rule := range config.Only {
+			only[rule] = true
+		}
+	} else if config.DisabledByDefault {
+		logger.Debug("Default plugin rules are disabled by default")
 	}
 
 	for _, rule := range r.Rules {
 		enabled := rule.Enabled()
-		if cfg := config.Rules[rule.Name()]; cfg != nil {
+		if len(only) > 0 {
+			enabled = only[rule.Name()]
+		} else if cfg := config.Rules[rule.Name()]; cfg != nil {
 			enabled = cfg.Enabled
 		} else if config.DisabledByDefault {
 			enabled = false

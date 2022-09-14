@@ -4,6 +4,7 @@ package tflint
 type Config struct {
 	Rules             map[string]*RuleConfig
 	DisabledByDefault bool
+	Only              []string
 }
 
 // RuleConfig is a TFLint's rule configuration.
