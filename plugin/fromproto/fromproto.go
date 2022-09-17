@@ -180,7 +180,11 @@ func Config(config *proto.ApplyGlobalConfig_Config) *tflint.Config {
 	for name, rule := range config.Rules {
 		rules[name] = &tflint.RuleConfig{Name: rule.Name, Enabled: rule.Enabled}
 	}
-	return &tflint.Config{Rules: rules, DisabledByDefault: config.DisabledByDefault}
+	return &tflint.Config{
+		Rules:             rules,
+		DisabledByDefault: config.DisabledByDefault,
+		Only:              config.Only,
+	}
 }
 
 // GetModuleContentOption converts proto.GetModuleContent_Option to tflint.GetModuleContentOption
