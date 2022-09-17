@@ -1,3 +1,14 @@
+## 0.13.0 (2022-09-17)
+
+### Enhancements
+
+- [#198](https://github.com/terraform-linters/tflint-plugin-sdk/pull/198): host2plugin: Allow ruleset to accept Only option
+  - This change is necessary due to a priority bug with the `--only` option. Most plugins are unaffected by this change.
+
+### Chores
+
+- [#197](https://github.com/terraform-linters/tflint-plugin-sdk/pull/197): Bump github.com/google/go-cmp from 0.5.8 to 0.5.9
+
 ## 0.12.0 (2022-09-07)
 
 This release adds `GetModulePath()` API. This is a breaking change and all plugins need to be built using this version in order to work with TFLint v0.40+.
