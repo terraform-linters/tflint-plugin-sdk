@@ -696,6 +696,127 @@ func TestContent_PartialContent(t *testing.T) {
 	}
 }
 
+func TestContent_JustAttributes(t *testing.T) {
+	tests := []struct {
+		Name      string
+		Body      *hclsyntax.Body
+		Schema    *BodySchema
+		Partial   bool
+		Want      *BodyContent
+		DiagCount int
+	}{
+		{
+			Name: "just attributes in the top level",
+			Body: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"foo": &hclsyntax.Attribute{Name: "foo"},
+					"bar": &hclsyntax.Attribute{Name: "bar"},
+					"baz": &hclsyntax.Attribute{Name: "baz"},
+				},
+			},
+			Schema: &BodySchema{Mode: SchemaJustAttributesMode},
+			Want: &BodyContent{
+				Attributes: Attributes{
+					"foo": &Attribute{Name: "foo"},
+					"bar": &Attribute{Name: "bar"},
+					"baz": &Attribute{Name: "baz"},
+				},
+				Blocks: Blocks{},
+			},
+		},
+		{
+			Name: "just attributes in nested blocks",
+			Body: &hclsyntax.Body{
+				Blocks: hclsyntax.Blocks{
+					&hclsyntax.Block{
+						Type: "bar",
+						Body: &hclsyntax.Body{
+							Attributes: hclsyntax.Attributes{
+								"foo": &hclsyntax.Attribute{Name: "foo"},
+								"bar": &hclsyntax.Attribute{Name: "bar"},
+								"baz": &hclsyntax.Attribute{Name: "baz"},
+							},
+						},
+					},
+				},
+			},
+			Schema: &BodySchema{
+				Blocks: []BlockSchema{
+					{
+						Type: "bar",
+						Body: &BodySchema{Mode: SchemaJustAttributesMode},
+					},
+				},
+			},
+			Want: &BodyContent{
+				Attributes: Attributes{},
+				Blocks: Blocks{
+					{
+						Type: "bar",
+						Body: &BodyContent{
+							Attributes: Attributes{
+								"foo": &Attribute{Name: "foo"},
+								"bar": &Attribute{Name: "bar"},
+								"baz": &Attribute{Name: "baz"},
+							},
+							Blocks: Blocks{},
+						},
+					},
+				},
+			},
+		},
+		{
+			Name: "just attributes in body with blocks",
+			Body: &hclsyntax.Body{
+				Attributes: hclsyntax.Attributes{
+					"foo": &hclsyntax.Attribute{Name: "foo"},
+					"bar": &hclsyntax.Attribute{Name: "bar"},
+					"baz": &hclsyntax.Attribute{Name: "baz"},
+				},
+				Blocks: hclsyntax.Blocks{
+					&hclsyntax.Block{
+						Type: "bar",
+						Body: &hclsyntax.Body{},
+					},
+				},
+			},
+			Schema: &BodySchema{Mode: SchemaJustAttributesMode},
+			Want: &BodyContent{
+				Attributes: Attributes{
+					"foo": &Attribute{Name: "foo"},
+					"bar": &Attribute{Name: "bar"},
+					"baz": &Attribute{Name: "baz"},
+				},
+				Blocks: Blocks{},
+			},
+			DiagCount: 1, // Unexpected "bar" block; Blocks are not allowed here.
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			var got *BodyContent
+			var diags hcl.Diagnostics
+			if test.Partial {
+				got, diags = PartialContent(test.Body, test.Schema)
+			} else {
+				got, diags = Content(test.Body, test.Schema)
+			}
+
+			if len(diags) != test.DiagCount {
+				t.Errorf("wrong number of diagnostics %d; want %d", len(diags), test.DiagCount)
+				for _, diag := range diags {
+					t.Logf(" - %s", diag.Error())
+				}
+			}
+
+			if diff := cmp.Diff(test.Want, got); diff != "" {
+				t.Errorf("wrong result\ndiff: %s", diff)
+			}
+		})
+	}
+}
+
 func Test_IsEmpty(t *testing.T) {
 	tests := []struct {
 		name string

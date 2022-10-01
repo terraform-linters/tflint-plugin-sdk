@@ -7,9 +7,23 @@ import (
 	"strings"
 )
 
+// SchemaMode controls how the body's schema is declared.
+//
+//go:generate stringer -type=SchemaMode
+type SchemaMode int32
+
+const (
+	// SchemaDefaultMode is a mode for explicitly declaring the structure of attributes and blocks.
+	SchemaDefaultMode SchemaMode = iota
+	// SchemaJustAttributesMode is the mode to extract body as attributes.
+	// In this mode you don't need to declare schema for attributes or blocks.
+	SchemaJustAttributesMode
+)
+
 // BodySchema represents the desired body.
 // This structure is designed to have attributes similar to hcl.BodySchema.
 type BodySchema struct {
+	Mode       SchemaMode
 	Attributes []AttributeSchema
 	Blocks     []BlockSchema
 }
