@@ -528,6 +528,25 @@ resource "aws_instance" "foo" {
 			ErrCheck: neverHappend,
 		},
 		{
+			Name: "get content as just attributes",
+			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
+				return &hclext.BodySchema{Mode: hclext.SchemaJustAttributesMode}, nil
+			},
+			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				file := hclFile("test.tf", `
+instance_type = "t2.micro"
+volume_size = 10`)
+				return hclext.Content(file.Body, schema)
+			},
+			Want: func(schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				file := hclFile("test.tf", `
+instance_type = "t2.micro"
+volume_size = 10`)
+				return hclext.Content(file.Body, schema)
+			},
+			ErrCheck: neverHappend,
+		},
+		{
 			Name: "get content with options",
 			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
 				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{
