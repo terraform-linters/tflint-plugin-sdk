@@ -179,6 +179,12 @@ message EmitIssue {
     message Response {}
 }
 
+enum SchemaMode {
+    SCHEMA_MODE_UNSPECIFIED = 0;
+    SCHEMA_MODE_DEFAULT = 1;
+    SCHEMA_MODE_JUST_ATTRIBUTES = 2;
+}
+
 message BodySchema {
     message Attribute {
         string name = 1;
@@ -192,6 +198,7 @@ message BodySchema {
 
     repeated Attribute attributes = 1;
     repeated Block blocks = 2;
+    SchemaMode Mode = 3;
 }
 
 message BodyContent {

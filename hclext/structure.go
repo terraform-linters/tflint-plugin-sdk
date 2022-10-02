@@ -1,6 +1,7 @@
 package hclext
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
@@ -71,7 +72,16 @@ func Content(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagnostics) 
 		childS[blockS.Type] = blockS.Body
 	}
 
-	content, diags := body.Content(hclS)
+	content := &hcl.BodyContent{}
+	var diags hcl.Diagnostics
+	switch schema.Mode {
+	case SchemaDefaultMode:
+		content, diags = body.Content(hclS)
+	case SchemaJustAttributesMode:
+		content.Attributes, diags = body.JustAttributes()
+	default:
+		panic(fmt.Sprintf("invalid SchemaMode: %s", schema.Mode))
+	}
 
 	ret := &BodyContent{
 		Attributes: Attributes{},
@@ -127,7 +137,16 @@ func PartialContent(body hcl.Body, schema *BodySchema) (*BodyContent, hcl.Diagno
 		childS[blockS.Type] = blockS.Body
 	}
 
-	content, _, diags := body.PartialContent(hclS)
+	content := &hcl.BodyContent{}
+	var diags hcl.Diagnostics
+	switch schema.Mode {
+	case SchemaDefaultMode:
+		content, _, diags = body.PartialContent(hclS)
+	case SchemaJustAttributesMode:
+		content.Attributes, diags = body.JustAttributes()
+	default:
+		panic(fmt.Sprintf("invalid SchemaMode: %s", schema.Mode))
+	}
 
 	ret := &BodyContent{
 		Attributes: Attributes{},

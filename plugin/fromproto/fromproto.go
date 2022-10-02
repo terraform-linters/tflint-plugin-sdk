@@ -32,8 +32,23 @@ func BodySchema(body *proto.BodySchema) *hclext.BodySchema {
 	}
 
 	return &hclext.BodySchema{
+		Mode:       SchemaMode(body.Mode),
 		Attributes: attributes,
 		Blocks:     blocks,
+	}
+}
+
+// SchemaMode converts proto.SchemaMode to hclext.SchemaMode
+func SchemaMode(mode proto.SchemaMode) hclext.SchemaMode {
+	switch mode {
+	case proto.SchemaMode_SCHEMA_MODE_UNSPECIFIED:
+		return hclext.SchemaDefaultMode
+	case proto.SchemaMode_SCHEMA_MODE_DEFAULT:
+		return hclext.SchemaDefaultMode
+	case proto.SchemaMode_SCHEMA_MODE_JUST_ATTRIBUTES:
+		return hclext.SchemaJustAttributesMode
+	default:
+		panic(fmt.Sprintf("invalid SchemaMode: %s", mode))
 	}
 }
 
