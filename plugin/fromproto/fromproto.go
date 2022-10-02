@@ -8,6 +8,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -251,7 +252,12 @@ func Error(err error) error {
 		return err
 	}
 
-	// If the error status has no details, retrieve an error from the gRPC error status.
+	// Unimplemented is an unexpected error, so return as-is.
+	if st.Code() == codes.Unimplemented {
+		return err
+	}
+
+	// If the error status has no details, return an error from the gRPC error status.
 	// Remove the status code because some statuses are expected and should not be shown to users.
 	if len(st.Details()) == 0 {
 		return errors.New(st.Message())

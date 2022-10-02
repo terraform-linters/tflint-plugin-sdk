@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/hashicorp/go-version"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
@@ -65,6 +66,19 @@ func (c *GRPCClient) RuleNames() ([]string, error) {
 		return []string{}, fromproto.Error(err)
 	}
 	return resp.Names, nil
+}
+
+// VersionConstraints returns constraints of TFLint versions.
+func (c *GRPCClient) VersionConstraints() (version.Constraints, error) {
+	resp, err := c.client.GetVersionConstraint(context.Background(), &proto.GetVersionConstraint_Request{})
+	if err != nil {
+		return nil, fromproto.Error(err)
+	}
+
+	if resp.Constraint == "" {
+		return version.Constraints{}, nil
+	}
+	return version.NewConstraint(resp.Constraint)
 }
 
 // ConfigSchema fetches the config schema from a plugin.

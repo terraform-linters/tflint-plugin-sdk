@@ -12,9 +12,10 @@ var _ RuleSet = &BuiltinRuleSet{}
 // BuiltinRuleSet is the basis of the ruleset. Plugins can serve this ruleset directly.
 // You can serve a custom ruleset by embedding this ruleset if you need special extensions.
 type BuiltinRuleSet struct {
-	Name    string
-	Version string
-	Rules   []Rule
+	Name       string
+	Version    string
+	Constraint string
+	Rules      []Rule
 
 	EnabledRules []Rule
 }
@@ -37,6 +38,12 @@ func (r *BuiltinRuleSet) RuleNames() []string {
 		names[idx] = rule.Name()
 	}
 	return names
+}
+
+// VersionConstraint declares the version of TFLint the plugin will work with.
+// Default is no constraint.
+func (r *BuiltinRuleSet) VersionConstraint() string {
+	return r.Constraint
 }
 
 // ApplyGlobalConfig applies the common config to the ruleset.
