@@ -20,6 +20,9 @@ type RuleSet interface {
 	// RuleNames is a list of rule names provided by the plugin. This method is not expected to be overridden.
 	RuleNames() []string
 
+	// VersionConstraint declares the version of TFLint the plugin will work with. Default is no constraint.
+	VersionConstraint() string
+
 	// ConfigSchema returns the ruleset plugin config schema.
 	// If you return a schema, TFLint will extract the config from .tflint.hcl based on that schema
 	// and pass it to ApplyConfig. This schema should be a schema inside of "plugin" block.

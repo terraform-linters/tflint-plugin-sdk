@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type RuleSetClient interface {
 	GetName(ctx context.Context, in *GetName_Request, opts ...grpc.CallOption) (*GetName_Response, error)
 	GetVersion(ctx context.Context, in *GetVersion_Request, opts ...grpc.CallOption) (*GetVersion_Response, error)
+	GetVersionConstraint(ctx context.Context, in *GetVersionConstraint_Request, opts ...grpc.CallOption) (*GetVersionConstraint_Response, error)
 	GetRuleNames(ctx context.Context, in *GetRuleNames_Request, opts ...grpc.CallOption) (*GetRuleNames_Response, error)
 	GetConfigSchema(ctx context.Context, in *GetConfigSchema_Request, opts ...grpc.CallOption) (*GetConfigSchema_Response, error)
 	ApplyGlobalConfig(ctx context.Context, in *ApplyGlobalConfig_Request, opts ...grpc.CallOption) (*ApplyGlobalConfig_Response, error)
@@ -51,6 +52,15 @@ func (c *ruleSetClient) GetName(ctx context.Context, in *GetName_Request, opts .
 func (c *ruleSetClient) GetVersion(ctx context.Context, in *GetVersion_Request, opts ...grpc.CallOption) (*GetVersion_Response, error) {
 	out := new(GetVersion_Response)
 	err := c.cc.Invoke(ctx, "/proto.RuleSet/GetVersion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ruleSetClient) GetVersionConstraint(ctx context.Context, in *GetVersionConstraint_Request, opts ...grpc.CallOption) (*GetVersionConstraint_Response, error) {
+	out := new(GetVersionConstraint_Response)
+	err := c.cc.Invoke(ctx, "/proto.RuleSet/GetVersionConstraint", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +118,7 @@ func (c *ruleSetClient) Check(ctx context.Context, in *Check_Request, opts ...gr
 type RuleSetServer interface {
 	GetName(context.Context, *GetName_Request) (*GetName_Response, error)
 	GetVersion(context.Context, *GetVersion_Request) (*GetVersion_Response, error)
+	GetVersionConstraint(context.Context, *GetVersionConstraint_Request) (*GetVersionConstraint_Response, error)
 	GetRuleNames(context.Context, *GetRuleNames_Request) (*GetRuleNames_Response, error)
 	GetConfigSchema(context.Context, *GetConfigSchema_Request) (*GetConfigSchema_Response, error)
 	ApplyGlobalConfig(context.Context, *ApplyGlobalConfig_Request) (*ApplyGlobalConfig_Response, error)
@@ -125,6 +136,9 @@ func (UnimplementedRuleSetServer) GetName(context.Context, *GetName_Request) (*G
 }
 func (UnimplementedRuleSetServer) GetVersion(context.Context, *GetVersion_Request) (*GetVersion_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVersion not implemented")
+}
+func (UnimplementedRuleSetServer) GetVersionConstraint(context.Context, *GetVersionConstraint_Request) (*GetVersionConstraint_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVersionConstraint not implemented")
 }
 func (UnimplementedRuleSetServer) GetRuleNames(context.Context, *GetRuleNames_Request) (*GetRuleNames_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRuleNames not implemented")
@@ -186,6 +200,24 @@ func _RuleSet_GetVersion_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RuleSetServer).GetVersion(ctx, req.(*GetVersion_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RuleSet_GetVersionConstraint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVersionConstraint_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RuleSetServer).GetVersionConstraint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.RuleSet/GetVersionConstraint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RuleSetServer).GetVersionConstraint(ctx, req.(*GetVersionConstraint_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -294,6 +326,10 @@ var RuleSet_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetVersion",
 			Handler:    _RuleSet_GetVersion_Handler,
+		},
+		{
+			MethodName: "GetVersionConstraint",
+			Handler:    _RuleSet_GetVersionConstraint_Handler,
 		},
 		{
 			MethodName: "GetRuleNames",

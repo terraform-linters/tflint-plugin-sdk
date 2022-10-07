@@ -63,6 +63,11 @@ func (s *GRPCServer) GetRuleNames(ctx context.Context, req *proto.GetRuleNames_R
 	return &proto.GetRuleNames_Response{Names: s.impl.RuleNames()}, nil
 }
 
+// GetVersionConstraint returns a constraint of TFLint versions.
+func (s *GRPCServer) GetVersionConstraint(ctx context.Context, req *proto.GetVersionConstraint_Request) (*proto.GetVersionConstraint_Response, error) {
+	return &proto.GetVersionConstraint_Response{Constraint: s.impl.VersionConstraint()}, nil
+}
+
 // GetConfigSchema returns the config schema of the plugin.
 func (s *GRPCServer) GetConfigSchema(ctx context.Context, req *proto.GetConfigSchema_Request) (*proto.GetConfigSchema_Response, error) {
 	return &proto.GetConfigSchema_Response{Schema: toproto.BodySchema(s.impl.ConfigSchema())}, nil

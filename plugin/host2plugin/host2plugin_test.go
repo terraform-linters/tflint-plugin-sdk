@@ -37,6 +37,7 @@ type mockRuleSet struct {
 
 type mockRuleSetImpl struct {
 	ruleNames         func() []string
+	versionConstraint func() string
 	configSchema      func() *hclext.BodySchema
 	applyGlobalConfig func(*tflint.Config) error
 	applyConfig       func(*hclext.BodyContent) error
@@ -48,6 +49,13 @@ func (r *mockRuleSet) RuleNames() []string {
 		return r.impl.ruleNames()
 	}
 	return []string{}
+}
+
+func (r *mockRuleSet) VersionConstraint() string {
+	if r.impl.versionConstraint != nil {
+		return r.impl.versionConstraint()
+	}
+	return ""
 }
 
 func (r *mockRuleSet) ConfigSchema() *hclext.BodySchema {
@@ -187,6 +195,60 @@ func TestRuleNames(t *testing.T) {
 
 			if diff := cmp.Diff(got, test.Want); diff != "" {
 				t.Errorf("diff: %s", diff)
+			}
+		})
+	}
+}
+
+func TestVersionConstraints(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+
+	tests := []struct {
+		Name       string
+		ServerImpl func() string
+		Want       string
+		ErrCheck   func(error) bool
+	}{
+		{
+			Name: "default",
+			ServerImpl: func() string {
+				return ""
+			},
+			Want:     "",
+			ErrCheck: neverHappend,
+		},
+		{
+			Name: "valid constraint",
+			ServerImpl: func() string {
+				return ">= 1.0"
+			},
+			Want:     ">= 1.0",
+			ErrCheck: neverHappend,
+		},
+		{
+			Name: "invalid constraint",
+			ServerImpl: func() string {
+				return ">> 1.0"
+			},
+			Want: "",
+			ErrCheck: func(err error) bool {
+				return err == nil || err.Error() != "Malformed constraint: >> 1.0"
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCPluginServer(t, newMockRuleSet("test_ruleset", "0.1.0", mockRuleSetImpl{versionConstraint: test.ServerImpl}))
+
+			got, err := client.VersionConstraints()
+			if test.ErrCheck(err) {
+				t.Fatalf("failed to call VersionConstraints: %s", err)
+			}
+
+			if got.String() != test.Want {
+				t.Errorf("want: %s, got: %s", test.Want, got)
 			}
 		})
 	}
