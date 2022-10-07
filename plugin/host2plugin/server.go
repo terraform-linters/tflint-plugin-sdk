@@ -68,6 +68,11 @@ func (s *GRPCServer) GetVersionConstraint(ctx context.Context, req *proto.GetVer
 	return &proto.GetVersionConstraint_Response{Constraint: s.impl.VersionConstraint()}, nil
 }
 
+// GetSDKVersion returns the SDK version.
+func (s *GRPCServer) GetSDKVersion(ctx context.Context, req *proto.GetSDKVersion_Request) (*proto.GetSDKVersion_Response, error) {
+	return &proto.GetSDKVersion_Response{Version: SDKVersion}, nil
+}
+
 // GetConfigSchema returns the config schema of the plugin.
 func (s *GRPCServer) GetConfigSchema(ctx context.Context, req *proto.GetConfigSchema_Request) (*proto.GetConfigSchema_Response, error) {
 	return &proto.GetConfigSchema_Response{Schema: toproto.BodySchema(s.impl.ConfigSchema())}, nil
