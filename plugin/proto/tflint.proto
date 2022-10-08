@@ -7,6 +7,7 @@ service RuleSet {
     rpc GetName(GetName.Request) returns (GetName.Response);
     rpc GetVersion(GetVersion.Request) returns (GetVersion.Response);
     rpc GetVersionConstraint(GetVersionConstraint.Request) returns (GetVersionConstraint.Response);
+    rpc GetSDKVersion(GetSDKVersion.Request) returns (GetSDKVersion.Response);
     rpc GetRuleNames(GetRuleNames.Request) returns (GetRuleNames.Response);
     rpc GetConfigSchema(GetConfigSchema.Request) returns (GetConfigSchema.Response);
     rpc ApplyGlobalConfig(ApplyGlobalConfig.Request) returns (ApplyGlobalConfig.Response);
@@ -32,6 +33,13 @@ message GetVersionConstraint {
     message Request {}
     message Response {
         string constraint = 1;
+    }
+}
+
+message GetSDKVersion {
+    message Request {}
+    message Response {
+        string version = 1;
     }
 }
 

@@ -254,6 +254,19 @@ func TestVersionConstraints(t *testing.T) {
 	}
 }
 
+func TestSDKVersion(t *testing.T) {
+	client := startTestGRPCPluginServer(t, newMockRuleSet("test_ruleset", "0.1.0", mockRuleSetImpl{}))
+
+	got, err := client.SDKVersion()
+	if err != nil {
+		t.Fatalf("failed to call SDKVersion: %s", err)
+	}
+
+	if got.String() != SDKVersion {
+		t.Errorf("want: %s, got: %s", SDKVersion, got)
+	}
+}
+
 func TestConfigSchema(t *testing.T) {
 	// default error check helper
 	neverHappend := func(err error) bool { return err != nil }

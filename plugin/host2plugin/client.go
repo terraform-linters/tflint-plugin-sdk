@@ -81,6 +81,15 @@ func (c *GRPCClient) VersionConstraints() (version.Constraints, error) {
 	return version.NewConstraint(resp.Constraint)
 }
 
+// SDKVersion returns the SDK version.
+func (c *GRPCClient) SDKVersion() (*version.Version, error) {
+	resp, err := c.client.GetSDKVersion(context.Background(), &proto.GetSDKVersion_Request{})
+	if err != nil {
+		return nil, fromproto.Error(err)
+	}
+	return version.NewVersion(resp.Version)
+}
+
 // ConfigSchema fetches the config schema from a plugin.
 func (c *GRPCClient) ConfigSchema() (*hclext.BodySchema, error) {
 	resp, err := c.client.GetConfigSchema(context.Background(), &proto.GetConfigSchema_Request{})
