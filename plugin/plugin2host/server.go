@@ -112,17 +112,32 @@ func (s *GRPCServer) GetRuleConfigContent(ctx context.Context, req *proto.GetRul
 
 // EvaluateExpr evals the passed expression based on the type.
 func (s *GRPCServer) EvaluateExpr(ctx context.Context, req *proto.EvaluateExpr_Request) (*proto.EvaluateExpr_Response, error) {
-	if req.Expr == nil {
-		return nil, status.Error(codes.InvalidArgument, "expr should not be null")
-	}
-	if req.ExprRange == nil {
-		return nil, status.Error(codes.InvalidArgument, "expr_range should not be null")
+	if req.Expression == nil {
+		if req.Expr == nil {
+			return nil, status.Error(codes.InvalidArgument, "expr should not be null")
+		}
+		if req.ExprRange == nil {
+			return nil, status.Error(codes.InvalidArgument, "expr_range should not be null")
+		}
+	} else {
+		if req.Expression.Bytes == nil {
+			return nil, status.Error(codes.InvalidArgument, "expression.bytes should not be null")
+		}
+		if req.Expression.Range == nil {
+			return nil, status.Error(codes.InvalidArgument, "expression.range should not be null")
+		}
 	}
 	if req.Option == nil {
 		return nil, status.Error(codes.InvalidArgument, "option should not be null")
 	}
 
-	expr, diags := hclext.ParseExpression(req.Expr, req.ExprRange.Filename, fromproto.Pos(req.ExprRange.Start))
+	var expr hcl.Expression
+	var diags hcl.Diagnostics
+	if req.Expression != nil {
+		expr, diags = fromproto.Expression(req.Expression)
+	} else {
+		expr, diags = hclext.ParseExpression(req.Expr, req.ExprRange.Filename, fromproto.Pos(req.ExprRange.Start))
+	}
 	if diags.HasErrors() {
 		return nil, toproto.Error(codes.InvalidArgument, diags)
 	}

@@ -8,6 +8,8 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/msgpack"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -65,11 +67,12 @@ func BodyContent(body *hclext.BodyContent, sources map[string][]byte) *proto.Bod
 		}
 
 		attributes[idx] = &proto.BodyContent_Attribute{
-			Name:      attr.Name,
-			Expr:      attr.Expr.Range().SliceBytes(bytes),
-			Range:     Range(attr.Range),
-			NameRange: Range(attr.NameRange),
-			ExprRange: Range(attr.Expr.Range()),
+			Name:       attr.Name,
+			Expr:       attr.Expr.Range().SliceBytes(bytes),
+			ExprRange:  Range(attr.Expr.Range()),
+			Expression: Expression(attr.Expr, bytes),
+			Range:      Range(attr.Range),
+			NameRange:  Range(attr.NameRange),
 		}
 	}
 
@@ -107,6 +110,23 @@ func Rule(rule tflint.Rule) *proto.EmitIssue_Rule {
 		Severity: Severity(rule.Severity()),
 		Link:     rule.Link(),
 	}
+}
+
+// Expression converts hcl.Expression to proto.Expression
+func Expression(expr hcl.Expression, source []byte) *proto.Expression {
+	out := &proto.Expression{
+		Bytes: expr.Range().SliceBytes(source),
+		Range: Range(expr.Range()),
+	}
+
+	if boundExpr, ok := expr.(*hclext.BoundExpr); ok {
+		val, err := msgpack.Marshal(boundExpr.Val, cty.DynamicPseudoType)
+		if err != nil {
+			panic(fmt.Errorf("cannot marshal the bound expr: %w", err))
+		}
+		out.Value = val
+	}
+	return out
 }
 
 // Severity converts severity to proto.EmitIssue_Severity

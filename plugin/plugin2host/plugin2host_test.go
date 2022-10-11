@@ -547,6 +547,55 @@ volume_size = 10`)
 			ErrCheck: neverHappend,
 		},
 		{
+			Name: "get content with bound expr",
+			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
+				return &hclext.BodySchema{
+					Attributes: []hclext.AttributeSchema{{Name: "value"}},
+				}, nil
+			},
+			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				file := hclFile("test.tf", "value = each.key")
+				attrs, diags := file.Body.JustAttributes()
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				attr := attrs["value"]
+
+				return &hclext.BodyContent{
+					Attributes: hclext.Attributes{
+						"value": {
+							Name:      attr.Name,
+							Expr:      hclext.BindValue(cty.StringVal("bound value"), attr.Expr),
+							Range:     attr.Range,
+							NameRange: attr.NameRange,
+						},
+					},
+					Blocks: hclext.Blocks{},
+				}, nil
+			},
+			Want: func(schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
+				file := hclFile("test.tf", "value = each.key")
+				attrs, diags := file.Body.JustAttributes()
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				attr := attrs["value"]
+
+				return &hclext.BodyContent{
+					Attributes: hclext.Attributes{
+						"value": {
+							Name:      attr.Name,
+							Expr:      hclext.BindValue(cty.StringVal("bound value"), attr.Expr),
+							Range:     attr.Range,
+							NameRange: attr.NameRange,
+						},
+					},
+					Blocks: hclext.Blocks{},
+				}, nil
+			},
+			ErrCheck: neverHappend,
+		},
+		{
 			Name: "get content with options",
 			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
 				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{
@@ -1534,6 +1583,17 @@ func TestEvaluateExpr(t *testing.T) {
 				return evalExpr(expr, nil)
 			},
 			Want:        map[string]string{"foo": "bar"},
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
+			Name:       "bound expr",
+			Expr:       hclext.BindValue(cty.StringVal("bound value"), hclExpr(`var.foo`)),
+			TargetType: reflect.TypeOf(""),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{})
+			},
+			Want:        "bound value",
 			GetFileImpl: fileExists,
 			ErrCheck:    neverHappend,
 		},
