@@ -115,10 +115,16 @@ message GetModuleContent {
     message Hint {
         string resource_type = 1;
     }
+    enum ExpandMode {
+        EXPAND_MODE_UNSPECIFIED = 0;
+        EXPAND_MODE_NONE = 1;
+        EXPAND_MODE_EXPAND = 2;
+    }
     message Option {
         ModuleCtxType module_ctx = 1;
         Hint hint = 2;
-        bool include_not_created = 3;
+        bool include_not_created = 3 [deprecated = true];
+        ExpandMode expand_mode = 4;
     }
 
     message Request {
