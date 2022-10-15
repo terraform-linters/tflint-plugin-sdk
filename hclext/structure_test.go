@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestContent_PartialContent(t *testing.T) {
@@ -855,5 +857,140 @@ func Test_IsEmpty(t *testing.T) {
 				t.Errorf("%t is expected, but got %t", test.want, test.body.IsEmpty())
 			}
 		})
+	}
+}
+
+func TestCopy_BodyContent(t *testing.T) {
+	body := &BodyContent{
+		Attributes: Attributes{
+			"foo": {Name: "foo"},
+		},
+		Blocks: Blocks{
+			{
+				Body: &BodyContent{
+					Attributes: Attributes{
+						"bar": {Name: "bar"},
+					},
+					Blocks: Blocks{
+						{
+							Body: &BodyContent{
+								Attributes: Attributes{
+									"baz": {Name: "baz"},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Body: &BodyContent{
+					Attributes: Attributes{
+						"aaa": {Name: "aaa"},
+						"bbb": {Name: "bbb"},
+					},
+				},
+			},
+		},
+	}
+
+	if diff := cmp.Diff(body.Copy(), body); diff != "" {
+		t.Error(diff)
+	}
+}
+
+func TestWalkAttributes(t *testing.T) {
+	body := &BodyContent{
+		Attributes: Attributes{
+			"foo": {Name: "foo"},
+		},
+		Blocks: Blocks{
+			{
+				Body: &BodyContent{
+					Attributes: Attributes{
+						"bar": {Name: "bar"},
+					},
+					Blocks: Blocks{
+						{
+							Body: &BodyContent{
+								Attributes: Attributes{
+									"baz": {Name: "baz"},
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Body: &BodyContent{
+					Attributes: Attributes{
+						"aaa": {Name: "aaa"},
+						"bbb": {Name: "bbb"},
+					},
+				},
+			},
+		},
+	}
+
+	got := []string{}
+	diags := body.WalkAttributes(func(a *Attribute) hcl.Diagnostics {
+		got = append(got, a.Name)
+		return nil
+	})
+	if diags.HasErrors() {
+		t.Fatal(diags)
+	}
+
+	want := []string{"foo", "bar", "baz", "aaa", "bbb"}
+
+	opt := cmpopts.SortSlices(func(x, y string) bool { return x < y })
+	if diff := cmp.Diff(got, want, opt); diff != "" {
+		t.Error(diff)
+	}
+}
+
+func TestCopy_Attribute(t *testing.T) {
+	attribute := &Attribute{
+		Name:      "foo",
+		Expr:      hcl.StaticExpr(cty.StringVal("foo"), hcl.Range{}),
+		Range:     hcl.Range{Start: hcl.Pos{Line: 2}},
+		NameRange: hcl.Range{Start: hcl.Pos{Line: 1}},
+	}
+
+	must := func(v cty.Value, diags hcl.Diagnostics) cty.Value {
+		if diags.HasErrors() {
+			t.Fatal(diags)
+		}
+		return v
+	}
+	opts := cmp.Options{
+		cmp.Comparer(func(x, y hcl.Expression) bool {
+			return must(x.Value(nil)) == must(y.Value(nil))
+		}),
+	}
+	if diff := cmp.Diff(attribute.Copy(), attribute, opts); diff != "" {
+		t.Error(diff)
+	}
+}
+
+func TestCopy_Block(t *testing.T) {
+	block := &Block{
+		Type:   "foo",
+		Labels: []string{"bar", "baz"},
+		Body: &BodyContent{
+			Attributes: Attributes{
+				"foo": {Name: "foo"},
+			},
+			Blocks: Blocks{},
+		},
+		DefRange:  hcl.Range{Start: hcl.Pos{Line: 1}},
+		TypeRange: hcl.Range{Start: hcl.Pos{Line: 2}},
+		LabelRanges: []hcl.Range{
+			{Start: hcl.Pos{Line: 3}},
+			{Start: hcl.Pos{Line: 4}},
+		},
+	}
+
+	if diff := cmp.Diff(block.Copy(), block); diff != "" {
+		t.Error(diff)
 	}
 }

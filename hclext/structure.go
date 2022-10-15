@@ -200,6 +200,20 @@ func (b *BodyContent) Copy() *BodyContent {
 	return out
 }
 
+// WalkAttributes visits all attributes with the passed walker function.
+func (b *BodyContent) WalkAttributes(walker func(*Attribute) hcl.Diagnostics) hcl.Diagnostics {
+	var diags hcl.Diagnostics
+	for _, attr := range b.Attributes {
+		walkDiags := walker(attr)
+		diags = diags.Extend(walkDiags)
+	}
+	for _, b := range b.Blocks {
+		walkDiags := b.Body.WalkAttributes(walker)
+		diags = diags.Extend(walkDiags)
+	}
+	return diags
+}
+
 // AsNative returns self as hcl.Attributes
 func (as Attributes) AsNative() hcl.Attributes {
 	ret := hcl.Attributes{}
