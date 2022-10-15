@@ -8,6 +8,8 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/msgpack"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -62,7 +64,13 @@ func BodyContent(body *proto.BodyContent) (*hclext.BodyContent, hcl.Diagnostics)
 
 	attributes := hclext.Attributes{}
 	for key, attr := range body.Attributes {
-		expr, exprDiags := hclext.ParseExpression(attr.Expr, attr.ExprRange.Filename, Pos(attr.ExprRange.Start))
+		var expr hcl.Expression
+		var exprDiags hcl.Diagnostics
+		if attr.Expression != nil {
+			expr, exprDiags = Expression(attr.Expression)
+		} else {
+			expr, exprDiags = hclext.ParseExpression(attr.Expr, attr.ExprRange.Filename, Pos(attr.ExprRange.Start))
+		}
 		diags = diags.Extend(exprDiags)
 
 		attributes[key] = &hclext.Attribute{
@@ -144,6 +152,22 @@ func Rule(rule *proto.EmitIssue_Rule) *RuleObject {
 			Link:     rule.Link,
 		},
 	}
+}
+
+// Expression converts proto.Expression to hcl.Expression
+func Expression(expr *proto.Expression) (hcl.Expression, hcl.Diagnostics) {
+	parsed, diags := hclext.ParseExpression(expr.Bytes, expr.Range.Filename, Pos(expr.Range.Start))
+	if diags.HasErrors() {
+		return nil, diags
+	}
+	if expr.Value != nil {
+		val, err := msgpack.Unmarshal(expr.Value, cty.DynamicPseudoType)
+		if err != nil {
+			panic(fmt.Errorf("cannot unmarshal the bound expr: %w", err))
+		}
+		parsed = hclext.BindValue(val, parsed)
+	}
+	return parsed, diags
 }
 
 // Severity converts proto.EmitIssue_Severity to severity
