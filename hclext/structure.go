@@ -185,6 +185,21 @@ func (b *BodyContent) IsEmpty() bool {
 	return len(b.Attributes) == 0 && len(b.Blocks) == 0
 }
 
+// Copy returns a new BodyContent based on the original.
+func (b *BodyContent) Copy() *BodyContent {
+	out := &BodyContent{
+		Attributes: Attributes{},
+		Blocks:     make(Blocks, len(b.Blocks)),
+	}
+
+	for k, v := range b.Attributes {
+		out.Attributes[k] = v.Copy()
+	}
+	copy(out.Blocks, b.Blocks)
+
+	return out
+}
+
 // AsNative returns self as hcl.Attributes
 func (as Attributes) AsNative() hcl.Attributes {
 	ret := hcl.Attributes{}
@@ -197,6 +212,18 @@ func (as Attributes) AsNative() hcl.Attributes {
 // AsNative returns self as hcl.Attribute
 func (a *Attribute) AsNative() *hcl.Attribute {
 	return &hcl.Attribute{
+		Name:      a.Name,
+		Expr:      a.Expr,
+		Range:     a.Range,
+		NameRange: a.NameRange,
+	}
+}
+
+// Copy returns a new Attribute based on the original.
+// Note that expr can be a shallow copy. So strictly speaking
+// Copy is not a deep copy.
+func (a *Attribute) Copy() *Attribute {
+	return &Attribute{
 		Name:      a.Name,
 		Expr:      a.Expr,
 		Range:     a.Range,
@@ -229,4 +256,21 @@ func (els Blocks) ByType() map[string]Blocks {
 		ret[ty] = append(ret[ty], el)
 	}
 	return ret
+}
+
+// Copy returns a new Block based on the original.
+func (b *Block) Copy() *Block {
+	out := &Block{
+		Type:        b.Type,
+		Labels:      make([]string, len(b.Labels)),
+		Body:        b.Body.Copy(),
+		DefRange:    b.DefRange,
+		TypeRange:   b.TypeRange,
+		LabelRanges: make([]hcl.Range, len(b.LabelRanges)),
+	}
+
+	copy(out.Labels, b.Labels)
+	copy(out.LabelRanges, b.LabelRanges)
+
+	return out
 }
