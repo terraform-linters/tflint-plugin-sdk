@@ -14,14 +14,29 @@ const (
 	RootModuleCtxType
 )
 
+// ExpandMode represents whether the block retrieved by GetModuleContent is expanded by the meta-arguments.
+//
+//go:generate stringer -type=ExpandMode
+type ExpandMode int32
+
+const (
+	// ExpandModeExpand is the mode for expanding blocks based on the meta-arguments. The default is this behavior.
+	ExpandModeExpand ExpandMode = iota
+	// ExpandModeNone is the mode that does not expand blocks.
+	ExpandModeNone
+)
+
 // GetModuleContentOption is an option that controls the behavior when getting a module content.
 type GetModuleContentOption struct {
 	// Specify the module to be acquired.
 	ModuleCtx ModuleCtxType
-	// Whether it includes resources that are not created, for example because count is 0 or unknown.
-	IncludeNotCreated bool
+	// Whether resources and modules are expanded by the count/for_each meta-arguments.
+	ExpandMode ExpandMode
 	// Hint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
 	Hint GetModuleContentHint
+
+	// Deprecated: Use ExpandMode instead.
+	IncludeNotCreated bool
 }
 
 // GetModuleContentHint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.

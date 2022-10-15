@@ -601,6 +601,7 @@ volume_size = 10`)
 				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{
 					ModuleCtx:         tflint.RootModuleCtxType,
 					IncludeNotCreated: true,
+					ExpandMode:        tflint.ExpandModeNone,
 					Hint:              tflint.GetModuleContentHint{ResourceType: "aws_instance"},
 				}
 			},
@@ -613,6 +614,11 @@ volume_size = 10`)
 				if !opts.IncludeNotCreated {
 					return &hclext.BodyContent{}, hcl.Diagnostics{
 						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected includeNotCreatedResources options"},
+					}
+				}
+				if opts.ExpandMode != tflint.ExpandModeNone {
+					return &hclext.BodyContent{}, hcl.Diagnostics{
+						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected expand mode options"},
 					}
 				}
 				if opts.Hint.ResourceType != "aws_instance" {

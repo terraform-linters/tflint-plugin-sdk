@@ -236,6 +236,7 @@ func GetModuleContentOption(opts *proto.GetModuleContent_Option) tflint.GetModul
 	return tflint.GetModuleContentOption{
 		ModuleCtx:         ModuleCtxType(opts.ModuleCtx),
 		IncludeNotCreated: opts.IncludeNotCreated,
+		ExpandMode:        ExpandMode(opts.ExpandMode),
 		Hint:              GetModuleContentHint(opts.Hint),
 	}
 }
@@ -251,6 +252,20 @@ func ModuleCtxType(ty proto.ModuleCtxType) tflint.ModuleCtxType {
 		return tflint.RootModuleCtxType
 	default:
 		panic(fmt.Sprintf("invalid ModuleCtxType: %s", ty))
+	}
+}
+
+// ExpandMode converts proto.GetModuleContent_ExpandMode to tflint.ExpandMode
+func ExpandMode(mode proto.GetModuleContent_ExpandMode) tflint.ExpandMode {
+	switch mode {
+	case proto.GetModuleContent_EXPAND_MODE_UNSPECIFIED:
+		return tflint.ExpandModeExpand
+	case proto.GetModuleContent_EXPAND_MODE_EXPAND:
+		return tflint.ExpandModeExpand
+	case proto.GetModuleContent_EXPAND_MODE_NONE:
+		return tflint.ExpandModeNone
+	default:
+		panic(fmt.Sprintf("invalid ExpandMode: %s", mode))
 	}
 }
 
