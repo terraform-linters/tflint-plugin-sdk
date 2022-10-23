@@ -1,3 +1,31 @@
+## 0.14.0 (2022-10-23)
+
+This release includes several new features for plugin developers. Introduced the Schema Mode to get all attributes, and added an option to set constraints on compatible TFLint versions. These may not work with older TFLint versions, so set version constraints as needed.
+
+The evaluation of `each.*` and `count.*` added in TFLint v0.42 requires plugins built with this version. In earlier versions, these values are always unknown.
+
+`IncludeNotCreated` in `GetModuleContentOption` has been deprecated. Use `ExpandModeNone` instead. The old option will still work, but will be removed in a future version.
+
+### Enhancements
+
+- [#201](https://github.com/terraform-linters/tflint-plugin-sdk/pull/201): hclext: Add schema mode to BodySchema
+  - This is available only for TFLint v0.42+. Schema mode is ignored in earlier versions. Set `>= 0.42.0` as a version constraint if you cannot tolerate being ignored.
+- [#202](https://github.com/terraform-linters/tflint-plugin-sdk/pull/202): host2plugin: Allow plugins to set host version constraints
+  - This is available only for TFLint v0.42+. Version constraints are ignored in earlier versions. Note that version constraints may not work in v0.40, v0.41.
+- [#203](https://github.com/terraform-linters/tflint-plugin-sdk/pull/203): host2plugin: Add SDKVersion
+- [#205](https://github.com/terraform-linters/tflint-plugin-sdk/pull/205): hclext: Add hclext.BoundExpr
+  - This is necessary due to the evaluation of `each.*` and `count.*` added in TFLint v0.42. Plugins not built with SDK v0.14+ will always evaluate to unknown values.
+- [#206](https://github.com/terraform-linters/tflint-plugin-sdk/pull/206): hclext: Add Copy() to structures
+- [#207](https://github.com/terraform-linters/tflint-plugin-sdk/pull/207): hclext: Add WalkAttribute to hclext.BodyContent
+- [#208](https://github.com/terraform-linters/tflint-plugin-sdk/pull/208): plugin2host: Add ExpandMode to GetModuleContentOption
+  - `IncludeNotCreated` is deprecated. Use `ExpandModeNone` instread.
+
+### Chores
+
+- [#199](https://github.com/terraform-linters/tflint-plugin-sdk/pull/199): Bump github.com/hashicorp/hcl/v2 from 2.14.0 to 2.14.1
+- [#200](https://github.com/terraform-linters/tflint-plugin-sdk/pull/200): Bump github.com/hashicorp/go-hclog from 1.3.0 to 1.3.1
+- [#209](https://github.com/terraform-linters/tflint-plugin-sdk/pull/209): Bump google.golang.org/grpc from 1.49.0 to 1.50.1
+
 ## 0.13.0 (2022-09-17)
 
 ### Enhancements
