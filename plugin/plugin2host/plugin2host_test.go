@@ -35,6 +35,7 @@ type mockServer struct {
 }
 
 type mockServerImpl struct {
+	getOriginalwd        func() string
 	getModulePath        func() []string
 	getModuleContent     func(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	getFile              func(string) (*hcl.File, error)
@@ -46,6 +47,13 @@ type mockServerImpl struct {
 
 func newMockServer(impl mockServerImpl) *mockServer {
 	return &mockServer{impl: impl}
+}
+
+func (s *mockServer) GetOriginalwd() string {
+	if s.impl.getOriginalwd != nil {
+		return s.impl.getOriginalwd()
+	}
+	return ""
 }
 
 func (s *mockServer) GetModulePath() []string {
@@ -99,6 +107,36 @@ func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Ra
 
 // @see https://github.com/google/go-cmp/issues/40
 var allowAllUnexported = cmp.Exporter(func(reflect.Type) bool { return true })
+
+func TestGetOriginalwd(t *testing.T) {
+	tests := []struct {
+		Name       string
+		ServerImpl func() string
+		Want       string
+	}{
+		{
+			Name: "get the original working directory",
+			ServerImpl: func() string {
+				return "/work"
+			},
+			Want: "/work",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{getOriginalwd: test.ServerImpl}))
+
+			got, err := client.GetOriginalwd()
+			if err != nil {
+				t.Fatalf("failed to call GetOriginalwd: %s", err)
+			}
+			if diff := cmp.Diff(got, test.Want); diff != "" {
+				t.Errorf("diff: %s", diff)
+			}
+		})
+	}
+}
 
 func TestGetModulePath(t *testing.T) {
 	tests := []struct {

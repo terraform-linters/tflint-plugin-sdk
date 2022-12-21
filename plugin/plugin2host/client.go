@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -19,6 +20,8 @@ import (
 	"github.com/zclconf/go-cty/cty/gocty"
 	"github.com/zclconf/go-cty/cty/json"
 	"github.com/zclconf/go-cty/cty/msgpack"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // GRPCClient is a plugin-side implementation. Plugin can send requests through the client to host's gRPC server.
@@ -27,6 +30,20 @@ type GRPCClient struct {
 }
 
 var _ tflint.Runner = &GRPCClient{}
+
+// GetOriginalwd gets the original working directory.
+func (c *GRPCClient) GetOriginalwd() (string, error) {
+	resp, err := c.Client.GetOriginalwd(context.Background(), &proto.GetOriginalwd_Request{})
+	if err != nil {
+		if st, ok := status.FromError(err); ok && st.Code() == codes.Unimplemented {
+			// Originalwd is available in TFLint v0.44+
+			// Fallback to os.Getwd() because it equals the current directory in earlier versions.
+			return os.Getwd()
+		}
+		return "", fromproto.Error(err)
+	}
+	return resp.Path, err
+}
 
 // GetModulePath gets the current module path address.
 func (c *GRPCClient) GetModulePath() (addrs.Module, error) {

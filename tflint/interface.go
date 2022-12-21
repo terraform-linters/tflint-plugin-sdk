@@ -75,6 +75,11 @@ type RuleSet interface {
 // Runner acts as a client for each plugin to query the host process about the Terraform configurations.
 // The actual implementation can be found in plugin/plugin2host.GRPCClient.
 type Runner interface {
+	// GetOriginalwd returns the original working directory.
+	// Normally this is equal to os.Getwd(), but differs if --chdir or --recursive is used.
+	// If you need the absolute path of the file, joining with the original working directory is appropriate.
+	GetOriginalwd() (string, error)
+
 	// GetModulePath returns the current module path address.
 	GetModulePath() (addrs.Module, error)
 

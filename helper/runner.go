@@ -44,6 +44,11 @@ type RuleConfig struct {
 
 var _ tflint.Runner = &Runner{}
 
+// GetOriginalwd always returns the current directory
+func (r *Runner) GetOriginalwd() (string, error) {
+	return os.Getwd()
+}
+
 // GetModulePath always returns the root module path address
 func (r *Runner) GetModulePath() (addrs.Module, error) {
 	return []string{}, nil
