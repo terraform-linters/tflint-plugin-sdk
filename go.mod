@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/go-test/deep v1.1.0
 	github.com/google/go-cmp v0.5.9
-	github.com/hashicorp/go-hclog v1.3.1
+	github.com/hashicorp/go-hclog v1.4.0
 	github.com/hashicorp/go-plugin v1.4.8
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/hcl/v2 v2.15.0
