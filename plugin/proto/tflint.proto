@@ -89,6 +89,7 @@ message Check {
 }
 
 service Runner {
+    rpc GetOriginalwd(GetOriginalwd.Request) returns (GetOriginalwd.Response);
     rpc GetModulePath(GetModulePath.Request) returns (GetModulePath.Response);
     rpc GetModuleContent(GetModuleContent.Request) returns (GetModuleContent.Response);
     rpc GetFile(GetFile.Request) returns (GetFile.Response);
@@ -102,6 +103,13 @@ enum ModuleCtxType {
     MODULE_CTX_TYPE_UNSPECIFIED = 0;
     MODULE_CTX_TYPE_SELF = 1;
     MODULE_CTX_TYPE_ROOT = 2;
+}
+
+message GetOriginalwd {
+    message Request {}
+    message Response {
+        string path = 1;
+    }
 }
 
 message GetModulePath {

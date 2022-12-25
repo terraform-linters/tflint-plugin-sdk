@@ -540,6 +540,10 @@ type mockServerImpl struct {
 	getFile func(string) (*hcl.File, error)
 }
 
+func (s *mockServer) GetOriginalwd() string {
+	return "/work"
+}
+
 func (s *mockServer) GetModulePath() []string {
 	return []string{}
 }

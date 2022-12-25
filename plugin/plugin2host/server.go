@@ -28,6 +28,7 @@ var _ proto.RunnerServer = &GRPCServer{}
 
 // Server is the interface that the host should implement when a plugin communicates with the host.
 type Server interface {
+	GetOriginalwd() string
 	GetModulePath() []string
 	GetModuleContent(*hclext.BodySchema, tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics)
 	GetFile(string) (*hcl.File, error)
@@ -36,6 +37,11 @@ type Server interface {
 	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
 	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
+}
+
+// GetOriginalwd gets the original working directory.
+func (s *GRPCServer) GetOriginalwd(ctx context.Context, req *proto.GetOriginalwd_Request) (*proto.GetOriginalwd_Response, error) {
+	return &proto.GetOriginalwd_Response{Path: s.Impl.GetOriginalwd()}, nil
 }
 
 // GetModulePath gets the current module path address.
