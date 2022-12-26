@@ -1,3 +1,18 @@
+## 0.15.0 (2022-12-26)
+
+### Enhancements
+
+- [#224](https://github.com/terraform-linters/tflint-plugin-sdk/pull/224): Add GetOriginalwd method
+
+### Chores
+
+- [#214](https://github.com/terraform-linters/tflint-plugin-sdk/pull/214): Bump github.com/hashicorp/hcl/v2 from 2.14.1 to 2.15.0
+- [#219](https://github.com/terraform-linters/tflint-plugin-sdk/pull/219): Bump google.golang.org/grpc from 1.50.1 to 1.51.0
+- [#220](https://github.com/terraform-linters/tflint-plugin-sdk/pull/220): Bump github.com/hashicorp/go-plugin from 1.4.5 to 1.4.8
+- [#221](https://github.com/terraform-linters/tflint-plugin-sdk/pull/221): Bump github.com/go-test/deep from 1.0.8 to 1.1.0
+- [#222](https://github.com/terraform-linters/tflint-plugin-sdk/pull/222): Bump github.com/hashicorp/go-hclog from 1.3.1 to 1.4.0
+- [#223](https://github.com/terraform-linters/tflint-plugin-sdk/pull/223): Bump golang.org/x/tools from 0.1.12 to 0.4.0
+
 ## 0.14.0 (2022-10-23)
 
 This release includes several new features for plugin developers. Introduced the Schema Mode to get all attributes, and added an option to set constraints on compatible TFLint versions. These may not work with older TFLint versions, so set version constraints as needed.
