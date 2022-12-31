@@ -98,8 +98,19 @@ func (r *BuiltinRuleSet) ApplyConfig(content *hclext.BodyContent) error {
 	return nil
 }
 
+// NewRunner returns a new runner based on the original runner.
+// Custom rulesets can override this method to inject a custom runner.
+func (r *BuiltinRuleSet) NewRunner(runner Runner) (Runner, error) {
+	return runner, nil
+}
+
 // Check runs inspection for each rule by applying Runner.
 func (r *BuiltinRuleSet) Check(runner Runner) error {
+	runner, err := r.NewRunner(runner)
+	if err != nil {
+		return err
+	}
+
 	for _, rule := range r.EnabledRules {
 		if err := rule.Check(runner); err != nil {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
