@@ -307,9 +307,9 @@ func Error(err error) error {
 	case *proto.ErrorDetail:
 		switch t.Code {
 		case proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE:
-			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnknownValue)
+			return tflint.ErrUnknownValue
 		case proto.ErrorCode_ERROR_CODE_NULL_VALUE:
-			return fmt.Errorf("%s%w", st.Message(), tflint.ErrNullValue)
+			return tflint.ErrNullValue
 		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
 			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnevaluable)
 		case proto.ErrorCode_ERROR_CODE_SENSITIVE:
