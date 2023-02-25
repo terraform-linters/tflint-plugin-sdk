@@ -1745,6 +1745,116 @@ func TestEvaluateExpr(t *testing.T) {
 				return !errors.Is(err, tflint.ErrSensitive)
 			},
 		},
+		{
+			Name:       "unknown value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(""),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.UnknownVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        "",
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrUnknownValue)
+			},
+		},
+		{
+			Name:       "unknown value as cty.Value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(cty.Value{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.UnknownVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        cty.UnknownVal(cty.String),
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
+			Name:       "unknown value in object",
+			Expr:       hclExpr(`{ value = var.foo }`),
+			TargetType: reflect.TypeOf(map[string]string{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.UnknownVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        (map[string]string)(nil),
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrUnknownValue)
+			},
+		},
+		{
+			Name:       "null",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(""),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.NullVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        "",
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrNullValue)
+			},
+		},
+		{
+			Name:       "null as cty.Value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(cty.Value{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.NullVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        cty.NullVal(cty.String),
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
+			Name:       "null value in object",
+			Expr:       hclExpr(`{ value = var.foo }`),
+			TargetType: reflect.TypeOf(map[string]string{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.NullVal(cty.String),
+						}),
+					},
+				})
+			},
+			Want:        (map[string]string)(nil),
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrNullValue)
+			},
+		},
 	}
 
 	for _, test := range tests {

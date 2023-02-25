@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	hcljson "github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
@@ -327,6 +328,27 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 	}
 
 	val, err := msgpack.Unmarshal(resp.Value, ty)
+	if err != nil {
+		return err
+	}
+
+	if ty == cty.DynamicPseudoType {
+		return gocty.FromCtyValue(val, ret)
+	}
+
+	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown value, null).
+	// This allows the caller to handle the value by the errors package.
+	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
+		if !v.IsKnown() {
+			logger.Debug(fmt.Sprintf("unknown value found in %s", expr.Range()))
+			return false, tflint.ErrUnknownValue
+		}
+		if v.IsNull() {
+			logger.Debug(fmt.Sprintf("null value found in %s", expr.Range()))
+			return false, tflint.ErrNullValue
+		}
+		return true, nil
+	})
 	if err != nil {
 		return err
 	}
