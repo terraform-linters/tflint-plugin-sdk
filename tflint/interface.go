@@ -64,8 +64,12 @@ type RuleSet interface {
 	// ```
 	ApplyConfig(*hclext.BodyContent) error
 
-	// Check runs inspection for each rule by applying Runner.
-	// This is a entrypoint for all inspections and can be used as a hook to inject a custom runner.
+	// NewRunner returns a new runner based on the original runner.
+	// Custom rulesets can override this method to inject a custom runner.
+	NewRunner(Runner) (Runner, error)
+
+	// Check is a entrypoint for all inspections.
+	// This is not supposed to be overridden from custom rulesets.
 	Check(Runner) error
 
 	// All Ruleset must embed the builtin ruleset.
