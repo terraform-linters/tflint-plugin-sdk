@@ -5,16 +5,15 @@ import (
 )
 
 // List of errors returned by TFLint.
-// It's possible to get this error from a plugin, but the error handling is hidden
-// inside the plugin system, so you usually don't have to worry about it.
 var (
-	// ErrUnknownValue is an error when an unknown value is referenced
+	// ErrUnknownValue is an error that occurs when decoding an unknown value to a Go value.
 	ErrUnknownValue = errors.New("unknown value found")
-	// ErrNullValue is an error when null value is referenced
+	// ErrNullValue is an error that occurs when decoding null to a Go value.
 	ErrNullValue = errors.New("null value found")
-	// ErrUnevaluable is an error when a received expression has unevaluable references.
+	// ErrUnevaluable is an error that occurs when decoding an unevaluable value to a Go value.
+	//
 	// Deprecated: This error is no longer returned since TFLint v0.41.
 	ErrUnevaluable = errors.New("")
-	// ErrSensitive is an error when a received expression contains a sensitive value.
+	// ErrSensitive is an error that occurs when decoding a sensitive value to a Go value.
 	ErrSensitive = errors.New("")
 )

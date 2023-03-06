@@ -265,6 +265,8 @@ func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range)
 }
 
 // EnsureNoError is a method that simply runs a function if there is no error.
+//
+// Deprecated: Use errors.Is() instead to determine which errors can be ignored.
 func (r *Runner) EnsureNoError(err error, proc func() error) error {
 	if err == nil {
 		return proc()
