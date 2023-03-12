@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/msgpack"
@@ -161,7 +162,7 @@ func Expression(expr *proto.Expression) (hcl.Expression, hcl.Diagnostics) {
 		return nil, diags
 	}
 	if expr.Value != nil {
-		val, err := msgpack.Unmarshal(expr.Value, cty.DynamicPseudoType)
+		val, err := Value(expr.Value, cty.DynamicPseudoType, expr.ValueMarks)
 		if err != nil {
 			panic(fmt.Errorf("cannot unmarshal the bound expr: %w", err))
 		}
@@ -208,6 +209,43 @@ func Pos(pos *proto.Range_Pos) hcl.Pos {
 		Column: int(pos.Column),
 		Byte:   int(pos.Byte),
 	}
+}
+
+// Value converts msgpack and []proto.ValueMark to cty.Value
+func Value(value []byte, ty cty.Type, valueMarks []*proto.ValueMark) (cty.Value, error) {
+	val, err := msgpack.Unmarshal(value, ty)
+	if err != nil {
+		return cty.NilVal, err
+	}
+
+	pvm := make([]cty.PathValueMarks, len(valueMarks))
+	for idx, mark := range valueMarks {
+		pvm[idx] = cty.PathValueMarks{
+			Path: AttributePath(mark.Path),
+		}
+		if mark.Sensitive {
+			pvm[idx].Marks = cty.NewValueMarks(marks.Sensitive)
+		}
+	}
+
+	return val.MarkWithPaths(pvm), nil
+}
+
+// AttributePath converts proto.AttributePath to cty.Path
+func AttributePath(path *proto.AttributePath) cty.Path {
+	ret := cty.Path{}
+
+	for _, step := range path.Steps {
+		switch s := step.Selector.(type) {
+		case *proto.AttributePath_Step_ElementKeyString:
+			ret = ret.IndexString(s.ElementKeyString)
+		case *proto.AttributePath_Step_ElementKeyInt:
+			ret = ret.IndexInt(int(s.ElementKeyInt))
+		case *proto.AttributePath_Step_AttributeName:
+			ret = ret.GetAttr(s.AttributeName)
+		}
+	}
+	return ret
 }
 
 // Config converts proto.ApplyGlobalConfig_Config to tflint.Config
@@ -313,7 +351,7 @@ func Error(err error) error {
 		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
 			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnevaluable)
 		case proto.ErrorCode_ERROR_CODE_SENSITIVE:
-			return fmt.Errorf("%s%w", st.Message(), tflint.ErrSensitive)
+			return tflint.ErrSensitive
 		}
 	}
 

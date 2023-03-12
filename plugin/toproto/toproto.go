@@ -7,8 +7,10 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/convert"
 	"github.com/zclconf/go-cty/cty/msgpack"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -120,11 +122,12 @@ func Expression(expr hcl.Expression, source []byte) *proto.Expression {
 	}
 
 	if boundExpr, ok := expr.(*hclext.BoundExpr); ok {
-		val, err := msgpack.Marshal(boundExpr.Val, cty.DynamicPseudoType)
+		val, marks, err := Value(boundExpr.Val, cty.DynamicPseudoType)
 		if err != nil {
 			panic(fmt.Errorf("cannot marshal the bound expr: %w", err))
 		}
 		out.Value = val
+		out.ValueMarks = marks
 	}
 	return out
 }
@@ -159,6 +162,68 @@ func Pos(pos hcl.Pos) *proto.Range_Pos {
 		Column: int64(pos.Column),
 		Byte:   int64(pos.Byte),
 	}
+}
+
+// Value converts cty.Value to msgpack and serialized value marks
+func Value(value cty.Value, ty cty.Type) ([]byte, []*proto.ValueMark, error) {
+	// Convert first to get the actual cty.Path
+	value, err := convert.Convert(value, ty)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	value, pvm := value.UnmarkDeepWithPaths()
+	valueMarks := make([]*proto.ValueMark, len(pvm))
+	for idx, m := range pvm {
+		path, err := AttributePath(m.Path)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		valueMarks[idx] = &proto.ValueMark{Path: path}
+		if _, exists := m.Marks[marks.Sensitive]; exists {
+			valueMarks[idx].Sensitive = true
+		}
+	}
+
+	val, err := msgpack.Marshal(value, ty)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return val, valueMarks, nil
+}
+
+// AttributePath converts cty.Path to proto.AttributePath
+func AttributePath(path cty.Path) (*proto.AttributePath, error) {
+	steps := make([]*proto.AttributePath_Step, len(path))
+
+	for idx, step := range path {
+		switch s := step.(type) {
+		case cty.IndexStep:
+			switch s.Key.Type() {
+			case cty.String:
+				steps[idx] = &proto.AttributePath_Step{
+					Selector: &proto.AttributePath_Step_ElementKeyString{ElementKeyString: s.Key.AsString()},
+				}
+			case cty.Number:
+				v, _ := s.Key.AsBigFloat().Int64()
+				steps[idx] = &proto.AttributePath_Step{
+					Selector: &proto.AttributePath_Step_ElementKeyInt{ElementKeyInt: v},
+				}
+			default:
+				return nil, fmt.Errorf("unknown index step key type: %s", s.Key.Type().GoString())
+			}
+		case cty.GetAttrStep:
+			steps[idx] = &proto.AttributePath_Step{
+				Selector: &proto.AttributePath_Step_AttributeName{AttributeName: s.Name},
+			}
+		default:
+			return nil, fmt.Errorf("unknown attribute path step: %T", s)
+		}
+	}
+
+	return &proto.AttributePath{Steps: steps}, nil
 }
 
 // Config converts tflint.Config to proto.ApplyGlobalConfig_Config

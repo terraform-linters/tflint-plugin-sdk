@@ -15,6 +15,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"google.golang.org/grpc"
@@ -1854,6 +1855,98 @@ func TestEvaluateExpr(t *testing.T) {
 			ErrCheck: func(err error) bool {
 				return !errors.Is(err, tflint.ErrNullValue)
 			},
+		},
+		{
+			Name:       "sensitive",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(""),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.StringVal("bar").Mark(marks.Sensitive),
+						}),
+					},
+				})
+			},
+			Want:        "",
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrSensitive)
+			},
+		},
+		{
+			Name:       "sensitive as cty.Value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(cty.Value{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.StringVal("bar").Mark(marks.Sensitive),
+						}),
+					},
+				})
+			},
+			Want:        cty.StringVal("bar").Mark(marks.Sensitive),
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
+			Name:       "sensitive in object",
+			Expr:       hclExpr(`{ value = var.foo }`),
+			TargetType: reflect.TypeOf(map[string]string{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.StringVal("bar").Mark(marks.Sensitive),
+						}),
+					},
+				})
+			},
+			Want:        (map[string]string)(nil),
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrSensitive)
+			},
+		},
+		{
+			Name:       "sensitive object as cty.Value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(cty.Value{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.ObjectVal(map[string]cty.Value{
+								"bar": cty.StringVal("barval").Mark(marks.Sensitive),
+								"baz": cty.ListVal([]cty.Value{cty.NumberIntVal(1).Mark(marks.Sensitive)}),
+								"qux": cty.TupleVal([]cty.Value{cty.StringVal("quxval").Mark(marks.Sensitive)}),
+								"quux": cty.MapVal(map[string]cty.Value{
+									"foo": cty.StringVal("fooval").Mark(marks.Sensitive),
+								}),
+								"corge": cty.ObjectVal(map[string]cty.Value{
+									"bar": cty.NumberIntVal(2).Mark(marks.Sensitive),
+								}),
+							}),
+						}),
+					},
+				})
+			},
+			Want: cty.ObjectVal(map[string]cty.Value{
+				"bar": cty.StringVal("barval").Mark(marks.Sensitive),
+				"baz": cty.ListVal([]cty.Value{cty.NumberIntVal(1).Mark(marks.Sensitive)}),
+				"qux": cty.TupleVal([]cty.Value{cty.StringVal("quxval").Mark(marks.Sensitive)}),
+				"quux": cty.MapVal(map[string]cty.Value{
+					"foo": cty.StringVal("fooval").Mark(marks.Sensitive),
+				}),
+				"corge": cty.ObjectVal(map[string]cty.Value{
+					"bar": cty.NumberIntVal(2).Mark(marks.Sensitive),
+				}),
+			}),
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
 		},
 	}
 
