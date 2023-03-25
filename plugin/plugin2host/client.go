@@ -20,7 +20,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"github.com/zclconf/go-cty/cty/json"
-	"github.com/zclconf/go-cty/cty/msgpack"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -327,7 +326,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		return fromproto.Error(err)
 	}
 
-	val, err := msgpack.Unmarshal(resp.Value, ty)
+	val, err := fromproto.Value(resp.Value, ty, resp.Marks)
 	if err != nil {
 		return err
 	}
@@ -336,7 +335,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		return gocty.FromCtyValue(val, ret)
 	}
 
-	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown value, null).
+	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, sensitive).
 	// This allows the caller to handle the value by the errors package.
 	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
 		if !v.IsKnown() {
@@ -346,6 +345,10 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		if v.IsNull() {
 			logger.Debug(fmt.Sprintf("null value found in %s", expr.Range()))
 			return false, tflint.ErrNullValue
+		}
+		if v.IsMarked() {
+			logger.Debug(fmt.Sprintf("sensitive value found in %s", expr.Range()))
+			return false, tflint.ErrSensitive
 		}
 		return true, nil
 	})

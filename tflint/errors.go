@@ -15,5 +15,5 @@ var (
 	// Deprecated: This error is no longer returned since TFLint v0.41.
 	ErrUnevaluable = errors.New("")
 	// ErrSensitive is an error that occurs when decoding a sensitive value to a Go value.
-	ErrSensitive = errors.New("")
+	ErrSensitive = errors.New("sensitive value found")
 )

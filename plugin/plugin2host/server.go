@@ -11,7 +11,6 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/json"
-	"github.com/zclconf/go-cty/cty/msgpack"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -156,12 +155,12 @@ func (s *GRPCServer) EvaluateExpr(ctx context.Context, req *proto.EvaluateExpr_R
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
-	val, err := msgpack.Marshal(value, ty)
+	val, marks, err := toproto.Value(value, ty)
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 
-	return &proto.EvaluateExpr_Response{Value: val}, nil
+	return &proto.EvaluateExpr_Response{Value: val, Marks: marks}, nil
 }
 
 // EmitIssue emits the issue with the passed rule, message, location
