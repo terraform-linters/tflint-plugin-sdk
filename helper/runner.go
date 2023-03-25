@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -196,9 +198,45 @@ func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
 	return nil
 }
 
+var errRefTy = reflect.TypeOf((*error)(nil)).Elem()
+
 // EvaluateExpr returns a value of the passed expression.
 // Note that some features are limited
-func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint.EvaluateExprOption) error {
+func (r *Runner) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
+	var callback bool
+	rval := reflect.ValueOf(target)
+	rty := rval.Type()
+	// Callback must meet the following requirements:
+	//   - It must be a function
+	//   - It must take an argument
+	//   - It must return an error
+	if rty.Kind() == reflect.Func && rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy) {
+		callback = true
+		target = reflect.New(rty.In(0)).Interface()
+	}
+
+	err := r.evaluateExpr(expr, target, opts)
+	if !callback {
+		// error should be handled in the caller
+		return err
+	}
+
+	if err != nil {
+		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
+		if errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrSensitive) || errors.Is(err, tflint.ErrUnevaluable) {
+			return nil
+		}
+		return err
+	}
+
+	rerr := rval.Call([]reflect.Value{reflect.ValueOf(target).Elem()})
+	if rerr[0].IsNil() {
+		return nil
+	}
+	return rerr[0].Interface().(error)
+}
+
+func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
 	if opts == nil {
 		opts = &tflint.EvaluateExprOption{}
 	}
@@ -207,7 +245,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint
 	if opts.WantType != nil {
 		ty = *opts.WantType
 	} else {
-		switch ret.(type) {
+		switch target.(type) {
 		case *string, string:
 			ty = cty.String
 		case *int, int:
@@ -223,7 +261,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint
 		case cty.Value, *cty.Value:
 			ty = cty.DynamicPseudoType
 		default:
-			return fmt.Errorf("unsupported result type: %T", ret)
+			return fmt.Errorf("unsupported target type: %T", target)
 		}
 	}
 
@@ -251,7 +289,7 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint
 		return err
 	}
 
-	return gocty.FromCtyValue(val, ret)
+	return gocty.FromCtyValue(val, target)
 }
 
 // EmitIssue adds an issue to the runner itself.
@@ -266,7 +304,7 @@ func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range)
 
 // EnsureNoError is a method that simply runs a function if there is no error.
 //
-// Deprecated: Use errors.Is() instead to determine which errors can be ignored.
+// Deprecated: Use EvaluateExpr with a function callback. e.g. EvaluateExpr(expr, func (val T) error {}, ...)
 func (r *Runner) EnsureNoError(err error, proc func() error) error {
 	if err == nil {
 		return proc()

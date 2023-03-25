@@ -1975,6 +1975,267 @@ func TestEvaluateExpr(t *testing.T) {
 	}
 }
 
+func TestEvaluateExpr_callback(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+
+	// default getFileImpl function
+	fileIdx := 1
+	files := map[string]*hcl.File{}
+	fileExists := func(filename string) (*hcl.File, error) {
+		return files[filename], nil
+	}
+
+	// test util functions
+	hclExpr := func(expr string) hcl.Expression {
+		filename := fmt.Sprintf("test%d.tf", fileIdx)
+		file, diags := hclsyntax.ParseConfig([]byte(fmt.Sprintf(`expr = %s`, expr)), filename, hcl.InitialPos)
+		if diags.HasErrors() {
+			panic(diags)
+		}
+		attributes, diags := file.Body.JustAttributes()
+		if diags.HasErrors() {
+			panic(diags)
+		}
+		files[filename] = file
+		fileIdx = fileIdx + 1
+		return attributes["expr"].Expr
+	}
+
+	// test struct for decoding from cty.Value
+	type Object struct {
+		Name    string `cty:"name"`
+		Enabled bool   `cty:"enabled"`
+	}
+	objectTy := cty.Object(map[string]cty.Type{"name": cty.String, "enabled": cty.Bool})
+
+	tests := []struct {
+		name        string
+		expr        hcl.Expression
+		target      any
+		option      *tflint.EvaluateExprOption
+		serverImpl  func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
+		getFileImpl func(string) (*hcl.File, error)
+		errCheck    func(err error) bool
+	}{
+		{
+			name: "callback with string",
+			expr: hclExpr(`"foo"`),
+			target: func(val string) error {
+				return fmt.Errorf("value is %s", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.StringVal("foo"), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != "value is foo"
+			},
+		},
+		{
+			name: "callback with int",
+			expr: hclExpr(`1`),
+			target: func(val int) error {
+				return fmt.Errorf("value is %d", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.NumberIntVal(1), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != "value is 1"
+			},
+		},
+		{
+			name: "callback with []string",
+			expr: hclExpr(`["foo", "bar"]`),
+			target: func(val []string) error {
+				return fmt.Errorf("value is %#v", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.ListVal([]cty.Value{cty.StringVal("foo"), cty.StringVal("bar")}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is []string{"foo", "bar"}`
+			},
+		},
+		{
+			name: "callback with []int",
+			expr: hclExpr(`[1, 2]`),
+			target: func(val []int) error {
+				return fmt.Errorf("value is %#v", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.ListVal([]cty.Value{cty.NumberIntVal(1), cty.NumberIntVal(2)}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is []int{1, 2}`
+			},
+		},
+		{
+			name: "callback with map[string]string",
+			expr: hclExpr(`{ "foo" = "bar", "baz" = "qux" }`),
+			target: func(val map[string]string) error {
+				return fmt.Errorf("foo is %s, baz is %s", val["foo"], val["baz"])
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.MapVal(map[string]cty.Value{
+					"foo": cty.StringVal("bar"),
+					"baz": cty.StringVal("qux"),
+				}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `foo is bar, baz is qux`
+			},
+		},
+		{
+			name: "callback with map[string]int",
+			expr: hclExpr(`{ "foo" = "bar", "baz" = "qux" }`),
+			target: func(val map[string]int) error {
+				return fmt.Errorf("foo is %d, baz is %d", val["foo"], val["baz"])
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.MapVal(map[string]cty.Value{
+					"foo": cty.NumberIntVal(1),
+					"baz": cty.NumberIntVal(2),
+				}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `foo is 1, baz is 2`
+			},
+		},
+		{
+			name: "callback with cty.Value",
+			expr: hclExpr(`var.foo`),
+			target: func(val cty.Value) error {
+				return fmt.Errorf("value is %s", val.GoString())
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.ObjectVal(map[string]cty.Value{
+					"foo": cty.NumberIntVal(1),
+					"bar": cty.StringVal("baz"),
+					"qux": cty.UnknownVal(cty.String),
+				}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is cty.ObjectVal(map[string]cty.Value{"bar":cty.StringVal("baz"), "foo":cty.NumberIntVal(1), "qux":cty.UnknownVal(cty.String)})`
+			},
+		},
+		{
+			name: "callback with struct",
+			expr: hclExpr(`var.foo`),
+			target: func(val Object) error {
+				return fmt.Errorf("value is %#v", val)
+			},
+			option: &tflint.EvaluateExprOption{WantType: &objectTy},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.ObjectVal(map[string]cty.Value{
+					"name":    cty.StringVal("bar"),
+					"enabled": cty.BoolVal(true),
+				}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is plugin2host.Object{Name:"bar", Enabled:true}`
+			},
+		},
+		{
+			name: "callback with unknown value as Go value",
+			expr: hclExpr(`var.foo`),
+			target: func(val string) error {
+				return fmt.Errorf("value is %s", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.UnknownVal(cty.String), nil
+			},
+			getFileImpl: fileExists,
+			errCheck:    neverHappend,
+		},
+		{
+			name: "callback with unknown value as cty.Value",
+			expr: hclExpr(`var.foo`),
+			target: func(val cty.Value) error {
+				return fmt.Errorf("value is %s", val.GoString())
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.UnknownVal(cty.String), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is cty.UnknownVal(cty.String)`
+			},
+		},
+		{
+			name: "callback with null as Go value",
+			expr: hclExpr(`var.foo`),
+			target: func(val string) error {
+				return fmt.Errorf("value is %s", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.NullVal(cty.String), nil
+			},
+			getFileImpl: fileExists,
+			errCheck:    neverHappend,
+		},
+		{
+			name: "callback with null as cty.Value",
+			expr: hclExpr(`var.foo`),
+			target: func(val cty.Value) error {
+				return fmt.Errorf("value is %s", val.GoString())
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.NullVal(cty.String), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is cty.NullVal(cty.String)`
+			},
+		},
+		{
+			name: "callback with sensitive value as Go value",
+			expr: hclExpr(`var.foo`),
+			target: func(val string) error {
+				return fmt.Errorf("value is %s", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.StringVal("foo").Mark(marks.Sensitive), nil
+			},
+			getFileImpl: fileExists,
+			errCheck:    neverHappend,
+		},
+		{
+			name: "callback with sensitive value as cty.Value",
+			expr: hclExpr(`var.foo`),
+			target: func(val cty.Value) error {
+				return fmt.Errorf("value is %s", val.GoString())
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.StringVal("foo").Mark(marks.Sensitive), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is cty.StringVal("foo").Mark(marks.Sensitive)`
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{evaluateExpr: test.serverImpl, getFile: test.getFileImpl}))
+
+			err := client.EvaluateExpr(test.expr, test.target, test.option)
+			if test.errCheck(err) {
+				t.Fatalf("failed to call EvaluateExpr: %s", err)
+			}
+		})
+	}
+}
+
 // test rule for TestEmitIssue
 type Rule struct {
 	tflint.DefaultRule
