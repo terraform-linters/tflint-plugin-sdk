@@ -190,9 +190,10 @@ type Runner interface {
 	//
 	// However, if the target is cty.Value, these errors will not be returned.
 	//
-	// Here are the types that can be passed as the target: string, int, []string, []int,
-	// map[string]string, map[string]int, and cty.Value. Passing any other type will
-	// result in a panic, but you can make an exception by passing wantType as an option.
+	// Here are the types that can be passed as the target: string, int, bool, []string,
+	// []int, []bool, map[string]string, map[string]int, map[string]bool, and cty.Value.
+	// Passing any other type will result in a panic, but you can make an exception by
+	// passing wantType as an option.
 	//
 	// ```
 	// type complexVal struct {

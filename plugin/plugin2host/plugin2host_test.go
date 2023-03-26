@@ -1475,6 +1475,26 @@ func TestEvaluateExpr(t *testing.T) {
 			ErrCheck:    neverHappend,
 		},
 		{
+			Name:       "bool variable",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(true),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				if *opts.WantType != cty.Bool {
+					return cty.Value{}, errors.New("wantType should be bool")
+				}
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.BoolVal(true),
+						}),
+					},
+				})
+			},
+			Want:        true,
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
 			Name:       "string list variable",
 			Expr:       hclExpr(`var.foo`),
 			TargetType: reflect.TypeOf([]string{}),
@@ -1515,6 +1535,26 @@ func TestEvaluateExpr(t *testing.T) {
 			ErrCheck:    neverHappend,
 		},
 		{
+			Name:       "bool list variable",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf([]bool{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				if *opts.WantType != cty.List(cty.Bool) {
+					return cty.Value{}, errors.New("wantType should be bool list")
+				}
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.ListVal([]cty.Value{cty.BoolVal(true), cty.BoolVal(false)}),
+						}),
+					},
+				})
+			},
+			Want:        []bool{true, false},
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
 			Name:       "string map variable",
 			Expr:       hclExpr(`var.foo`),
 			TargetType: reflect.TypeOf(map[string]string{}),
@@ -1551,6 +1591,26 @@ func TestEvaluateExpr(t *testing.T) {
 				})
 			},
 			Want:        map[string]int{"foo": 1, "bar": 2},
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
+		{
+			Name:       "bool map variable",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(map[string]bool{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				if *opts.WantType != cty.Map(cty.Bool) {
+					return cty.Value{}, errors.New("wantType should be bool map")
+				}
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.MapVal(map[string]cty.Value{"foo": cty.BoolVal(true), "bar": cty.BoolVal(false)}),
+						}),
+					},
+				})
+			},
+			Want:        map[string]bool{"foo": true, "bar": false},
 			GetFileImpl: fileExists,
 			ErrCheck:    neverHappend,
 		},
@@ -2047,6 +2107,20 @@ func TestEvaluateExpr_callback(t *testing.T) {
 			},
 		},
 		{
+			name: "callback with bool",
+			expr: hclExpr(`true`),
+			target: func(val bool) error {
+				return fmt.Errorf("value is %t", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.BoolVal(true), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != "value is true"
+			},
+		},
+		{
 			name: "callback with []string",
 			expr: hclExpr(`["foo", "bar"]`),
 			target: func(val []string) error {
@@ -2072,6 +2146,20 @@ func TestEvaluateExpr_callback(t *testing.T) {
 			getFileImpl: fileExists,
 			errCheck: func(err error) bool {
 				return err == nil || err.Error() != `value is []int{1, 2}`
+			},
+		},
+		{
+			name: "callback with []bool",
+			expr: hclExpr(`[true, false]`),
+			target: func(val []bool) error {
+				return fmt.Errorf("value is %#v", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.ListVal([]cty.Value{cty.BoolVal(true), cty.BoolVal(false)}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is []bool{true, false}`
 			},
 		},
 		{
@@ -2106,6 +2194,23 @@ func TestEvaluateExpr_callback(t *testing.T) {
 			getFileImpl: fileExists,
 			errCheck: func(err error) bool {
 				return err == nil || err.Error() != `foo is 1, baz is 2`
+			},
+		},
+		{
+			name: "callback with map[string]bool",
+			expr: hclExpr(`{ "foo" = true, "baz" = false }`),
+			target: func(val map[string]bool) error {
+				return fmt.Errorf("foo is %t, baz is %t", val["foo"], val["baz"])
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.MapVal(map[string]cty.Value{
+					"foo": cty.BoolVal(true),
+					"baz": cty.BoolVal(false),
+				}), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `foo is true, baz is false`
 			},
 		},
 		{
