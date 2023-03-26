@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -274,8 +275,46 @@ func (c *GRPCClient) DecodeRuleConfig(name string, ret interface{}) error {
 	return nil
 }
 
+var errRefTy = reflect.TypeOf((*error)(nil)).Elem()
+
 // EvaluateExpr evals the passed expression based on the type.
-func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tflint.EvaluateExprOption) error {
+// Passing a callback function instead of a value as the target will invoke the callback,
+// passing the evaluated value to the argument.
+func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
+	var callback bool
+	rval := reflect.ValueOf(target)
+	rty := rval.Type()
+	// Callback must meet the following requirements:
+	//   - It must be a function
+	//   - It must take an argument
+	//   - It must return an error
+	if rty.Kind() == reflect.Func && rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy) {
+		callback = true
+		target = reflect.New(rty.In(0)).Interface()
+	}
+
+	err := c.evaluateExpr(expr, target, opts)
+	if !callback {
+		// error should be handled in the caller
+		return err
+	}
+
+	if err != nil {
+		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
+		if errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrSensitive) || errors.Is(err, tflint.ErrUnevaluable) {
+			return nil
+		}
+		return err
+	}
+
+	rerr := rval.Call([]reflect.Value{reflect.ValueOf(target).Elem()})
+	if rerr[0].IsNil() {
+		return nil
+	}
+	return rerr[0].Interface().(error)
+}
+
+func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
 	if opts == nil {
 		opts = &tflint.EvaluateExprOption{}
 	}
@@ -284,7 +323,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 	if opts.WantType != nil {
 		ty = *opts.WantType
 	} else {
-		switch ret.(type) {
+		switch target.(type) {
 		case *string, string:
 			ty = cty.String
 		case *int, int:
@@ -300,7 +339,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		case cty.Value, *cty.Value:
 			ty = cty.DynamicPseudoType
 		default:
-			panic(fmt.Sprintf("unsupported result type: %T", ret))
+			panic(fmt.Sprintf("unsupported target type: %T", target))
 		}
 	}
 	tyby, err := json.MarshalType(ty)
@@ -332,7 +371,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 	}
 
 	if ty == cty.DynamicPseudoType {
-		return gocty.FromCtyValue(val, ret)
+		return gocty.FromCtyValue(val, target)
 	}
 
 	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, sensitive).
@@ -356,7 +395,7 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, ret interface{}, opts *tf
 		return err
 	}
 
-	return gocty.FromCtyValue(val, ret)
+	return gocty.FromCtyValue(val, target)
 }
 
 // EmitIssue emits the issue with the passed rule, message, location

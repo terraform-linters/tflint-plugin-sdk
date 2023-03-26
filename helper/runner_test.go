@@ -576,6 +576,7 @@ resource "aws_instance" "foo" {
 			}
 
 			for _, resource := range resources.Blocks {
+				// raw value
 				var instanceType string
 				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, &instanceType, nil); err != nil {
 					t.Fatal(err)
@@ -583,6 +584,16 @@ resource "aws_instance" "foo" {
 
 				if instanceType != test.Want {
 					t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType)
+				}
+
+				// callback
+				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, func(val string) error {
+					if instanceType != test.Want {
+						t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType)
+					}
+					return nil
+				}, nil); err != nil {
+					t.Fatal(err)
 				}
 			}
 		})
