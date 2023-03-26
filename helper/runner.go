@@ -203,16 +203,26 @@ var errRefTy = reflect.TypeOf((*error)(nil)).Elem()
 // EvaluateExpr returns a value of the passed expression.
 // Note that some features are limited
 func (r *Runner) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
-	var callback bool
 	rval := reflect.ValueOf(target)
 	rty := rval.Type()
-	// Callback must meet the following requirements:
-	//   - It must be a function
-	//   - It must take an argument
-	//   - It must return an error
-	if rty.Kind() == reflect.Func && rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy) {
+
+	var callback bool
+	switch rty.Kind() {
+	case reflect.Func:
+		// Callback must meet the following requirements:
+		//   - It must be a function
+		//   - It must take an argument
+		//   - It must return an error
+		if !(rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy)) {
+			panic(`callback must be of type "func (v T) error"`)
+		}
 		callback = true
 		target = reflect.New(rty.In(0)).Interface()
+
+	case reflect.Pointer:
+		// ok
+	default:
+		panic("target value is not a pointer or function")
 	}
 
 	err := r.evaluateExpr(expr, target, opts)
@@ -246,19 +256,19 @@ func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tfl
 		ty = *opts.WantType
 	} else {
 		switch target.(type) {
-		case *string, string:
+		case *string:
 			ty = cty.String
-		case *int, int:
+		case *int:
 			ty = cty.Number
-		case *[]string, []string:
+		case *[]string:
 			ty = cty.List(cty.String)
-		case *[]int, []int:
+		case *[]int:
 			ty = cty.List(cty.Number)
-		case *map[string]string, map[string]string:
+		case *map[string]string:
 			ty = cty.Map(cty.String)
-		case *map[string]int, map[string]int:
+		case *map[string]int:
 			ty = cty.Map(cty.Number)
-		case cty.Value, *cty.Value:
+		case *cty.Value:
 			ty = cty.DynamicPseudoType
 		default:
 			return fmt.Errorf("unsupported target type: %T", target)
