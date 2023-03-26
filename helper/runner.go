@@ -260,14 +260,20 @@ func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tfl
 			ty = cty.String
 		case *int:
 			ty = cty.Number
+		case *bool:
+			ty = cty.Bool
 		case *[]string:
 			ty = cty.List(cty.String)
 		case *[]int:
 			ty = cty.List(cty.Number)
+		case *[]bool:
+			ty = cty.List(cty.Bool)
 		case *map[string]string:
 			ty = cty.Map(cty.String)
 		case *map[string]int:
 			ty = cty.Map(cty.Number)
+		case *map[string]bool:
+			ty = cty.Map(cty.Bool)
 		case *cty.Value:
 			ty = cty.DynamicPseudoType
 		default:
