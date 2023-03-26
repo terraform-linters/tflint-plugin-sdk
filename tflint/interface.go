@@ -159,18 +159,14 @@ type Runner interface {
 	// See the hclext.DecodeBody documentation and examples for more details.
 	DecodeRuleConfig(ruleName string, ret interface{}) error
 
-	// EvaluateExpr evaluates the given expression and assigns the value to the Go value target.
-	// The target must be a pointer. Otherwise, it will cause a panic.
+	// EvaluateExpr evaluates an expression and assigns its value to a Go value target,
+	// which must be a pointer or a function. Any other type of target will trigger a panic.
 	//
-	// If the value cannot be assigned to the target, it returns an error.
-	// There are particularly examples such as:
+	// For pointers, if the expression value cannot be assigned to the target, an error is returned.
+	// Some examples of this include unknown values (like variables without defaults or
+	// aws_instance.foo.arn), null values, and sensitive values (for variables with sensitive = true).
 	//
-	//   1. Unknown value (e.g. variables without defaults, `aws_instance.foo.arn`)
-	//   2. NULL
-	//   3. Sensitive value (variables with `sensitive = true`)
-	//
-	// However, if the target is cty.Value, these errors will not be returned.
-	// These errors can be handled with errors.Is().
+	// These errors be handled with errors.Is():
 	//
 	// ```
 	// var val string
@@ -192,29 +188,11 @@ type Runner interface {
 	// }
 	// ```
 	//
-	// The following are the types that can be passed as the target:
+	// However, if the target is cty.Value, these errors will not be returned.
 	//
-	//   1. string
-	//   2. int
-	//   3. []string
-	//   4. []int
-	//   5. map[string]string
-	//   6. map[string]int
-	//   7. cty.Value
-	//   8. func (v T) error
-	//
-	// Passing any other type will cause a panic. If you pass a function, the assigned value
-	// will be used as an argument to execute the function. In this case, if a value cannot be
-	// assigned to the argument type, instead of returning an error, the execution is skipped.
-	// This is useful when it is always acceptable to ignore exceptional values.
-	//
-	// ```
-	// runner.EvaluateExpr(expr, func (val string) error {
-	//   // Test value
-	// }, nil)
-	// ```
-	//
-	// Besides this, you can pass a structure. In that case, you need to explicitly pass wantType.
+	// Here are the types that can be passed as the target: string, int, []string, []int,
+	// map[string]string, map[string]int, and cty.Value. Passing any other type will
+	// result in a panic, but you can make an exception by passing wantType as an option.
 	//
 	// ```
 	// type complexVal struct {
@@ -229,6 +207,19 @@ type Runner interface {
 	//
 	// var complexVals []complexVal
 	// runner.EvaluateExpr(expr, &compleVals, &tflint.EvaluateExprOption{WantType: &wantType})
+	// ```
+	//
+	// For functions (callbacks), the assigned value is used as an argument to execute
+	// the function. If a value cannot be assigned to the argument type, the execution
+	// is skipped instead of returning an error. This is useful when it's always acceptable
+	// to ignore exceptional values.
+	//
+	// Here's an example of how you can pass a function to EvaluateExpr:
+	//
+	// ```
+	// runner.EvaluateExpr(expr, func (val string) error {
+	//   // Test value
+	// }, nil)
 	// ```
 	EvaluateExpr(expr hcl.Expression, target interface{}, option *EvaluateExprOption) error
 
