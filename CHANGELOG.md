@@ -1,3 +1,55 @@
+## 0.16.0 (2023-04-02)
+
+This release deprecates the `runner.EnsureNoError` helper. This helper is still available in this version, but we recommend migrating to the function callback approach.
+
+```go
+// Before
+var val string
+err := runner.EvaluateExpr(expr, &val, nil)
+err = runner.EnsureNoError(err, func () error {
+  // Test values
+})
+if err != nil {
+  return err
+}
+
+// After
+err := runner.EvaluateExpr(expr, func (val string), error {
+  // Test values
+}, nil)
+```
+
+See also https://github.com/terraform-linters/tflint-ruleset-template/pull/76 for an example of upgrading the SDK.
+
+### Enhancements
+
+- [#225](https://github.com/terraform-linters/tflint-plugin-sdk/pull/225): ruleset: Allow a runner to be redefined within a ruleset
+  - The `NewRunner` method has been added to the `tflint.RuleSet` interface.
+- [#239](https://github.com/terraform-linters/tflint-plugin-sdk/pull/239): plugin2host: Send marked values over the wire
+  - With this change, sensitive values can now be handled by plugins (requires TFLint v0.46+). Previously, `tflint.ErrSensitive` was always returned.
+- [#246](https://github.com/terraform-linters/tflint-plugin-sdk/pull/246) [#247](https://github.com/terraform-linters/tflint-plugin-sdk/pull/247): runner: Add support for function callbacks as the target of `EvaluateExpr`
+  - This allows reproducing the same behavior as before without using `EnsureNoError`.
+- [#248](https://github.com/terraform-linters/tflint-plugin-sdk/pull/248): runner: Add support for the bool type as a target value of `EvaluateExpr`
+
+### Changes
+
+- [#236](https://github.com/terraform-linters/tflint-plugin-sdk/pull/236): runner: Deprecate `EnsureNoError` helper
+  - This helper is still available in this version, but we recommend migrating to the function callback approach.
+
+### Chores
+
+- [#233](https://github.com/terraform-linters/tflint-plugin-sdk/pull/233): Bump golang.org/x/net from 0.3.0 to 0.7.0
+- [#234](https://github.com/terraform-linters/tflint-plugin-sdk/pull/234): Go 1.20
+- [#235](https://github.com/terraform-linters/tflint-plugin-sdk/pull/235): plugin2host: Handle eval errors on the client side
+- [#238](https://github.com/terraform-linters/tflint-plugin-sdk/pull/238): Bump github.com/hashicorp/go-plugin from 1.4.8 to 1.4.9
+- [#240](https://github.com/terraform-linters/tflint-plugin-sdk/pull/240): Bump github.com/hashicorp/hcl/v2 from 2.15.0 to 2.16.2
+- [#241](https://github.com/terraform-linters/tflint-plugin-sdk/pull/241): Bump golang.org/x/tools from 0.4.0 to 0.7.0
+- [#243](https://github.com/terraform-linters/tflint-plugin-sdk/pull/243): Bump actions/setup-go from 3 to 4
+- [#244](https://github.com/terraform-linters/tflint-plugin-sdk/pull/244): Bump github.com/zclconf/go-cty from 1.12.1 to 1.13.1
+- [#245](https://github.com/terraform-linters/tflint-plugin-sdk/pull/245): Bump google.golang.org/protobuf from 1.28.1 to 1.30.0
+- [#249](https://github.com/terraform-linters/tflint-plugin-sdk/pull/249): Bump github.com/hashicorp/go-hclog from 1.4.0 to 1.5.0
+- [#250](https://github.com/terraform-linters/tflint-plugin-sdk/pull/250): Bump google.golang.org/grpc from 1.51.0 to 1.54.0
+
 ## 0.15.0 (2022-12-26)
 
 ### Enhancements
