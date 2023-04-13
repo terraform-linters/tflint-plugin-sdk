@@ -1,3 +1,13 @@
+## 0.16.1 (2023-04-13)
+
+### BugFixes
+
+- [#252](https://github.com/terraform-linters/tflint-plugin-sdk/pull/252): ruleset: Fix NewRunner hook not injecting a custom runner
+
+### Chores
+
+- [#251](https://github.com/terraform-linters/tflint-plugin-sdk/pull/251): Bump golang.org/x/tools from 0.7.0 to 0.8.0
+
 ## 0.16.0 (2023-04-02)
 
 This release deprecates the `runner.EnsureNoError` helper. This helper is still available in this version, but we recommend migrating to the function callback approach.
