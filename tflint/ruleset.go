@@ -106,11 +106,6 @@ func (r *BuiltinRuleSet) NewRunner(runner Runner) (Runner, error) {
 
 // Check runs inspection for each rule by applying Runner.
 func (r *BuiltinRuleSet) Check(runner Runner) error {
-	runner, err := r.NewRunner(runner)
-	if err != nil {
-		return err
-	}
-
 	for _, rule := range r.EnabledRules {
 		if err := rule.Check(runner); err != nil {
 			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)

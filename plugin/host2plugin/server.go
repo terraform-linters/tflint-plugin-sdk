@@ -116,8 +116,11 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	}
 	defer conn.Close()
 
-	err = s.impl.Check(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)})
-
+	runner, err := s.impl.NewRunner(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)})
+	if err != nil {
+		return nil, toproto.Error(codes.FailedPrecondition, err)
+	}
+	err = s.impl.Check(runner)
 	if err != nil {
 		return nil, toproto.Error(codes.Aborted, err)
 	}
