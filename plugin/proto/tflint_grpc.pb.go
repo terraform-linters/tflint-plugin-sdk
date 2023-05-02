@@ -413,6 +413,7 @@ const (
 	Runner_GetRuleConfigContent_FullMethodName = "/proto.Runner/GetRuleConfigContent"
 	Runner_EvaluateExpr_FullMethodName         = "/proto.Runner/EvaluateExpr"
 	Runner_EmitIssue_FullMethodName            = "/proto.Runner/EmitIssue"
+	Runner_ApplyChanges_FullMethodName         = "/proto.Runner/ApplyChanges"
 )
 
 // RunnerClient is the client API for Runner service.
@@ -427,6 +428,7 @@ type RunnerClient interface {
 	GetRuleConfigContent(ctx context.Context, in *GetRuleConfigContent_Request, opts ...grpc.CallOption) (*GetRuleConfigContent_Response, error)
 	EvaluateExpr(ctx context.Context, in *EvaluateExpr_Request, opts ...grpc.CallOption) (*EvaluateExpr_Response, error)
 	EmitIssue(ctx context.Context, in *EmitIssue_Request, opts ...grpc.CallOption) (*EmitIssue_Response, error)
+	ApplyChanges(ctx context.Context, in *ApplyChanges_Request, opts ...grpc.CallOption) (*ApplyChanges_Response, error)
 }
 
 type runnerClient struct {
@@ -509,6 +511,15 @@ func (c *runnerClient) EmitIssue(ctx context.Context, in *EmitIssue_Request, opt
 	return out, nil
 }
 
+func (c *runnerClient) ApplyChanges(ctx context.Context, in *ApplyChanges_Request, opts ...grpc.CallOption) (*ApplyChanges_Response, error) {
+	out := new(ApplyChanges_Response)
+	err := c.cc.Invoke(ctx, Runner_ApplyChanges_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RunnerServer is the server API for Runner service.
 // All implementations must embed UnimplementedRunnerServer
 // for forward compatibility
@@ -521,6 +532,7 @@ type RunnerServer interface {
 	GetRuleConfigContent(context.Context, *GetRuleConfigContent_Request) (*GetRuleConfigContent_Response, error)
 	EvaluateExpr(context.Context, *EvaluateExpr_Request) (*EvaluateExpr_Response, error)
 	EmitIssue(context.Context, *EmitIssue_Request) (*EmitIssue_Response, error)
+	ApplyChanges(context.Context, *ApplyChanges_Request) (*ApplyChanges_Response, error)
 	mustEmbedUnimplementedRunnerServer()
 }
 
@@ -551,6 +563,9 @@ func (UnimplementedRunnerServer) EvaluateExpr(context.Context, *EvaluateExpr_Req
 }
 func (UnimplementedRunnerServer) EmitIssue(context.Context, *EmitIssue_Request) (*EmitIssue_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmitIssue not implemented")
+}
+func (UnimplementedRunnerServer) ApplyChanges(context.Context, *ApplyChanges_Request) (*ApplyChanges_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyChanges not implemented")
 }
 func (UnimplementedRunnerServer) mustEmbedUnimplementedRunnerServer() {}
 
@@ -709,6 +724,24 @@ func _Runner_EmitIssue_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Runner_ApplyChanges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyChanges_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RunnerServer).ApplyChanges(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Runner_ApplyChanges_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RunnerServer).ApplyChanges(ctx, req.(*ApplyChanges_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Runner_ServiceDesc is the grpc.ServiceDesc for Runner service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -747,6 +780,10 @@ var Runner_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EmitIssue",
 			Handler:    _Runner_EmitIssue_Handler,
+		},
+		{
+			MethodName: "ApplyChanges",
+			Handler:    _Runner_ApplyChanges_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

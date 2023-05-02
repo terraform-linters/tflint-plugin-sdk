@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	hcljson "github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
@@ -27,7 +28,9 @@ import (
 
 // GRPCClient is a plugin-side implementation. Plugin can send requests through the client to host's gRPC server.
 type GRPCClient struct {
-	Client proto.RunnerClient
+	Client     proto.RunnerClient
+	Fixer      *internal.Fixer
+	FixEnabled bool
 }
 
 var _ tflint.Runner = &GRPCClient{}
@@ -420,6 +423,51 @@ func (c *GRPCClient) EmitIssue(rule tflint.Rule, message string, location hcl.Ra
 	if err != nil {
 		return fromproto.Error(err)
 	}
+	return nil
+}
+
+// EmitIssueWithFix emits the issue with the passed rule, message, location.
+// Invoke the fix function and add the changes to the fixer.
+// If the fix function returns ErrFixNotSupported, the emitted issue will not
+// be marked as fixable.
+func (c *GRPCClient) EmitIssueWithFix(rule tflint.Rule, message string, location hcl.Range, fixFunc func(f tflint.Fixer) error) error {
+	var fixable bool
+	var fixErr error
+
+	path, err := c.GetModulePath()
+	if err != nil {
+		return fromproto.Error(err)
+	}
+	// If the issue is not in the root module, skip the fix.
+	if path.IsRoot() {
+		fixable = true
+		c.Fixer.StashChanges()
+
+		fixErr = fixFunc(c.Fixer)
+		if errors.Is(fixErr, tflint.ErrFixNotSupported) {
+			fixable = false
+		}
+	}
+
+	resp, err := c.Client.EmitIssue(context.Background(), &proto.EmitIssue_Request{Rule: toproto.Rule(rule), Message: message, Range: toproto.Range(location), Fixable: fixable})
+	if err != nil {
+		return fromproto.Error(err)
+	}
+
+	if !c.FixEnabled || !fixable || !resp.Applied {
+		c.Fixer.PopChangesFromStash()
+		return nil
+	}
+	return fixErr
+}
+
+// ApplyChanges applies the changes in the fixer to the server
+func (c *GRPCClient) ApplyChanges() error {
+	_, err := c.Client.ApplyChanges(context.Background(), &proto.ApplyChanges_Request{Changes: c.Fixer.Changes()})
+	if err != nil {
+		return fromproto.Error(err)
+	}
+	c.Fixer.ApplyChanges()
 	return nil
 }
 

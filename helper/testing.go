@@ -17,6 +17,8 @@ import (
 // TestRunner returns a mock Runner for testing.
 // You can pass the map of file names and their contents in the second argument.
 func TestRunner(t *testing.T, files map[string]string) *Runner {
+	t.Helper()
+
 	runner := NewLocalRunner(map[string]*hcl.File{}, Issues{})
 	parser := hclparse.NewParser()
 
@@ -50,25 +52,42 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 }
 
 // AssertIssues is an assertion helper for comparing issues.
-func AssertIssues(t *testing.T, expected Issues, actual Issues) {
+func AssertIssues(t *testing.T, want Issues, got Issues) {
+	t.Helper()
+
 	opts := []cmp.Option{
 		// Byte field will be ignored because it's not important in tests such as positions
 		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
 		ruleComparer(),
 	}
-	if !cmp.Equal(expected, actual, opts...) {
-		t.Fatalf("Expected issues are not matched:\n %s\n", cmp.Diff(expected, actual, opts...))
+	if diff := cmp.Diff(want, got, opts...); diff != "" {
+		t.Fatalf("Expected issues are not matched:\n %s\n", diff)
 	}
 }
 
 // AssertIssuesWithoutRange is an assertion helper for comparing issues except for range.
-func AssertIssuesWithoutRange(t *testing.T, expected Issues, actual Issues) {
+func AssertIssuesWithoutRange(t *testing.T, want Issues, got Issues) {
+	t.Helper()
+
 	opts := []cmp.Option{
 		cmpopts.IgnoreFields(Issue{}, "Range"),
 		ruleComparer(),
 	}
-	if !cmp.Equal(expected, actual, opts...) {
-		t.Fatalf("Expected issues are not matched:\n %s\n", cmp.Diff(expected, actual, opts...))
+	if diff := cmp.Diff(want, got, opts...); diff != "" {
+		t.Fatalf("Expected issues are not matched:\n %s\n", diff)
+	}
+}
+
+// AssertChanges is an assertion helper for comparing autofix changes.
+func AssertChanges(t *testing.T, want map[string]string, got map[string][]byte) {
+	t.Helper()
+
+	sources := make(map[string]string)
+	for name, src := range got {
+		sources[name] = string(src)
+	}
+	if diff := cmp.Diff(want, sources); diff != "" {
+		t.Fatalf("Expected changes are not matched:\n %s\n", diff)
 	}
 }
 

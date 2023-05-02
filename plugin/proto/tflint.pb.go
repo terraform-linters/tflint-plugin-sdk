@@ -920,6 +920,44 @@ func (*EmitIssue) Descriptor() ([]byte, []int) {
 	return file_tflint_proto_rawDescGZIP(), []int{16}
 }
 
+type ApplyChanges struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ApplyChanges) Reset() {
+	*x = ApplyChanges{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_tflint_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApplyChanges) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyChanges) ProtoMessage() {}
+
+func (x *ApplyChanges) ProtoReflect() protoreflect.Message {
+	mi := &file_tflint_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyChanges.ProtoReflect.Descriptor instead.
+func (*ApplyChanges) Descriptor() ([]byte, []int) {
+	return file_tflint_proto_rawDescGZIP(), []int{17}
+}
+
 type BodySchema struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -933,7 +971,7 @@ type BodySchema struct {
 func (x *BodySchema) Reset() {
 	*x = BodySchema{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[17]
+		mi := &file_tflint_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -946,7 +984,7 @@ func (x *BodySchema) String() string {
 func (*BodySchema) ProtoMessage() {}
 
 func (x *BodySchema) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[17]
+	mi := &file_tflint_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -959,7 +997,7 @@ func (x *BodySchema) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodySchema.ProtoReflect.Descriptor instead.
 func (*BodySchema) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{17}
+	return file_tflint_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *BodySchema) GetAttributes() []*BodySchema_Attribute {
@@ -995,7 +1033,7 @@ type BodyContent struct {
 func (x *BodyContent) Reset() {
 	*x = BodyContent{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[18]
+		mi := &file_tflint_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1008,7 +1046,7 @@ func (x *BodyContent) String() string {
 func (*BodyContent) ProtoMessage() {}
 
 func (x *BodyContent) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[18]
+	mi := &file_tflint_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1021,7 +1059,7 @@ func (x *BodyContent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodyContent.ProtoReflect.Descriptor instead.
 func (*BodyContent) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{18}
+	return file_tflint_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *BodyContent) GetAttributes() map[string]*BodyContent_Attribute {
@@ -1052,7 +1090,7 @@ type Expression struct {
 func (x *Expression) Reset() {
 	*x = Expression{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[19]
+		mi := &file_tflint_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1065,7 +1103,7 @@ func (x *Expression) String() string {
 func (*Expression) ProtoMessage() {}
 
 func (x *Expression) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[19]
+	mi := &file_tflint_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1078,7 +1116,7 @@ func (x *Expression) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Expression.ProtoReflect.Descriptor instead.
 func (*Expression) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{19}
+	return file_tflint_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Expression) GetBytes() []byte {
@@ -1122,7 +1160,7 @@ type Range struct {
 func (x *Range) Reset() {
 	*x = Range{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[20]
+		mi := &file_tflint_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1135,7 +1173,7 @@ func (x *Range) String() string {
 func (*Range) ProtoMessage() {}
 
 func (x *Range) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[20]
+	mi := &file_tflint_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1186,7 @@ func (x *Range) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Range.ProtoReflect.Descriptor instead.
 func (*Range) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{20}
+	return file_tflint_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Range) GetFilename() string {
@@ -1183,7 +1221,7 @@ type AttributePath struct {
 func (x *AttributePath) Reset() {
 	*x = AttributePath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[21]
+		mi := &file_tflint_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1196,7 +1234,7 @@ func (x *AttributePath) String() string {
 func (*AttributePath) ProtoMessage() {}
 
 func (x *AttributePath) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[21]
+	mi := &file_tflint_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1209,7 +1247,7 @@ func (x *AttributePath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AttributePath.ProtoReflect.Descriptor instead.
 func (*AttributePath) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{21}
+	return file_tflint_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *AttributePath) GetSteps() []*AttributePath_Step {
@@ -1231,7 +1269,7 @@ type ValueMark struct {
 func (x *ValueMark) Reset() {
 	*x = ValueMark{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[22]
+		mi := &file_tflint_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1244,7 +1282,7 @@ func (x *ValueMark) String() string {
 func (*ValueMark) ProtoMessage() {}
 
 func (x *ValueMark) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[22]
+	mi := &file_tflint_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1257,7 +1295,7 @@ func (x *ValueMark) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValueMark.ProtoReflect.Descriptor instead.
 func (*ValueMark) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{22}
+	return file_tflint_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ValueMark) GetPath() *AttributePath {
@@ -1286,7 +1324,7 @@ type ErrorDetail struct {
 func (x *ErrorDetail) Reset() {
 	*x = ErrorDetail{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[23]
+		mi := &file_tflint_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1299,7 +1337,7 @@ func (x *ErrorDetail) String() string {
 func (*ErrorDetail) ProtoMessage() {}
 
 func (x *ErrorDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[23]
+	mi := &file_tflint_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1312,7 +1350,7 @@ func (x *ErrorDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ErrorDetail.ProtoReflect.Descriptor instead.
 func (*ErrorDetail) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{23}
+	return file_tflint_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ErrorDetail) GetCode() ErrorCode {
@@ -1338,7 +1376,7 @@ type GetName_Request struct {
 func (x *GetName_Request) Reset() {
 	*x = GetName_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[24]
+		mi := &file_tflint_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1351,7 +1389,7 @@ func (x *GetName_Request) String() string {
 func (*GetName_Request) ProtoMessage() {}
 
 func (x *GetName_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[24]
+	mi := &file_tflint_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1378,7 +1416,7 @@ type GetName_Response struct {
 func (x *GetName_Response) Reset() {
 	*x = GetName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[25]
+		mi := &file_tflint_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1391,7 +1429,7 @@ func (x *GetName_Response) String() string {
 func (*GetName_Response) ProtoMessage() {}
 
 func (x *GetName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[25]
+	mi := &file_tflint_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1423,7 +1461,7 @@ type GetVersion_Request struct {
 func (x *GetVersion_Request) Reset() {
 	*x = GetVersion_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[26]
+		mi := &file_tflint_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1436,7 +1474,7 @@ func (x *GetVersion_Request) String() string {
 func (*GetVersion_Request) ProtoMessage() {}
 
 func (x *GetVersion_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[26]
+	mi := &file_tflint_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1463,7 +1501,7 @@ type GetVersion_Response struct {
 func (x *GetVersion_Response) Reset() {
 	*x = GetVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[27]
+		mi := &file_tflint_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1476,7 +1514,7 @@ func (x *GetVersion_Response) String() string {
 func (*GetVersion_Response) ProtoMessage() {}
 
 func (x *GetVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[27]
+	mi := &file_tflint_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1508,7 +1546,7 @@ type GetVersionConstraint_Request struct {
 func (x *GetVersionConstraint_Request) Reset() {
 	*x = GetVersionConstraint_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[28]
+		mi := &file_tflint_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1521,7 +1559,7 @@ func (x *GetVersionConstraint_Request) String() string {
 func (*GetVersionConstraint_Request) ProtoMessage() {}
 
 func (x *GetVersionConstraint_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[28]
+	mi := &file_tflint_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1548,7 +1586,7 @@ type GetVersionConstraint_Response struct {
 func (x *GetVersionConstraint_Response) Reset() {
 	*x = GetVersionConstraint_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[29]
+		mi := &file_tflint_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1561,7 +1599,7 @@ func (x *GetVersionConstraint_Response) String() string {
 func (*GetVersionConstraint_Response) ProtoMessage() {}
 
 func (x *GetVersionConstraint_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[29]
+	mi := &file_tflint_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1593,7 +1631,7 @@ type GetSDKVersion_Request struct {
 func (x *GetSDKVersion_Request) Reset() {
 	*x = GetSDKVersion_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[30]
+		mi := &file_tflint_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1606,7 +1644,7 @@ func (x *GetSDKVersion_Request) String() string {
 func (*GetSDKVersion_Request) ProtoMessage() {}
 
 func (x *GetSDKVersion_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[30]
+	mi := &file_tflint_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1633,7 +1671,7 @@ type GetSDKVersion_Response struct {
 func (x *GetSDKVersion_Response) Reset() {
 	*x = GetSDKVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[31]
+		mi := &file_tflint_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1646,7 +1684,7 @@ func (x *GetSDKVersion_Response) String() string {
 func (*GetSDKVersion_Response) ProtoMessage() {}
 
 func (x *GetSDKVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[31]
+	mi := &file_tflint_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1678,7 +1716,7 @@ type GetRuleNames_Request struct {
 func (x *GetRuleNames_Request) Reset() {
 	*x = GetRuleNames_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[32]
+		mi := &file_tflint_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1691,7 +1729,7 @@ func (x *GetRuleNames_Request) String() string {
 func (*GetRuleNames_Request) ProtoMessage() {}
 
 func (x *GetRuleNames_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[32]
+	mi := &file_tflint_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1718,7 +1756,7 @@ type GetRuleNames_Response struct {
 func (x *GetRuleNames_Response) Reset() {
 	*x = GetRuleNames_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[33]
+		mi := &file_tflint_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1731,7 +1769,7 @@ func (x *GetRuleNames_Response) String() string {
 func (*GetRuleNames_Response) ProtoMessage() {}
 
 func (x *GetRuleNames_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[33]
+	mi := &file_tflint_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1763,7 +1801,7 @@ type GetConfigSchema_Request struct {
 func (x *GetConfigSchema_Request) Reset() {
 	*x = GetConfigSchema_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[34]
+		mi := &file_tflint_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1776,7 +1814,7 @@ func (x *GetConfigSchema_Request) String() string {
 func (*GetConfigSchema_Request) ProtoMessage() {}
 
 func (x *GetConfigSchema_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[34]
+	mi := &file_tflint_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1803,7 +1841,7 @@ type GetConfigSchema_Response struct {
 func (x *GetConfigSchema_Response) Reset() {
 	*x = GetConfigSchema_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[35]
+		mi := &file_tflint_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1816,7 +1854,7 @@ func (x *GetConfigSchema_Response) String() string {
 func (*GetConfigSchema_Response) ProtoMessage() {}
 
 func (x *GetConfigSchema_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[35]
+	mi := &file_tflint_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1847,12 +1885,13 @@ type ApplyGlobalConfig_Config struct {
 	Rules             map[string]*ApplyGlobalConfig_RuleConfig `protobuf:"bytes,1,rep,name=rules,proto3" json:"rules,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	DisabledByDefault bool                                     `protobuf:"varint,2,opt,name=disabled_by_default,json=disabledByDefault,proto3" json:"disabled_by_default,omitempty"`
 	Only              []string                                 `protobuf:"bytes,3,rep,name=only,proto3" json:"only,omitempty"`
+	Fix               bool                                     `protobuf:"varint,4,opt,name=fix,proto3" json:"fix,omitempty"`
 }
 
 func (x *ApplyGlobalConfig_Config) Reset() {
 	*x = ApplyGlobalConfig_Config{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[36]
+		mi := &file_tflint_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1865,7 +1904,7 @@ func (x *ApplyGlobalConfig_Config) String() string {
 func (*ApplyGlobalConfig_Config) ProtoMessage() {}
 
 func (x *ApplyGlobalConfig_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[36]
+	mi := &file_tflint_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1902,6 +1941,13 @@ func (x *ApplyGlobalConfig_Config) GetOnly() []string {
 	return nil
 }
 
+func (x *ApplyGlobalConfig_Config) GetFix() bool {
+	if x != nil {
+		return x.Fix
+	}
+	return false
+}
+
 type ApplyGlobalConfig_RuleConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1914,7 +1960,7 @@ type ApplyGlobalConfig_RuleConfig struct {
 func (x *ApplyGlobalConfig_RuleConfig) Reset() {
 	*x = ApplyGlobalConfig_RuleConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[37]
+		mi := &file_tflint_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1927,7 +1973,7 @@ func (x *ApplyGlobalConfig_RuleConfig) String() string {
 func (*ApplyGlobalConfig_RuleConfig) ProtoMessage() {}
 
 func (x *ApplyGlobalConfig_RuleConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[37]
+	mi := &file_tflint_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1968,7 +2014,7 @@ type ApplyGlobalConfig_Request struct {
 func (x *ApplyGlobalConfig_Request) Reset() {
 	*x = ApplyGlobalConfig_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[38]
+		mi := &file_tflint_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1981,7 +2027,7 @@ func (x *ApplyGlobalConfig_Request) String() string {
 func (*ApplyGlobalConfig_Request) ProtoMessage() {}
 
 func (x *ApplyGlobalConfig_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[38]
+	mi := &file_tflint_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2013,7 +2059,7 @@ type ApplyGlobalConfig_Response struct {
 func (x *ApplyGlobalConfig_Response) Reset() {
 	*x = ApplyGlobalConfig_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[39]
+		mi := &file_tflint_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2026,7 +2072,7 @@ func (x *ApplyGlobalConfig_Response) String() string {
 func (*ApplyGlobalConfig_Response) ProtoMessage() {}
 
 func (x *ApplyGlobalConfig_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[39]
+	mi := &file_tflint_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2053,7 +2099,7 @@ type ApplyConfig_Request struct {
 func (x *ApplyConfig_Request) Reset() {
 	*x = ApplyConfig_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[41]
+		mi := &file_tflint_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2066,7 +2112,7 @@ func (x *ApplyConfig_Request) String() string {
 func (*ApplyConfig_Request) ProtoMessage() {}
 
 func (x *ApplyConfig_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[41]
+	mi := &file_tflint_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2098,7 +2144,7 @@ type ApplyConfig_Response struct {
 func (x *ApplyConfig_Response) Reset() {
 	*x = ApplyConfig_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[42]
+		mi := &file_tflint_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2111,7 +2157,7 @@ func (x *ApplyConfig_Response) String() string {
 func (*ApplyConfig_Response) ProtoMessage() {}
 
 func (x *ApplyConfig_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[42]
+	mi := &file_tflint_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2138,7 +2184,7 @@ type Check_Request struct {
 func (x *Check_Request) Reset() {
 	*x = Check_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[43]
+		mi := &file_tflint_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2151,7 +2197,7 @@ func (x *Check_Request) String() string {
 func (*Check_Request) ProtoMessage() {}
 
 func (x *Check_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[43]
+	mi := &file_tflint_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2183,7 +2229,7 @@ type Check_Response struct {
 func (x *Check_Response) Reset() {
 	*x = Check_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[44]
+		mi := &file_tflint_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2196,7 +2242,7 @@ func (x *Check_Response) String() string {
 func (*Check_Response) ProtoMessage() {}
 
 func (x *Check_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[44]
+	mi := &file_tflint_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2221,7 +2267,7 @@ type GetOriginalwd_Request struct {
 func (x *GetOriginalwd_Request) Reset() {
 	*x = GetOriginalwd_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[45]
+		mi := &file_tflint_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2234,7 +2280,7 @@ func (x *GetOriginalwd_Request) String() string {
 func (*GetOriginalwd_Request) ProtoMessage() {}
 
 func (x *GetOriginalwd_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[45]
+	mi := &file_tflint_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2261,7 +2307,7 @@ type GetOriginalwd_Response struct {
 func (x *GetOriginalwd_Response) Reset() {
 	*x = GetOriginalwd_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[46]
+		mi := &file_tflint_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2274,7 +2320,7 @@ func (x *GetOriginalwd_Response) String() string {
 func (*GetOriginalwd_Response) ProtoMessage() {}
 
 func (x *GetOriginalwd_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[46]
+	mi := &file_tflint_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2306,7 +2352,7 @@ type GetModulePath_Request struct {
 func (x *GetModulePath_Request) Reset() {
 	*x = GetModulePath_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[47]
+		mi := &file_tflint_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2319,7 +2365,7 @@ func (x *GetModulePath_Request) String() string {
 func (*GetModulePath_Request) ProtoMessage() {}
 
 func (x *GetModulePath_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[47]
+	mi := &file_tflint_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2346,7 +2392,7 @@ type GetModulePath_Response struct {
 func (x *GetModulePath_Response) Reset() {
 	*x = GetModulePath_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[48]
+		mi := &file_tflint_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2359,7 +2405,7 @@ func (x *GetModulePath_Response) String() string {
 func (*GetModulePath_Response) ProtoMessage() {}
 
 func (x *GetModulePath_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[48]
+	mi := &file_tflint_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2393,7 +2439,7 @@ type GetModuleContent_Hint struct {
 func (x *GetModuleContent_Hint) Reset() {
 	*x = GetModuleContent_Hint{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[49]
+		mi := &file_tflint_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2406,7 +2452,7 @@ func (x *GetModuleContent_Hint) String() string {
 func (*GetModuleContent_Hint) ProtoMessage() {}
 
 func (x *GetModuleContent_Hint) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[49]
+	mi := &file_tflint_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2444,7 +2490,7 @@ type GetModuleContent_Option struct {
 func (x *GetModuleContent_Option) Reset() {
 	*x = GetModuleContent_Option{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[50]
+		mi := &file_tflint_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2457,7 +2503,7 @@ func (x *GetModuleContent_Option) String() string {
 func (*GetModuleContent_Option) ProtoMessage() {}
 
 func (x *GetModuleContent_Option) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[50]
+	mi := &file_tflint_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2514,7 +2560,7 @@ type GetModuleContent_Request struct {
 func (x *GetModuleContent_Request) Reset() {
 	*x = GetModuleContent_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[51]
+		mi := &file_tflint_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2527,7 +2573,7 @@ func (x *GetModuleContent_Request) String() string {
 func (*GetModuleContent_Request) ProtoMessage() {}
 
 func (x *GetModuleContent_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[51]
+	mi := &file_tflint_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2568,7 +2614,7 @@ type GetModuleContent_Response struct {
 func (x *GetModuleContent_Response) Reset() {
 	*x = GetModuleContent_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[52]
+		mi := &file_tflint_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2581,7 +2627,7 @@ func (x *GetModuleContent_Response) String() string {
 func (*GetModuleContent_Response) ProtoMessage() {}
 
 func (x *GetModuleContent_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[52]
+	mi := &file_tflint_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2615,7 +2661,7 @@ type GetFile_Request struct {
 func (x *GetFile_Request) Reset() {
 	*x = GetFile_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[53]
+		mi := &file_tflint_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2628,7 +2674,7 @@ func (x *GetFile_Request) String() string {
 func (*GetFile_Request) ProtoMessage() {}
 
 func (x *GetFile_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[53]
+	mi := &file_tflint_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2662,7 +2708,7 @@ type GetFile_Response struct {
 func (x *GetFile_Response) Reset() {
 	*x = GetFile_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[54]
+		mi := &file_tflint_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2675,7 +2721,7 @@ func (x *GetFile_Response) String() string {
 func (*GetFile_Response) ProtoMessage() {}
 
 func (x *GetFile_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[54]
+	mi := &file_tflint_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2707,7 +2753,7 @@ type GetFiles_Request struct {
 func (x *GetFiles_Request) Reset() {
 	*x = GetFiles_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[55]
+		mi := &file_tflint_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2720,7 +2766,7 @@ func (x *GetFiles_Request) String() string {
 func (*GetFiles_Request) ProtoMessage() {}
 
 func (x *GetFiles_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[55]
+	mi := &file_tflint_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2747,7 +2793,7 @@ type GetFiles_Response struct {
 func (x *GetFiles_Response) Reset() {
 	*x = GetFiles_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[56]
+		mi := &file_tflint_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2760,7 +2806,7 @@ func (x *GetFiles_Response) String() string {
 func (*GetFiles_Response) ProtoMessage() {}
 
 func (x *GetFiles_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[56]
+	mi := &file_tflint_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2795,7 +2841,7 @@ type GetRuleConfigContent_Request struct {
 func (x *GetRuleConfigContent_Request) Reset() {
 	*x = GetRuleConfigContent_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[58]
+		mi := &file_tflint_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2808,7 +2854,7 @@ func (x *GetRuleConfigContent_Request) String() string {
 func (*GetRuleConfigContent_Request) ProtoMessage() {}
 
 func (x *GetRuleConfigContent_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[58]
+	mi := &file_tflint_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2849,7 +2895,7 @@ type GetRuleConfigContent_Response struct {
 func (x *GetRuleConfigContent_Response) Reset() {
 	*x = GetRuleConfigContent_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[59]
+		mi := &file_tflint_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2862,7 +2908,7 @@ func (x *GetRuleConfigContent_Response) String() string {
 func (*GetRuleConfigContent_Response) ProtoMessage() {}
 
 func (x *GetRuleConfigContent_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[59]
+	mi := &file_tflint_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2897,7 +2943,7 @@ type EvaluateExpr_Option struct {
 func (x *EvaluateExpr_Option) Reset() {
 	*x = EvaluateExpr_Option{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[60]
+		mi := &file_tflint_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2910,7 +2956,7 @@ func (x *EvaluateExpr_Option) String() string {
 func (*EvaluateExpr_Option) ProtoMessage() {}
 
 func (x *EvaluateExpr_Option) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[60]
+	mi := &file_tflint_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2956,7 +3002,7 @@ type EvaluateExpr_Request struct {
 func (x *EvaluateExpr_Request) Reset() {
 	*x = EvaluateExpr_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[61]
+		mi := &file_tflint_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2969,7 +3015,7 @@ func (x *EvaluateExpr_Request) String() string {
 func (*EvaluateExpr_Request) ProtoMessage() {}
 
 func (x *EvaluateExpr_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[61]
+	mi := &file_tflint_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3027,7 +3073,7 @@ type EvaluateExpr_Response struct {
 func (x *EvaluateExpr_Response) Reset() {
 	*x = EvaluateExpr_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[62]
+		mi := &file_tflint_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3040,7 +3086,7 @@ func (x *EvaluateExpr_Response) String() string {
 func (*EvaluateExpr_Response) ProtoMessage() {}
 
 func (x *EvaluateExpr_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[62]
+	mi := &file_tflint_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3084,7 +3130,7 @@ type EmitIssue_Rule struct {
 func (x *EmitIssue_Rule) Reset() {
 	*x = EmitIssue_Rule{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[63]
+		mi := &file_tflint_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3097,7 +3143,7 @@ func (x *EmitIssue_Rule) String() string {
 func (*EmitIssue_Rule) ProtoMessage() {}
 
 func (x *EmitIssue_Rule) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[63]
+	mi := &file_tflint_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3149,12 +3195,13 @@ type EmitIssue_Request struct {
 	Rule    *EmitIssue_Rule `protobuf:"bytes,1,opt,name=rule,proto3" json:"rule,omitempty"`
 	Message string          `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	Range   *Range          `protobuf:"bytes,3,opt,name=range,proto3" json:"range,omitempty"`
+	Fixable bool            `protobuf:"varint,4,opt,name=fixable,proto3" json:"fixable,omitempty"`
 }
 
 func (x *EmitIssue_Request) Reset() {
 	*x = EmitIssue_Request{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[64]
+		mi := &file_tflint_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3167,7 +3214,7 @@ func (x *EmitIssue_Request) String() string {
 func (*EmitIssue_Request) ProtoMessage() {}
 
 func (x *EmitIssue_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[64]
+	mi := &file_tflint_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3204,16 +3251,25 @@ func (x *EmitIssue_Request) GetRange() *Range {
 	return nil
 }
 
+func (x *EmitIssue_Request) GetFixable() bool {
+	if x != nil {
+		return x.Fixable
+	}
+	return false
+}
+
 type EmitIssue_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Applied bool `protobuf:"varint,1,opt,name=applied,proto3" json:"applied,omitempty"`
 }
 
 func (x *EmitIssue_Response) Reset() {
 	*x = EmitIssue_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[65]
+		mi := &file_tflint_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3226,7 +3282,7 @@ func (x *EmitIssue_Response) String() string {
 func (*EmitIssue_Response) ProtoMessage() {}
 
 func (x *EmitIssue_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[65]
+	mi := &file_tflint_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3242,6 +3298,98 @@ func (*EmitIssue_Response) Descriptor() ([]byte, []int) {
 	return file_tflint_proto_rawDescGZIP(), []int{16, 2}
 }
 
+func (x *EmitIssue_Response) GetApplied() bool {
+	if x != nil {
+		return x.Applied
+	}
+	return false
+}
+
+type ApplyChanges_Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Changes map[string][]byte `protobuf:"bytes,1,rep,name=changes,proto3" json:"changes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (x *ApplyChanges_Request) Reset() {
+	*x = ApplyChanges_Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_tflint_proto_msgTypes[67]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApplyChanges_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyChanges_Request) ProtoMessage() {}
+
+func (x *ApplyChanges_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_tflint_proto_msgTypes[67]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyChanges_Request.ProtoReflect.Descriptor instead.
+func (*ApplyChanges_Request) Descriptor() ([]byte, []int) {
+	return file_tflint_proto_rawDescGZIP(), []int{17, 0}
+}
+
+func (x *ApplyChanges_Request) GetChanges() map[string][]byte {
+	if x != nil {
+		return x.Changes
+	}
+	return nil
+}
+
+type ApplyChanges_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ApplyChanges_Response) Reset() {
+	*x = ApplyChanges_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_tflint_proto_msgTypes[68]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApplyChanges_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyChanges_Response) ProtoMessage() {}
+
+func (x *ApplyChanges_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_tflint_proto_msgTypes[68]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyChanges_Response.ProtoReflect.Descriptor instead.
+func (*ApplyChanges_Response) Descriptor() ([]byte, []int) {
+	return file_tflint_proto_rawDescGZIP(), []int{17, 1}
+}
+
 type BodySchema_Attribute struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3254,7 +3402,7 @@ type BodySchema_Attribute struct {
 func (x *BodySchema_Attribute) Reset() {
 	*x = BodySchema_Attribute{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[66]
+		mi := &file_tflint_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3267,7 +3415,7 @@ func (x *BodySchema_Attribute) String() string {
 func (*BodySchema_Attribute) ProtoMessage() {}
 
 func (x *BodySchema_Attribute) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[66]
+	mi := &file_tflint_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3280,7 +3428,7 @@ func (x *BodySchema_Attribute) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodySchema_Attribute.ProtoReflect.Descriptor instead.
 func (*BodySchema_Attribute) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{17, 0}
+	return file_tflint_proto_rawDescGZIP(), []int{18, 0}
 }
 
 func (x *BodySchema_Attribute) GetName() string {
@@ -3310,7 +3458,7 @@ type BodySchema_Block struct {
 func (x *BodySchema_Block) Reset() {
 	*x = BodySchema_Block{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[67]
+		mi := &file_tflint_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3323,7 +3471,7 @@ func (x *BodySchema_Block) String() string {
 func (*BodySchema_Block) ProtoMessage() {}
 
 func (x *BodySchema_Block) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[67]
+	mi := &file_tflint_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3336,7 +3484,7 @@ func (x *BodySchema_Block) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodySchema_Block.ProtoReflect.Descriptor instead.
 func (*BodySchema_Block) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{17, 1}
+	return file_tflint_proto_rawDescGZIP(), []int{18, 1}
 }
 
 func (x *BodySchema_Block) GetType() string {
@@ -3378,7 +3526,7 @@ type BodyContent_Attribute struct {
 func (x *BodyContent_Attribute) Reset() {
 	*x = BodyContent_Attribute{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[68]
+		mi := &file_tflint_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3391,7 +3539,7 @@ func (x *BodyContent_Attribute) String() string {
 func (*BodyContent_Attribute) ProtoMessage() {}
 
 func (x *BodyContent_Attribute) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[68]
+	mi := &file_tflint_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3404,7 +3552,7 @@ func (x *BodyContent_Attribute) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodyContent_Attribute.ProtoReflect.Descriptor instead.
 func (*BodyContent_Attribute) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{18, 0}
+	return file_tflint_proto_rawDescGZIP(), []int{19, 0}
 }
 
 func (x *BodyContent_Attribute) GetName() string {
@@ -3467,7 +3615,7 @@ type BodyContent_Block struct {
 func (x *BodyContent_Block) Reset() {
 	*x = BodyContent_Block{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[69]
+		mi := &file_tflint_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3480,7 +3628,7 @@ func (x *BodyContent_Block) String() string {
 func (*BodyContent_Block) ProtoMessage() {}
 
 func (x *BodyContent_Block) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[69]
+	mi := &file_tflint_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3493,7 +3641,7 @@ func (x *BodyContent_Block) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BodyContent_Block.ProtoReflect.Descriptor instead.
 func (*BodyContent_Block) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{18, 1}
+	return file_tflint_proto_rawDescGZIP(), []int{19, 1}
 }
 
 func (x *BodyContent_Block) GetType() string {
@@ -3551,7 +3699,7 @@ type Range_Pos struct {
 func (x *Range_Pos) Reset() {
 	*x = Range_Pos{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[71]
+		mi := &file_tflint_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3564,7 +3712,7 @@ func (x *Range_Pos) String() string {
 func (*Range_Pos) ProtoMessage() {}
 
 func (x *Range_Pos) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[71]
+	mi := &file_tflint_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3577,7 +3725,7 @@ func (x *Range_Pos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Range_Pos.ProtoReflect.Descriptor instead.
 func (*Range_Pos) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{20, 0}
+	return file_tflint_proto_rawDescGZIP(), []int{21, 0}
 }
 
 func (x *Range_Pos) GetLine() int64 {
@@ -3617,7 +3765,7 @@ type AttributePath_Step struct {
 func (x *AttributePath_Step) Reset() {
 	*x = AttributePath_Step{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_tflint_proto_msgTypes[72]
+		mi := &file_tflint_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3630,7 +3778,7 @@ func (x *AttributePath_Step) String() string {
 func (*AttributePath_Step) ProtoMessage() {}
 
 func (x *AttributePath_Step) ProtoReflect() protoreflect.Message {
-	mi := &file_tflint_proto_msgTypes[72]
+	mi := &file_tflint_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3643,7 +3791,7 @@ func (x *AttributePath_Step) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AttributePath_Step.ProtoReflect.Descriptor instead.
 func (*AttributePath_Step) Descriptor() ([]byte, []int) {
-	return file_tflint_proto_rawDescGZIP(), []int{21, 0}
+	return file_tflint_proto_rawDescGZIP(), []int{22, 0}
 }
 
 func (m *AttributePath_Step) GetSelector() isAttributePath_Step_Selector {
@@ -3725,9 +3873,9 @@ var file_tflint_proto_rawDesc = []byte{
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x35, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
 	0x73, 0x65, 0x12, 0x29, 0x0a, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53,
-	0x63, 0x68, 0x65, 0x6d, 0x61, 0x52, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x22, 0x8f, 0x03,
+	0x63, 0x68, 0x65, 0x6d, 0x61, 0x52, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x22, 0xa1, 0x03,
 	0x0a, 0x11, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x43, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x1a, 0xed, 0x01, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x40,
+	0x66, 0x69, 0x67, 0x1a, 0xff, 0x01, 0x0a, 0x06, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x40,
 	0x0a, 0x05, 0x72, 0x75, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61,
 	0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x52,
@@ -3736,142 +3884,157 @@ var file_tflint_proto_rawDesc = []byte{
 	0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11, 0x64,
 	0x69, 0x73, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x42, 0x79, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74,
 	0x12, 0x12, 0x0a, 0x04, 0x6f, 0x6e, 0x6c, 0x79, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x04,
-	0x6f, 0x6e, 0x6c, 0x79, 0x1a, 0x5d, 0x0a, 0x0a, 0x52, 0x75, 0x6c, 0x65, 0x73, 0x45, 0x6e, 0x74,
-	0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x03, 0x6b, 0x65, 0x79, 0x12, 0x39, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x6c,
-	0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x52, 0x75,
-	0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a,
-	0x02, 0x38, 0x01, 0x1a, 0x3a, 0x0a, 0x0a, 0x52, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x1a,
-	0x42, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x37, 0x0a, 0x06, 0x63, 0x6f,
-	0x6e, 0x66, 0x69, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x43, 0x6f,
-	0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x52, 0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x37,
-	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x6f, 0x6e,
-	0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x52, 0x07,
-	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x36, 0x0a, 0x05, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x1a, 0x21, 0x0a, 0x07,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x75, 0x6e, 0x6e, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x72, 0x75, 0x6e, 0x6e, 0x65, 0x72, 0x1a,
-	0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3a, 0x0a, 0x0d, 0x47,
-	0x65, 0x74, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x77, 0x64, 0x1a, 0x09, 0x0a, 0x07,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0x3a, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4d, 0x6f,
-	0x64, 0x75, 0x6c, 0x65, 0x50, 0x61, 0x74, 0x68, 0x1a, 0x09, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x1e, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x70,
-	0x61, 0x74, 0x68, 0x22, 0xab, 0x04, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c,
-	0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x2b, 0x0a, 0x04, 0x48, 0x69, 0x6e, 0x74,
-	0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x74, 0x79, 0x70,
-	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x54, 0x79, 0x70, 0x65, 0x1a, 0xe8, 0x01, 0x0a, 0x06, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x33, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x63, 0x74, 0x78, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x6f, 0x64,
-	0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x6d, 0x6f, 0x64, 0x75,
-	0x6c, 0x65, 0x43, 0x74, 0x78, 0x12, 0x30, 0x0a, 0x04, 0x68, 0x69, 0x6e, 0x74, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4d,
-	0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x48, 0x69, 0x6e,
-	0x74, 0x52, 0x04, 0x68, 0x69, 0x6e, 0x74, 0x12, 0x32, 0x0a, 0x13, 0x69, 0x6e, 0x63, 0x6c, 0x75,
-	0x64, 0x65, 0x5f, 0x6e, 0x6f, 0x74, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x08, 0x42, 0x02, 0x18, 0x01, 0x52, 0x11, 0x69, 0x6e, 0x63, 0x6c, 0x75, 0x64,
-	0x65, 0x4e, 0x6f, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x43, 0x0a, 0x0b, 0x65,
-	0x78, 0x70, 0x61, 0x6e, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0e,
-	0x32, 0x22, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x64, 0x75,
-	0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x45, 0x78, 0x70, 0x61, 0x6e, 0x64,
-	0x4d, 0x6f, 0x64, 0x65, 0x52, 0x0a, 0x65, 0x78, 0x70, 0x61, 0x6e, 0x64, 0x4d, 0x6f, 0x64, 0x65,
-	0x1a, 0x6c, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x29, 0x0a, 0x06, 0x73,
-	0x63, 0x68, 0x65, 0x6d, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x52, 0x06,
-	0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x36, 0x0a, 0x06, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47,
-	0x65, 0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x06, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x38,
-	0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x6f,
-	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x52,
-	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x57, 0x0a, 0x0a, 0x45, 0x78, 0x70, 0x61,
-	0x6e, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x1b, 0x0a, 0x17, 0x45, 0x58, 0x50, 0x41, 0x4e, 0x44,
-	0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45,
-	0x44, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x45, 0x58, 0x50, 0x41, 0x4e, 0x44, 0x5f, 0x4d, 0x4f,
-	0x44, 0x45, 0x5f, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x45, 0x58, 0x50,
-	0x41, 0x4e, 0x44, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x41, 0x4e, 0x44, 0x10,
-	0x02, 0x22, 0x48, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x1a, 0x1d, 0x0a, 0x07,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x1a, 0x1e, 0x0a, 0x08, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x22, 0x96, 0x01, 0x0a, 0x08,
-	0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x1a, 0x09, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x7f, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x39, 0x0a, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x23,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x2e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x45, 0x6e,
-	0x74, 0x72, 0x79, 0x52, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x1a, 0x38, 0x0a, 0x0a, 0x46, 0x69,
-	0x6c, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x3a, 0x02, 0x38, 0x01, 0x22, 0x9a, 0x01, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x52, 0x75, 0x6c, 0x65,
-	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x48, 0x0a,
-	0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x29, 0x0a, 0x06,
-	0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x52,
-	0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x1a, 0x38, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64,
-	0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
-	0x74, 0x22, 0xe7, 0x02, 0x0a, 0x0c, 0x45, 0x76, 0x61, 0x6c, 0x75, 0x61, 0x74, 0x65, 0x45, 0x78,
-	0x70, 0x72, 0x1a, 0x51, 0x0a, 0x06, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04,
-	0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65,
-	0x12, 0x33, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x63, 0x74, 0x78, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d, 0x6f, 0x64,
-	0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x6d, 0x6f, 0x64, 0x75,
-	0x6c, 0x65, 0x43, 0x74, 0x78, 0x1a, 0xb9, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x16, 0x0a, 0x04, 0x65, 0x78, 0x70, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x42,
-	0x02, 0x18, 0x01, 0x52, 0x04, 0x65, 0x78, 0x70, 0x72, 0x12, 0x2f, 0x0a, 0x0a, 0x65, 0x78, 0x70,
-	0x72, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x42, 0x02, 0x18, 0x01, 0x52,
-	0x09, 0x65, 0x78, 0x70, 0x72, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x32, 0x0a, 0x06, 0x6f, 0x70,
-	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x45, 0x76, 0x61, 0x6c, 0x75, 0x61, 0x74, 0x65, 0x45, 0x78, 0x70, 0x72, 0x2e,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x06, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x31,
-	0x0a, 0x0a, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x78, 0x70, 0x72, 0x65,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x1a, 0x48, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a,
-	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x12, 0x26, 0x0a, 0x05, 0x6d, 0x61, 0x72, 0x6b, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x4d, 0x61, 0x72, 0x6b, 0x52, 0x05, 0x6d, 0x61, 0x72, 0x6b, 0x73, 0x22, 0xf1, 0x02, 0x0a, 0x09,
-	0x45, 0x6d, 0x69, 0x74, 0x49, 0x73, 0x73, 0x75, 0x65, 0x1a, 0x7f, 0x0a, 0x04, 0x52, 0x75, 0x6c,
-	0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12,
-	0x35, 0x0a, 0x08, 0x73, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0e, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x69, 0x74, 0x49, 0x73,
-	0x73, 0x75, 0x65, 0x2e, 0x53, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x52, 0x08, 0x73, 0x65,
-	0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x1a, 0x72, 0x0a, 0x07, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x29, 0x0a, 0x04, 0x72, 0x75, 0x6c, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x69, 0x74,
-	0x49, 0x73, 0x73, 0x75, 0x65, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x52, 0x04, 0x72, 0x75, 0x6c, 0x65,
-	0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x22, 0x0a, 0x05, 0x72, 0x61,
-	0x6e, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x1a, 0x0a,
-	0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x63, 0x0a, 0x08, 0x53, 0x65,
-	0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x12, 0x18, 0x0a, 0x14, 0x53, 0x45, 0x56, 0x45, 0x52, 0x49,
-	0x54, 0x59, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00,
-	0x12, 0x12, 0x0a, 0x0e, 0x53, 0x45, 0x56, 0x45, 0x52, 0x49, 0x54, 0x59, 0x5f, 0x45, 0x52, 0x52,
-	0x4f, 0x52, 0x10, 0x01, 0x12, 0x14, 0x0a, 0x10, 0x53, 0x45, 0x56, 0x45, 0x52, 0x49, 0x54, 0x59,
-	0x5f, 0x57, 0x41, 0x52, 0x4e, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x45,
-	0x56, 0x45, 0x52, 0x49, 0x54, 0x59, 0x5f, 0x4e, 0x4f, 0x54, 0x49, 0x43, 0x45, 0x10, 0x03, 0x22,
+	0x6f, 0x6e, 0x6c, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x66, 0x69, 0x78, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x03, 0x66, 0x69, 0x78, 0x1a, 0x5d, 0x0a, 0x0a, 0x52, 0x75, 0x6c, 0x65, 0x73, 0x45,
+	0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x39, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x70,
+	0x70, 0x6c, 0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e,
+	0x52, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x3a, 0x02, 0x38, 0x01, 0x1a, 0x3a, 0x0a, 0x0a, 0x52, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c,
+	0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65,
+	0x64, 0x1a, 0x42, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x37, 0x0a, 0x06,
+	0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c,
+	0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x06, 0x63,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x52, 0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x1a, 0x37, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2c, 0x0a, 0x07, 0x63,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x36, 0x0a, 0x05, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x1a, 0x21,
+	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x75, 0x6e,
+	0x6e, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x72, 0x75, 0x6e, 0x6e, 0x65,
+	0x72, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3a, 0x0a,
+	0x0d, 0x47, 0x65, 0x74, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x77, 0x64, 0x1a, 0x09,
+	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x0a, 0x08, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0x3a, 0x0a, 0x0d, 0x47, 0x65, 0x74,
+	0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x50, 0x61, 0x74, 0x68, 0x1a, 0x09, 0x0a, 0x07, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x61, 0x74, 0x68, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x04, 0x70, 0x61, 0x74, 0x68, 0x22, 0xab, 0x04, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x64,
+	0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a, 0x2b, 0x0a, 0x04, 0x48, 0x69,
+	0x6e, 0x74, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x74,
+	0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x54, 0x79, 0x70, 0x65, 0x1a, 0xe8, 0x01, 0x0a, 0x06, 0x4f, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x12, 0x33, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x63, 0x74, 0x78,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d,
+	0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x6d, 0x6f,
+	0x64, 0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x12, 0x30, 0x0a, 0x04, 0x68, 0x69, 0x6e, 0x74, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65,
+	0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x48,
+	0x69, 0x6e, 0x74, 0x52, 0x04, 0x68, 0x69, 0x6e, 0x74, 0x12, 0x32, 0x0a, 0x13, 0x69, 0x6e, 0x63,
+	0x6c, 0x75, 0x64, 0x65, 0x5f, 0x6e, 0x6f, 0x74, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x42, 0x02, 0x18, 0x01, 0x52, 0x11, 0x69, 0x6e, 0x63, 0x6c,
+	0x75, 0x64, 0x65, 0x4e, 0x6f, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x43, 0x0a,
+	0x0b, 0x65, 0x78, 0x70, 0x61, 0x6e, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x0e, 0x32, 0x22, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x6f,
+	0x64, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2e, 0x45, 0x78, 0x70, 0x61,
+	0x6e, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x52, 0x0a, 0x65, 0x78, 0x70, 0x61, 0x6e, 0x64, 0x4d, 0x6f,
+	0x64, 0x65, 0x1a, 0x6c, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x29, 0x0a,
+	0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61,
+	0x52, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x36, 0x0a, 0x06, 0x6f, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
+	0x74, 0x2e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x06, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x1a, 0x38, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x07,
+	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e,
+	0x74, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x57, 0x0a, 0x0a, 0x45, 0x78,
+	0x70, 0x61, 0x6e, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x1b, 0x0a, 0x17, 0x45, 0x58, 0x50, 0x41,
+	0x4e, 0x44, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46,
+	0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x45, 0x58, 0x50, 0x41, 0x4e, 0x44, 0x5f,
+	0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x45,
+	0x58, 0x50, 0x41, 0x4e, 0x44, 0x5f, 0x4d, 0x4f, 0x44, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x41, 0x4e,
+	0x44, 0x10, 0x02, 0x22, 0x48, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x1a, 0x1d,
+	0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x1a, 0x1e, 0x0a,
+	0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x66, 0x69, 0x6c,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x22, 0x96, 0x01,
+	0x0a, 0x08, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x1a, 0x09, 0x0a, 0x07, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x7f, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x39, 0x0a, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x23, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65,
+	0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x73,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x1a, 0x38, 0x0a, 0x0a,
+	0x46, 0x69, 0x6c, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65,
+	0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x9a, 0x01, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x52, 0x75,
+	0x6c, 0x65, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x1a,
+	0x48, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x29,
+	0x0a, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53, 0x63, 0x68, 0x65, 0x6d,
+	0x61, 0x52, 0x06, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x1a, 0x38, 0x0a, 0x08, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42,
+	0x6f, 0x64, 0x79, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74,
+	0x65, 0x6e, 0x74, 0x22, 0xe7, 0x02, 0x0a, 0x0c, 0x45, 0x76, 0x61, 0x6c, 0x75, 0x61, 0x74, 0x65,
+	0x45, 0x78, 0x70, 0x72, 0x1a, 0x51, 0x0a, 0x06, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x12,
+	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x74, 0x79,
+	0x70, 0x65, 0x12, 0x33, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x63, 0x74, 0x78,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4d,
+	0x6f, 0x64, 0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x6d, 0x6f,
+	0x64, 0x75, 0x6c, 0x65, 0x43, 0x74, 0x78, 0x1a, 0xb9, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x04, 0x65, 0x78, 0x70, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0c, 0x42, 0x02, 0x18, 0x01, 0x52, 0x04, 0x65, 0x78, 0x70, 0x72, 0x12, 0x2f, 0x0a, 0x0a, 0x65,
+	0x78, 0x70, 0x72, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x42, 0x02, 0x18,
+	0x01, 0x52, 0x09, 0x65, 0x78, 0x70, 0x72, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x32, 0x0a, 0x06,
+	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x76, 0x61, 0x6c, 0x75, 0x61, 0x74, 0x65, 0x45, 0x78, 0x70,
+	0x72, 0x2e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x06, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x12, 0x31, 0x0a, 0x0a, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x78, 0x70,
+	0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x65, 0x78, 0x70, 0x72, 0x65, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x1a, 0x48, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x26, 0x0a, 0x05, 0x6d, 0x61, 0x72, 0x6b, 0x73, 0x18, 0x02,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x56, 0x61, 0x6c,
+	0x75, 0x65, 0x4d, 0x61, 0x72, 0x6b, 0x52, 0x05, 0x6d, 0x61, 0x72, 0x6b, 0x73, 0x22, 0xa6, 0x03,
+	0x0a, 0x09, 0x45, 0x6d, 0x69, 0x74, 0x49, 0x73, 0x73, 0x75, 0x65, 0x1a, 0x7f, 0x0a, 0x04, 0x52,
+	0x75, 0x6c, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c,
+	0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65,
+	0x64, 0x12, 0x35, 0x0a, 0x08, 0x73, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0e, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x69, 0x74,
+	0x49, 0x73, 0x73, 0x75, 0x65, 0x2e, 0x53, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x52, 0x08,
+	0x73, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x1a, 0x8c, 0x01, 0x0a,
+	0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x29, 0x0a, 0x04, 0x72, 0x75, 0x6c, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45,
+	0x6d, 0x69, 0x74, 0x49, 0x73, 0x73, 0x75, 0x65, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x52, 0x04, 0x72,
+	0x75, 0x6c, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x22, 0x0a,
+	0x05, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x05, 0x72, 0x61, 0x6e, 0x67,
+	0x65, 0x12, 0x18, 0x0a, 0x07, 0x66, 0x69, 0x78, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x07, 0x66, 0x69, 0x78, 0x61, 0x62, 0x6c, 0x65, 0x1a, 0x24, 0x0a, 0x08, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x70, 0x70, 0x6c, 0x69,
+	0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65,
+	0x64, 0x22, 0x63, 0x0a, 0x08, 0x53, 0x65, 0x76, 0x65, 0x72, 0x69, 0x74, 0x79, 0x12, 0x18, 0x0a,
+	0x14, 0x53, 0x45, 0x56, 0x45, 0x52, 0x49, 0x54, 0x59, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43,
+	0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x53, 0x45, 0x56, 0x45, 0x52,
+	0x49, 0x54, 0x59, 0x5f, 0x45, 0x52, 0x52, 0x4f, 0x52, 0x10, 0x01, 0x12, 0x14, 0x0a, 0x10, 0x53,
+	0x45, 0x56, 0x45, 0x52, 0x49, 0x54, 0x59, 0x5f, 0x57, 0x41, 0x52, 0x4e, 0x49, 0x4e, 0x47, 0x10,
+	0x02, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x45, 0x56, 0x45, 0x52, 0x49, 0x54, 0x59, 0x5f, 0x4e, 0x4f,
+	0x54, 0x49, 0x43, 0x45, 0x10, 0x03, 0x22, 0xa6, 0x01, 0x0a, 0x0c, 0x41, 0x70, 0x70, 0x6c, 0x79,
+	0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x1a, 0x89, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x42, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70,
+	0x6c, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x07,
+	0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x1a, 0x3a, 0x0a, 0x0c, 0x43, 0x68, 0x61, 0x6e, 0x67,
+	0x65, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a,
+	0x02, 0x38, 0x01, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
 	0xc3, 0x02, 0x0a, 0x0a, 0x42, 0x6f, 0x64, 0x79, 0x53, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x12, 0x3b,
 	0x0a, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
 	0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x6f, 0x64, 0x79, 0x53,
@@ -4046,7 +4209,7 @@ var file_tflint_proto_rawDesc = []byte{
 	0x68, 0x65, 0x63, 0x6b, 0x12, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x43, 0x68, 0x65,
 	0x63, 0x6b, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x32, 0xe6, 0x04, 0x0a, 0x06, 0x52, 0x75, 0x6e, 0x6e, 0x65, 0x72, 0x12, 0x4c, 0x0a, 0x0d,
+	0x65, 0x32, 0xb1, 0x05, 0x0a, 0x06, 0x52, 0x75, 0x6e, 0x6e, 0x65, 0x72, 0x12, 0x4c, 0x0a, 0x0d,
 	0x47, 0x65, 0x74, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61, 0x6c, 0x77, 0x64, 0x12, 0x1c, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x4f, 0x72, 0x69, 0x67, 0x69, 0x6e, 0x61,
 	0x6c, 0x77, 0x64, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x70, 0x72,
@@ -4084,12 +4247,16 @@ var file_tflint_proto_rawDesc = []byte{
 	0x49, 0x73, 0x73, 0x75, 0x65, 0x12, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d,
 	0x69, 0x74, 0x49, 0x73, 0x73, 0x75, 0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
 	0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45, 0x6d, 0x69, 0x74, 0x49, 0x73, 0x73, 0x75,
-	0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x3d, 0x5a, 0x3b, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x72, 0x72, 0x61, 0x66, 0x6f,
-	0x72, 0x6d, 0x2d, 0x6c, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x73, 0x2f, 0x74, 0x66, 0x6c, 0x69, 0x6e,
-	0x74, 0x2d, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x70, 0x6c, 0x75,
-	0x67, 0x69, 0x6e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x49, 0x0a, 0x0c, 0x41, 0x70,
+	0x70, 0x6c, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x12, 0x1b, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x2e,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
+	0x41, 0x70, 0x70, 0x6c, 0x79, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x73, 0x2e, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x3d, 0x5a, 0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x72, 0x72, 0x61, 0x66, 0x6f, 0x72, 0x6d, 0x2d, 0x6c, 0x69,
+	0x6e, 0x74, 0x65, 0x72, 0x73, 0x2f, 0x74, 0x66, 0x6c, 0x69, 0x6e, 0x74, 0x2d, 0x70, 0x6c, 0x75,
+	0x67, 0x69, 0x6e, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4105,7 +4272,7 @@ func file_tflint_proto_rawDescGZIP() []byte {
 }
 
 var file_tflint_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_tflint_proto_msgTypes = make([]protoimpl.MessageInfo, 73)
+var file_tflint_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
 var file_tflint_proto_goTypes = []interface{}{
 	(ModuleCtxType)(0),                    // 0: proto.ModuleCtxType
 	(SchemaMode)(0),                       // 1: proto.SchemaMode
@@ -4129,147 +4296,154 @@ var file_tflint_proto_goTypes = []interface{}{
 	(*GetRuleConfigContent)(nil),          // 19: proto.GetRuleConfigContent
 	(*EvaluateExpr)(nil),                  // 20: proto.EvaluateExpr
 	(*EmitIssue)(nil),                     // 21: proto.EmitIssue
-	(*BodySchema)(nil),                    // 22: proto.BodySchema
-	(*BodyContent)(nil),                   // 23: proto.BodyContent
-	(*Expression)(nil),                    // 24: proto.Expression
-	(*Range)(nil),                         // 25: proto.Range
-	(*AttributePath)(nil),                 // 26: proto.AttributePath
-	(*ValueMark)(nil),                     // 27: proto.ValueMark
-	(*ErrorDetail)(nil),                   // 28: proto.ErrorDetail
-	(*GetName_Request)(nil),               // 29: proto.GetName.Request
-	(*GetName_Response)(nil),              // 30: proto.GetName.Response
-	(*GetVersion_Request)(nil),            // 31: proto.GetVersion.Request
-	(*GetVersion_Response)(nil),           // 32: proto.GetVersion.Response
-	(*GetVersionConstraint_Request)(nil),  // 33: proto.GetVersionConstraint.Request
-	(*GetVersionConstraint_Response)(nil), // 34: proto.GetVersionConstraint.Response
-	(*GetSDKVersion_Request)(nil),         // 35: proto.GetSDKVersion.Request
-	(*GetSDKVersion_Response)(nil),        // 36: proto.GetSDKVersion.Response
-	(*GetRuleNames_Request)(nil),          // 37: proto.GetRuleNames.Request
-	(*GetRuleNames_Response)(nil),         // 38: proto.GetRuleNames.Response
-	(*GetConfigSchema_Request)(nil),       // 39: proto.GetConfigSchema.Request
-	(*GetConfigSchema_Response)(nil),      // 40: proto.GetConfigSchema.Response
-	(*ApplyGlobalConfig_Config)(nil),      // 41: proto.ApplyGlobalConfig.Config
-	(*ApplyGlobalConfig_RuleConfig)(nil),  // 42: proto.ApplyGlobalConfig.RuleConfig
-	(*ApplyGlobalConfig_Request)(nil),     // 43: proto.ApplyGlobalConfig.Request
-	(*ApplyGlobalConfig_Response)(nil),    // 44: proto.ApplyGlobalConfig.Response
-	nil,                                   // 45: proto.ApplyGlobalConfig.Config.RulesEntry
-	(*ApplyConfig_Request)(nil),           // 46: proto.ApplyConfig.Request
-	(*ApplyConfig_Response)(nil),          // 47: proto.ApplyConfig.Response
-	(*Check_Request)(nil),                 // 48: proto.Check.Request
-	(*Check_Response)(nil),                // 49: proto.Check.Response
-	(*GetOriginalwd_Request)(nil),         // 50: proto.GetOriginalwd.Request
-	(*GetOriginalwd_Response)(nil),        // 51: proto.GetOriginalwd.Response
-	(*GetModulePath_Request)(nil),         // 52: proto.GetModulePath.Request
-	(*GetModulePath_Response)(nil),        // 53: proto.GetModulePath.Response
-	(*GetModuleContent_Hint)(nil),         // 54: proto.GetModuleContent.Hint
-	(*GetModuleContent_Option)(nil),       // 55: proto.GetModuleContent.Option
-	(*GetModuleContent_Request)(nil),      // 56: proto.GetModuleContent.Request
-	(*GetModuleContent_Response)(nil),     // 57: proto.GetModuleContent.Response
-	(*GetFile_Request)(nil),               // 58: proto.GetFile.Request
-	(*GetFile_Response)(nil),              // 59: proto.GetFile.Response
-	(*GetFiles_Request)(nil),              // 60: proto.GetFiles.Request
-	(*GetFiles_Response)(nil),             // 61: proto.GetFiles.Response
-	nil,                                   // 62: proto.GetFiles.Response.FilesEntry
-	(*GetRuleConfigContent_Request)(nil),  // 63: proto.GetRuleConfigContent.Request
-	(*GetRuleConfigContent_Response)(nil), // 64: proto.GetRuleConfigContent.Response
-	(*EvaluateExpr_Option)(nil),           // 65: proto.EvaluateExpr.Option
-	(*EvaluateExpr_Request)(nil),          // 66: proto.EvaluateExpr.Request
-	(*EvaluateExpr_Response)(nil),         // 67: proto.EvaluateExpr.Response
-	(*EmitIssue_Rule)(nil),                // 68: proto.EmitIssue.Rule
-	(*EmitIssue_Request)(nil),             // 69: proto.EmitIssue.Request
-	(*EmitIssue_Response)(nil),            // 70: proto.EmitIssue.Response
-	(*BodySchema_Attribute)(nil),          // 71: proto.BodySchema.Attribute
-	(*BodySchema_Block)(nil),              // 72: proto.BodySchema.Block
-	(*BodyContent_Attribute)(nil),         // 73: proto.BodyContent.Attribute
-	(*BodyContent_Block)(nil),             // 74: proto.BodyContent.Block
-	nil,                                   // 75: proto.BodyContent.AttributesEntry
-	(*Range_Pos)(nil),                     // 76: proto.Range.Pos
-	(*AttributePath_Step)(nil),            // 77: proto.AttributePath.Step
+	(*ApplyChanges)(nil),                  // 22: proto.ApplyChanges
+	(*BodySchema)(nil),                    // 23: proto.BodySchema
+	(*BodyContent)(nil),                   // 24: proto.BodyContent
+	(*Expression)(nil),                    // 25: proto.Expression
+	(*Range)(nil),                         // 26: proto.Range
+	(*AttributePath)(nil),                 // 27: proto.AttributePath
+	(*ValueMark)(nil),                     // 28: proto.ValueMark
+	(*ErrorDetail)(nil),                   // 29: proto.ErrorDetail
+	(*GetName_Request)(nil),               // 30: proto.GetName.Request
+	(*GetName_Response)(nil),              // 31: proto.GetName.Response
+	(*GetVersion_Request)(nil),            // 32: proto.GetVersion.Request
+	(*GetVersion_Response)(nil),           // 33: proto.GetVersion.Response
+	(*GetVersionConstraint_Request)(nil),  // 34: proto.GetVersionConstraint.Request
+	(*GetVersionConstraint_Response)(nil), // 35: proto.GetVersionConstraint.Response
+	(*GetSDKVersion_Request)(nil),         // 36: proto.GetSDKVersion.Request
+	(*GetSDKVersion_Response)(nil),        // 37: proto.GetSDKVersion.Response
+	(*GetRuleNames_Request)(nil),          // 38: proto.GetRuleNames.Request
+	(*GetRuleNames_Response)(nil),         // 39: proto.GetRuleNames.Response
+	(*GetConfigSchema_Request)(nil),       // 40: proto.GetConfigSchema.Request
+	(*GetConfigSchema_Response)(nil),      // 41: proto.GetConfigSchema.Response
+	(*ApplyGlobalConfig_Config)(nil),      // 42: proto.ApplyGlobalConfig.Config
+	(*ApplyGlobalConfig_RuleConfig)(nil),  // 43: proto.ApplyGlobalConfig.RuleConfig
+	(*ApplyGlobalConfig_Request)(nil),     // 44: proto.ApplyGlobalConfig.Request
+	(*ApplyGlobalConfig_Response)(nil),    // 45: proto.ApplyGlobalConfig.Response
+	nil,                                   // 46: proto.ApplyGlobalConfig.Config.RulesEntry
+	(*ApplyConfig_Request)(nil),           // 47: proto.ApplyConfig.Request
+	(*ApplyConfig_Response)(nil),          // 48: proto.ApplyConfig.Response
+	(*Check_Request)(nil),                 // 49: proto.Check.Request
+	(*Check_Response)(nil),                // 50: proto.Check.Response
+	(*GetOriginalwd_Request)(nil),         // 51: proto.GetOriginalwd.Request
+	(*GetOriginalwd_Response)(nil),        // 52: proto.GetOriginalwd.Response
+	(*GetModulePath_Request)(nil),         // 53: proto.GetModulePath.Request
+	(*GetModulePath_Response)(nil),        // 54: proto.GetModulePath.Response
+	(*GetModuleContent_Hint)(nil),         // 55: proto.GetModuleContent.Hint
+	(*GetModuleContent_Option)(nil),       // 56: proto.GetModuleContent.Option
+	(*GetModuleContent_Request)(nil),      // 57: proto.GetModuleContent.Request
+	(*GetModuleContent_Response)(nil),     // 58: proto.GetModuleContent.Response
+	(*GetFile_Request)(nil),               // 59: proto.GetFile.Request
+	(*GetFile_Response)(nil),              // 60: proto.GetFile.Response
+	(*GetFiles_Request)(nil),              // 61: proto.GetFiles.Request
+	(*GetFiles_Response)(nil),             // 62: proto.GetFiles.Response
+	nil,                                   // 63: proto.GetFiles.Response.FilesEntry
+	(*GetRuleConfigContent_Request)(nil),  // 64: proto.GetRuleConfigContent.Request
+	(*GetRuleConfigContent_Response)(nil), // 65: proto.GetRuleConfigContent.Response
+	(*EvaluateExpr_Option)(nil),           // 66: proto.EvaluateExpr.Option
+	(*EvaluateExpr_Request)(nil),          // 67: proto.EvaluateExpr.Request
+	(*EvaluateExpr_Response)(nil),         // 68: proto.EvaluateExpr.Response
+	(*EmitIssue_Rule)(nil),                // 69: proto.EmitIssue.Rule
+	(*EmitIssue_Request)(nil),             // 70: proto.EmitIssue.Request
+	(*EmitIssue_Response)(nil),            // 71: proto.EmitIssue.Response
+	(*ApplyChanges_Request)(nil),          // 72: proto.ApplyChanges.Request
+	(*ApplyChanges_Response)(nil),         // 73: proto.ApplyChanges.Response
+	nil,                                   // 74: proto.ApplyChanges.Request.ChangesEntry
+	(*BodySchema_Attribute)(nil),          // 75: proto.BodySchema.Attribute
+	(*BodySchema_Block)(nil),              // 76: proto.BodySchema.Block
+	(*BodyContent_Attribute)(nil),         // 77: proto.BodyContent.Attribute
+	(*BodyContent_Block)(nil),             // 78: proto.BodyContent.Block
+	nil,                                   // 79: proto.BodyContent.AttributesEntry
+	(*Range_Pos)(nil),                     // 80: proto.Range.Pos
+	(*AttributePath_Step)(nil),            // 81: proto.AttributePath.Step
 }
 var file_tflint_proto_depIdxs = []int32{
-	71, // 0: proto.BodySchema.attributes:type_name -> proto.BodySchema.Attribute
-	72, // 1: proto.BodySchema.blocks:type_name -> proto.BodySchema.Block
+	75, // 0: proto.BodySchema.attributes:type_name -> proto.BodySchema.Attribute
+	76, // 1: proto.BodySchema.blocks:type_name -> proto.BodySchema.Block
 	1,  // 2: proto.BodySchema.Mode:type_name -> proto.SchemaMode
-	75, // 3: proto.BodyContent.attributes:type_name -> proto.BodyContent.AttributesEntry
-	74, // 4: proto.BodyContent.blocks:type_name -> proto.BodyContent.Block
-	25, // 5: proto.Expression.range:type_name -> proto.Range
-	27, // 6: proto.Expression.value_marks:type_name -> proto.ValueMark
-	76, // 7: proto.Range.start:type_name -> proto.Range.Pos
-	76, // 8: proto.Range.end:type_name -> proto.Range.Pos
-	77, // 9: proto.AttributePath.steps:type_name -> proto.AttributePath.Step
-	26, // 10: proto.ValueMark.path:type_name -> proto.AttributePath
+	79, // 3: proto.BodyContent.attributes:type_name -> proto.BodyContent.AttributesEntry
+	78, // 4: proto.BodyContent.blocks:type_name -> proto.BodyContent.Block
+	26, // 5: proto.Expression.range:type_name -> proto.Range
+	28, // 6: proto.Expression.value_marks:type_name -> proto.ValueMark
+	80, // 7: proto.Range.start:type_name -> proto.Range.Pos
+	80, // 8: proto.Range.end:type_name -> proto.Range.Pos
+	81, // 9: proto.AttributePath.steps:type_name -> proto.AttributePath.Step
+	27, // 10: proto.ValueMark.path:type_name -> proto.AttributePath
 	2,  // 11: proto.ErrorDetail.code:type_name -> proto.ErrorCode
-	22, // 12: proto.GetConfigSchema.Response.schema:type_name -> proto.BodySchema
-	45, // 13: proto.ApplyGlobalConfig.Config.rules:type_name -> proto.ApplyGlobalConfig.Config.RulesEntry
-	41, // 14: proto.ApplyGlobalConfig.Request.config:type_name -> proto.ApplyGlobalConfig.Config
-	42, // 15: proto.ApplyGlobalConfig.Config.RulesEntry.value:type_name -> proto.ApplyGlobalConfig.RuleConfig
-	23, // 16: proto.ApplyConfig.Request.content:type_name -> proto.BodyContent
+	23, // 12: proto.GetConfigSchema.Response.schema:type_name -> proto.BodySchema
+	46, // 13: proto.ApplyGlobalConfig.Config.rules:type_name -> proto.ApplyGlobalConfig.Config.RulesEntry
+	42, // 14: proto.ApplyGlobalConfig.Request.config:type_name -> proto.ApplyGlobalConfig.Config
+	43, // 15: proto.ApplyGlobalConfig.Config.RulesEntry.value:type_name -> proto.ApplyGlobalConfig.RuleConfig
+	24, // 16: proto.ApplyConfig.Request.content:type_name -> proto.BodyContent
 	0,  // 17: proto.GetModuleContent.Option.module_ctx:type_name -> proto.ModuleCtxType
-	54, // 18: proto.GetModuleContent.Option.hint:type_name -> proto.GetModuleContent.Hint
+	55, // 18: proto.GetModuleContent.Option.hint:type_name -> proto.GetModuleContent.Hint
 	3,  // 19: proto.GetModuleContent.Option.expand_mode:type_name -> proto.GetModuleContent.ExpandMode
-	22, // 20: proto.GetModuleContent.Request.schema:type_name -> proto.BodySchema
-	55, // 21: proto.GetModuleContent.Request.option:type_name -> proto.GetModuleContent.Option
-	23, // 22: proto.GetModuleContent.Response.content:type_name -> proto.BodyContent
-	62, // 23: proto.GetFiles.Response.files:type_name -> proto.GetFiles.Response.FilesEntry
-	22, // 24: proto.GetRuleConfigContent.Request.schema:type_name -> proto.BodySchema
-	23, // 25: proto.GetRuleConfigContent.Response.content:type_name -> proto.BodyContent
+	23, // 20: proto.GetModuleContent.Request.schema:type_name -> proto.BodySchema
+	56, // 21: proto.GetModuleContent.Request.option:type_name -> proto.GetModuleContent.Option
+	24, // 22: proto.GetModuleContent.Response.content:type_name -> proto.BodyContent
+	63, // 23: proto.GetFiles.Response.files:type_name -> proto.GetFiles.Response.FilesEntry
+	23, // 24: proto.GetRuleConfigContent.Request.schema:type_name -> proto.BodySchema
+	24, // 25: proto.GetRuleConfigContent.Response.content:type_name -> proto.BodyContent
 	0,  // 26: proto.EvaluateExpr.Option.module_ctx:type_name -> proto.ModuleCtxType
-	25, // 27: proto.EvaluateExpr.Request.expr_range:type_name -> proto.Range
-	65, // 28: proto.EvaluateExpr.Request.option:type_name -> proto.EvaluateExpr.Option
-	24, // 29: proto.EvaluateExpr.Request.expression:type_name -> proto.Expression
-	27, // 30: proto.EvaluateExpr.Response.marks:type_name -> proto.ValueMark
+	26, // 27: proto.EvaluateExpr.Request.expr_range:type_name -> proto.Range
+	66, // 28: proto.EvaluateExpr.Request.option:type_name -> proto.EvaluateExpr.Option
+	25, // 29: proto.EvaluateExpr.Request.expression:type_name -> proto.Expression
+	28, // 30: proto.EvaluateExpr.Response.marks:type_name -> proto.ValueMark
 	4,  // 31: proto.EmitIssue.Rule.severity:type_name -> proto.EmitIssue.Severity
-	68, // 32: proto.EmitIssue.Request.rule:type_name -> proto.EmitIssue.Rule
-	25, // 33: proto.EmitIssue.Request.range:type_name -> proto.Range
-	22, // 34: proto.BodySchema.Block.body:type_name -> proto.BodySchema
-	25, // 35: proto.BodyContent.Attribute.expr_range:type_name -> proto.Range
-	25, // 36: proto.BodyContent.Attribute.range:type_name -> proto.Range
-	25, // 37: proto.BodyContent.Attribute.name_range:type_name -> proto.Range
-	24, // 38: proto.BodyContent.Attribute.expression:type_name -> proto.Expression
-	23, // 39: proto.BodyContent.Block.body:type_name -> proto.BodyContent
-	25, // 40: proto.BodyContent.Block.def_range:type_name -> proto.Range
-	25, // 41: proto.BodyContent.Block.type_range:type_name -> proto.Range
-	25, // 42: proto.BodyContent.Block.label_ranges:type_name -> proto.Range
-	73, // 43: proto.BodyContent.AttributesEntry.value:type_name -> proto.BodyContent.Attribute
-	29, // 44: proto.RuleSet.GetName:input_type -> proto.GetName.Request
-	31, // 45: proto.RuleSet.GetVersion:input_type -> proto.GetVersion.Request
-	33, // 46: proto.RuleSet.GetVersionConstraint:input_type -> proto.GetVersionConstraint.Request
-	35, // 47: proto.RuleSet.GetSDKVersion:input_type -> proto.GetSDKVersion.Request
-	37, // 48: proto.RuleSet.GetRuleNames:input_type -> proto.GetRuleNames.Request
-	39, // 49: proto.RuleSet.GetConfigSchema:input_type -> proto.GetConfigSchema.Request
-	43, // 50: proto.RuleSet.ApplyGlobalConfig:input_type -> proto.ApplyGlobalConfig.Request
-	46, // 51: proto.RuleSet.ApplyConfig:input_type -> proto.ApplyConfig.Request
-	48, // 52: proto.RuleSet.Check:input_type -> proto.Check.Request
-	50, // 53: proto.Runner.GetOriginalwd:input_type -> proto.GetOriginalwd.Request
-	52, // 54: proto.Runner.GetModulePath:input_type -> proto.GetModulePath.Request
-	56, // 55: proto.Runner.GetModuleContent:input_type -> proto.GetModuleContent.Request
-	58, // 56: proto.Runner.GetFile:input_type -> proto.GetFile.Request
-	60, // 57: proto.Runner.GetFiles:input_type -> proto.GetFiles.Request
-	63, // 58: proto.Runner.GetRuleConfigContent:input_type -> proto.GetRuleConfigContent.Request
-	66, // 59: proto.Runner.EvaluateExpr:input_type -> proto.EvaluateExpr.Request
-	69, // 60: proto.Runner.EmitIssue:input_type -> proto.EmitIssue.Request
-	30, // 61: proto.RuleSet.GetName:output_type -> proto.GetName.Response
-	32, // 62: proto.RuleSet.GetVersion:output_type -> proto.GetVersion.Response
-	34, // 63: proto.RuleSet.GetVersionConstraint:output_type -> proto.GetVersionConstraint.Response
-	36, // 64: proto.RuleSet.GetSDKVersion:output_type -> proto.GetSDKVersion.Response
-	38, // 65: proto.RuleSet.GetRuleNames:output_type -> proto.GetRuleNames.Response
-	40, // 66: proto.RuleSet.GetConfigSchema:output_type -> proto.GetConfigSchema.Response
-	44, // 67: proto.RuleSet.ApplyGlobalConfig:output_type -> proto.ApplyGlobalConfig.Response
-	47, // 68: proto.RuleSet.ApplyConfig:output_type -> proto.ApplyConfig.Response
-	49, // 69: proto.RuleSet.Check:output_type -> proto.Check.Response
-	51, // 70: proto.Runner.GetOriginalwd:output_type -> proto.GetOriginalwd.Response
-	53, // 71: proto.Runner.GetModulePath:output_type -> proto.GetModulePath.Response
-	57, // 72: proto.Runner.GetModuleContent:output_type -> proto.GetModuleContent.Response
-	59, // 73: proto.Runner.GetFile:output_type -> proto.GetFile.Response
-	61, // 74: proto.Runner.GetFiles:output_type -> proto.GetFiles.Response
-	64, // 75: proto.Runner.GetRuleConfigContent:output_type -> proto.GetRuleConfigContent.Response
-	67, // 76: proto.Runner.EvaluateExpr:output_type -> proto.EvaluateExpr.Response
-	70, // 77: proto.Runner.EmitIssue:output_type -> proto.EmitIssue.Response
-	61, // [61:78] is the sub-list for method output_type
-	44, // [44:61] is the sub-list for method input_type
-	44, // [44:44] is the sub-list for extension type_name
-	44, // [44:44] is the sub-list for extension extendee
-	0,  // [0:44] is the sub-list for field type_name
+	69, // 32: proto.EmitIssue.Request.rule:type_name -> proto.EmitIssue.Rule
+	26, // 33: proto.EmitIssue.Request.range:type_name -> proto.Range
+	74, // 34: proto.ApplyChanges.Request.changes:type_name -> proto.ApplyChanges.Request.ChangesEntry
+	23, // 35: proto.BodySchema.Block.body:type_name -> proto.BodySchema
+	26, // 36: proto.BodyContent.Attribute.expr_range:type_name -> proto.Range
+	26, // 37: proto.BodyContent.Attribute.range:type_name -> proto.Range
+	26, // 38: proto.BodyContent.Attribute.name_range:type_name -> proto.Range
+	25, // 39: proto.BodyContent.Attribute.expression:type_name -> proto.Expression
+	24, // 40: proto.BodyContent.Block.body:type_name -> proto.BodyContent
+	26, // 41: proto.BodyContent.Block.def_range:type_name -> proto.Range
+	26, // 42: proto.BodyContent.Block.type_range:type_name -> proto.Range
+	26, // 43: proto.BodyContent.Block.label_ranges:type_name -> proto.Range
+	77, // 44: proto.BodyContent.AttributesEntry.value:type_name -> proto.BodyContent.Attribute
+	30, // 45: proto.RuleSet.GetName:input_type -> proto.GetName.Request
+	32, // 46: proto.RuleSet.GetVersion:input_type -> proto.GetVersion.Request
+	34, // 47: proto.RuleSet.GetVersionConstraint:input_type -> proto.GetVersionConstraint.Request
+	36, // 48: proto.RuleSet.GetSDKVersion:input_type -> proto.GetSDKVersion.Request
+	38, // 49: proto.RuleSet.GetRuleNames:input_type -> proto.GetRuleNames.Request
+	40, // 50: proto.RuleSet.GetConfigSchema:input_type -> proto.GetConfigSchema.Request
+	44, // 51: proto.RuleSet.ApplyGlobalConfig:input_type -> proto.ApplyGlobalConfig.Request
+	47, // 52: proto.RuleSet.ApplyConfig:input_type -> proto.ApplyConfig.Request
+	49, // 53: proto.RuleSet.Check:input_type -> proto.Check.Request
+	51, // 54: proto.Runner.GetOriginalwd:input_type -> proto.GetOriginalwd.Request
+	53, // 55: proto.Runner.GetModulePath:input_type -> proto.GetModulePath.Request
+	57, // 56: proto.Runner.GetModuleContent:input_type -> proto.GetModuleContent.Request
+	59, // 57: proto.Runner.GetFile:input_type -> proto.GetFile.Request
+	61, // 58: proto.Runner.GetFiles:input_type -> proto.GetFiles.Request
+	64, // 59: proto.Runner.GetRuleConfigContent:input_type -> proto.GetRuleConfigContent.Request
+	67, // 60: proto.Runner.EvaluateExpr:input_type -> proto.EvaluateExpr.Request
+	70, // 61: proto.Runner.EmitIssue:input_type -> proto.EmitIssue.Request
+	72, // 62: proto.Runner.ApplyChanges:input_type -> proto.ApplyChanges.Request
+	31, // 63: proto.RuleSet.GetName:output_type -> proto.GetName.Response
+	33, // 64: proto.RuleSet.GetVersion:output_type -> proto.GetVersion.Response
+	35, // 65: proto.RuleSet.GetVersionConstraint:output_type -> proto.GetVersionConstraint.Response
+	37, // 66: proto.RuleSet.GetSDKVersion:output_type -> proto.GetSDKVersion.Response
+	39, // 67: proto.RuleSet.GetRuleNames:output_type -> proto.GetRuleNames.Response
+	41, // 68: proto.RuleSet.GetConfigSchema:output_type -> proto.GetConfigSchema.Response
+	45, // 69: proto.RuleSet.ApplyGlobalConfig:output_type -> proto.ApplyGlobalConfig.Response
+	48, // 70: proto.RuleSet.ApplyConfig:output_type -> proto.ApplyConfig.Response
+	50, // 71: proto.RuleSet.Check:output_type -> proto.Check.Response
+	52, // 72: proto.Runner.GetOriginalwd:output_type -> proto.GetOriginalwd.Response
+	54, // 73: proto.Runner.GetModulePath:output_type -> proto.GetModulePath.Response
+	58, // 74: proto.Runner.GetModuleContent:output_type -> proto.GetModuleContent.Response
+	60, // 75: proto.Runner.GetFile:output_type -> proto.GetFile.Response
+	62, // 76: proto.Runner.GetFiles:output_type -> proto.GetFiles.Response
+	65, // 77: proto.Runner.GetRuleConfigContent:output_type -> proto.GetRuleConfigContent.Response
+	68, // 78: proto.Runner.EvaluateExpr:output_type -> proto.EvaluateExpr.Response
+	71, // 79: proto.Runner.EmitIssue:output_type -> proto.EmitIssue.Response
+	73, // 80: proto.Runner.ApplyChanges:output_type -> proto.ApplyChanges.Response
+	63, // [63:81] is the sub-list for method output_type
+	45, // [45:63] is the sub-list for method input_type
+	45, // [45:45] is the sub-list for extension type_name
+	45, // [45:45] is the sub-list for extension extendee
+	0,  // [0:45] is the sub-list for field type_name
 }
 
 func init() { file_tflint_proto_init() }
@@ -4483,7 +4657,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodySchema); i {
+			switch v := v.(*ApplyChanges); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4495,7 +4669,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodyContent); i {
+			switch v := v.(*BodySchema); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4507,7 +4681,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Expression); i {
+			switch v := v.(*BodyContent); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4519,7 +4693,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Range); i {
+			switch v := v.(*Expression); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4531,7 +4705,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AttributePath); i {
+			switch v := v.(*Range); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4543,7 +4717,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ValueMark); i {
+			switch v := v.(*AttributePath); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4555,7 +4729,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ErrorDetail); i {
+			switch v := v.(*ValueMark); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4567,7 +4741,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetName_Request); i {
+			switch v := v.(*ErrorDetail); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4579,7 +4753,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetName_Response); i {
+			switch v := v.(*GetName_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4591,7 +4765,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetVersion_Request); i {
+			switch v := v.(*GetName_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4603,7 +4777,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetVersion_Response); i {
+			switch v := v.(*GetVersion_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4615,7 +4789,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetVersionConstraint_Request); i {
+			switch v := v.(*GetVersion_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4627,7 +4801,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetVersionConstraint_Response); i {
+			switch v := v.(*GetVersionConstraint_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4639,7 +4813,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSDKVersion_Request); i {
+			switch v := v.(*GetVersionConstraint_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4651,7 +4825,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSDKVersion_Response); i {
+			switch v := v.(*GetSDKVersion_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4663,7 +4837,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRuleNames_Request); i {
+			switch v := v.(*GetSDKVersion_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4675,7 +4849,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRuleNames_Response); i {
+			switch v := v.(*GetRuleNames_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4687,7 +4861,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetConfigSchema_Request); i {
+			switch v := v.(*GetRuleNames_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4699,7 +4873,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetConfigSchema_Response); i {
+			switch v := v.(*GetConfigSchema_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4711,7 +4885,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplyGlobalConfig_Config); i {
+			switch v := v.(*GetConfigSchema_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4723,7 +4897,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplyGlobalConfig_RuleConfig); i {
+			switch v := v.(*ApplyGlobalConfig_Config); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4735,7 +4909,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplyGlobalConfig_Request); i {
+			switch v := v.(*ApplyGlobalConfig_RuleConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4747,6 +4921,18 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ApplyGlobalConfig_Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tflint_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ApplyGlobalConfig_Response); i {
 			case 0:
 				return &v.state
@@ -4758,7 +4944,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ApplyConfig_Request); i {
 			case 0:
 				return &v.state
@@ -4770,7 +4956,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ApplyConfig_Response); i {
 			case 0:
 				return &v.state
@@ -4782,7 +4968,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Check_Request); i {
 			case 0:
 				return &v.state
@@ -4794,7 +4980,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Check_Response); i {
 			case 0:
 				return &v.state
@@ -4806,7 +4992,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetOriginalwd_Request); i {
 			case 0:
 				return &v.state
@@ -4818,7 +5004,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetOriginalwd_Response); i {
 			case 0:
 				return &v.state
@@ -4830,7 +5016,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModulePath_Request); i {
 			case 0:
 				return &v.state
@@ -4842,7 +5028,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModulePath_Response); i {
 			case 0:
 				return &v.state
@@ -4854,7 +5040,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModuleContent_Hint); i {
 			case 0:
 				return &v.state
@@ -4866,7 +5052,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModuleContent_Option); i {
 			case 0:
 				return &v.state
@@ -4878,7 +5064,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModuleContent_Request); i {
 			case 0:
 				return &v.state
@@ -4890,7 +5076,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModuleContent_Response); i {
 			case 0:
 				return &v.state
@@ -4902,7 +5088,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetFile_Request); i {
 			case 0:
 				return &v.state
@@ -4914,7 +5100,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetFile_Response); i {
 			case 0:
 				return &v.state
@@ -4926,7 +5112,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetFiles_Request); i {
 			case 0:
 				return &v.state
@@ -4938,7 +5124,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetFiles_Response); i {
 			case 0:
 				return &v.state
@@ -4950,7 +5136,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRuleConfigContent_Request); i {
 			case 0:
 				return &v.state
@@ -4962,7 +5148,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRuleConfigContent_Response); i {
 			case 0:
 				return &v.state
@@ -4974,7 +5160,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EvaluateExpr_Option); i {
 			case 0:
 				return &v.state
@@ -4986,7 +5172,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EvaluateExpr_Request); i {
 			case 0:
 				return &v.state
@@ -4998,7 +5184,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EvaluateExpr_Response); i {
 			case 0:
 				return &v.state
@@ -5010,7 +5196,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EmitIssue_Rule); i {
 			case 0:
 				return &v.state
@@ -5022,7 +5208,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EmitIssue_Request); i {
 			case 0:
 				return &v.state
@@ -5034,7 +5220,7 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
+		file_tflint_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EmitIssue_Response); i {
 			case 0:
 				return &v.state
@@ -5046,20 +5232,8 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodySchema_Attribute); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 		file_tflint_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodySchema_Block); i {
+			switch v := v.(*ApplyChanges_Request); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5071,7 +5245,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodyContent_Attribute); i {
+			switch v := v.(*ApplyChanges_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5082,8 +5256,8 @@ func file_tflint_proto_init() {
 				return nil
 			}
 		}
-		file_tflint_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BodyContent_Block); i {
+		file_tflint_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BodySchema_Attribute); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5095,7 +5269,7 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Range_Pos); i {
+			switch v := v.(*BodySchema_Block); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5107,6 +5281,42 @@ func file_tflint_proto_init() {
 			}
 		}
 		file_tflint_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BodyContent_Attribute); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tflint_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BodyContent_Block); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tflint_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Range_Pos); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_tflint_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AttributePath_Step); i {
 			case 0:
 				return &v.state
@@ -5119,7 +5329,7 @@ func file_tflint_proto_init() {
 			}
 		}
 	}
-	file_tflint_proto_msgTypes[72].OneofWrappers = []interface{}{
+	file_tflint_proto_msgTypes[76].OneofWrappers = []interface{}{
 		(*AttributePath_Step_AttributeName)(nil),
 		(*AttributePath_Step_ElementKeyString)(nil),
 		(*AttributePath_Step_ElementKeyInt)(nil),
@@ -5130,7 +5340,7 @@ func file_tflint_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tflint_proto_rawDesc,
 			NumEnums:      5,
-			NumMessages:   73,
+			NumMessages:   77,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

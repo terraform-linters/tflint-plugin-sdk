@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
@@ -26,7 +27,11 @@ func startTestGRPCServer(t *testing.T, runner Server) *GRPCClient {
 		proto.RegisterRunnerServer(server, &GRPCServer{Impl: runner})
 	})
 
-	return &GRPCClient{Client: proto.NewRunnerClient(conn)}
+	return &GRPCClient{
+		Client:     proto.NewRunnerClient(conn),
+		Fixer:      internal.NewFixer(runner.GetFiles(tflint.RootModuleCtxType)),
+		FixEnabled: false,
+	}
 }
 
 var _ Server = &mockServer{}
@@ -43,7 +48,8 @@ type mockServerImpl struct {
 	getFiles             func() map[string][]byte
 	getRuleConfigContent func(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	evaluateExpr         func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
-	emitIssue            func(tflint.Rule, string, hcl.Range) error
+	emitIssue            func(tflint.Rule, string, hcl.Range, bool) (bool, error)
+	applyChanges         func(map[string][]byte) error
 }
 
 func newMockServer(impl mockServerImpl) *mockServer {
@@ -99,9 +105,16 @@ func (s *mockServer) EvaluateExpr(expr hcl.Expression, opts tflint.EvaluateExprO
 	return cty.Value{}, nil
 }
 
-func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Range) error {
+func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
 	if s.impl.emitIssue != nil {
-		return s.impl.emitIssue(rule, message, location)
+		return s.impl.emitIssue(rule, message, location, fixable)
+	}
+	return true, nil
+}
+
+func (s *mockServer) ApplyChanges(sources map[string][]byte) error {
+	if s.impl.applyChanges != nil {
+		return s.impl.applyChanges(sources)
 	}
 	return nil
 }
@@ -2359,7 +2372,7 @@ func TestEmitIssue(t *testing.T) {
 	tests := []struct {
 		Name       string
 		Args       func() (tflint.Rule, string, hcl.Range)
-		ServerImpl func(tflint.Rule, string, hcl.Range) error
+		ServerImpl func(tflint.Rule, string, hcl.Range, bool) (bool, error)
 		ErrCheck   func(error) bool
 	}{
 		{
@@ -2367,21 +2380,21 @@ func TestEmitIssue(t *testing.T) {
 			Args: func() (tflint.Rule, string, hcl.Range) {
 				return &Rule{}, "this is test", hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}}
 			},
-			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range) error {
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
 				if rule.Name() != "test_rule" {
-					return fmt.Errorf("rule.Name() should be test_rule, but %s", rule.Name())
+					return false, fmt.Errorf("rule.Name() should be test_rule, but %s", rule.Name())
 				}
 				if rule.Enabled() != true {
-					return fmt.Errorf("rule.Enabled() should be true, but %t", rule.Enabled())
+					return false, fmt.Errorf("rule.Enabled() should be true, but %t", rule.Enabled())
 				}
 				if rule.Severity() != tflint.ERROR {
-					return fmt.Errorf("rule.Severity() should be ERROR, but %s", rule.Severity())
+					return false, fmt.Errorf("rule.Severity() should be ERROR, but %s", rule.Severity())
 				}
 				if rule.Link() != "https://example.com" {
-					return fmt.Errorf("rule.Link() should be https://example.com, but %s", rule.Link())
+					return false, fmt.Errorf("rule.Link() should be https://example.com, but %s", rule.Link())
 				}
 				if message != "this is test" {
-					return fmt.Errorf("message should be `this is test`, but %s", message)
+					return false, fmt.Errorf("message should be `this is test`, but %s", message)
 				}
 				want := hcl.Range{
 					Filename: "test.tf",
@@ -2389,9 +2402,9 @@ func TestEmitIssue(t *testing.T) {
 					End:      hcl.Pos{Line: 2, Column: 10},
 				}
 				if diff := cmp.Diff(location, want); diff != "" {
-					return fmt.Errorf("diff: %s", diff)
+					return false, fmt.Errorf("diff: %s", diff)
 				}
-				return nil
+				return true, nil
 			},
 			ErrCheck: neverHappend,
 		},
@@ -2400,8 +2413,8 @@ func TestEmitIssue(t *testing.T) {
 			Args: func() (tflint.Rule, string, hcl.Range) {
 				return &Rule{}, "this is test", hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}}
 			},
-			ServerImpl: func(tflint.Rule, string, hcl.Range) error {
-				return errors.New("unexpected error")
+			ServerImpl: func(tflint.Rule, string, hcl.Range, bool) (bool, error) {
+				return false, errors.New("unexpected error")
 			},
 			ErrCheck: func(err error) bool {
 				return err == nil || err.Error() != "unexpected error"
@@ -2416,6 +2429,317 @@ func TestEmitIssue(t *testing.T) {
 			err := client.EmitIssue(test.Args())
 			if test.ErrCheck(err) {
 				t.Fatalf("failed to call EmitIssue: %s", err)
+			}
+		})
+	}
+}
+
+func TestEmitIssueWithFix(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+	getFiles := func() map[string][]byte {
+		return map[string][]byte{
+			"test.tf": []byte(`foo = "bar"`),
+		}
+	}
+
+	tests := []struct {
+		Name       string
+		Args       func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error)
+		ServerImpl func(tflint.Rule, string, hcl.Range, bool) (bool, error)
+		ModulePath []string
+		DisableFix bool
+		ErrCheck   func(error) bool
+		Changes    map[string]string
+	}{
+		{
+			Name: "emit issue",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						)
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if rule.Name() != "test_rule" {
+					return false, fmt.Errorf("rule.Name() should be test_rule, but %s", rule.Name())
+				}
+				if rule.Enabled() != true {
+					return false, fmt.Errorf("rule.Enabled() should be true, but %t", rule.Enabled())
+				}
+				if rule.Severity() != tflint.ERROR {
+					return false, fmt.Errorf("rule.Severity() should be ERROR, but %s", rule.Severity())
+				}
+				if rule.Link() != "https://example.com" {
+					return false, fmt.Errorf("rule.Link() should be https://example.com, but %s", rule.Link())
+				}
+				if message != "this is test" {
+					return false, fmt.Errorf("message should be `this is test`, but %s", message)
+				}
+				want := hcl.Range{
+					Filename: "test.tf",
+					Start:    hcl.Pos{Line: 2, Column: 2},
+					End:      hcl.Pos{Line: 2, Column: 10},
+				}
+				if diff := cmp.Diff(location, want); diff != "" {
+					return false, fmt.Errorf("diff: %s", diff)
+				}
+				if fixable != true {
+					return false, fmt.Errorf("fixable should be true, but %t", fixable)
+				}
+				return true, nil
+			},
+			ErrCheck: neverHappend,
+			Changes: map[string]string{
+				"test.tf": `foo = "baz"`,
+			},
+		},
+		{
+			Name: "child modules",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						)
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if fixable != false {
+					return false, fmt.Errorf("fixable should be false, but %t", fixable)
+				}
+				return true, nil
+			},
+			ModulePath: []string{"module", "child"},
+			ErrCheck:   neverHappend,
+			Changes:    map[string]string{},
+		},
+		{
+			Name: "autofix is not supported",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						if err := f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						); err != nil {
+							return err
+						}
+						return tflint.ErrFixNotSupported
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if fixable != false {
+					return false, fmt.Errorf("fixable should be false, but %t", fixable)
+				}
+				return true, nil
+			},
+			ErrCheck: neverHappend,
+			Changes:  map[string]string{},
+		},
+		{
+			Name: "fix is disbaled",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						)
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if fixable != true {
+					return false, fmt.Errorf("fixable should be true, but %t", fixable)
+				}
+				return true, nil
+			},
+			DisableFix: true,
+			ErrCheck:   neverHappend,
+			Changes:    map[string]string{},
+		},
+		{
+			Name: "fix is not applied",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						)
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if fixable != true {
+					return false, fmt.Errorf("fixable should be true, but %t", fixable)
+				}
+				return false, nil
+			},
+			ErrCheck: neverHappend,
+			Changes:  map[string]string{},
+		},
+		{
+			Name: "fix raises an error",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						if err := f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						); err != nil {
+							return err
+						}
+						return errors.New("unexpected error")
+					}
+			},
+			ServerImpl: func(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+				if fixable != true {
+					return false, fmt.Errorf("fixable should be true, but %t", fixable)
+				}
+				return true, nil
+			},
+			ErrCheck: func(err error) bool {
+				return err == nil || err.Error() != "unexpected error"
+			},
+			Changes: map[string]string{
+				"test.tf": `foo = "baz"`,
+			},
+		},
+		{
+			Name: "server returns an error",
+			Args: func() (tflint.Rule, string, hcl.Range, func(tflint.Fixer) error) {
+				return &Rule{},
+					"this is test",
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Line: 2, Column: 2}, End: hcl.Pos{Line: 2, Column: 10}},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+							"baz",
+						)
+					}
+			},
+			ServerImpl: func(tflint.Rule, string, hcl.Range, bool) (bool, error) {
+				return false, errors.New("unexpected error")
+			},
+			ErrCheck: func(err error) bool {
+				return err == nil || err.Error() != "unexpected error"
+			},
+			Changes: map[string]string{
+				"test.tf": `foo = "baz"`,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			client := startTestGRPCServer(
+				t,
+				newMockServer(mockServerImpl{
+					getFiles:      getFiles,
+					getModulePath: func() []string { return test.ModulePath },
+					emitIssue:     test.ServerImpl,
+				}),
+			)
+			client.FixEnabled = !test.DisableFix
+
+			err := client.EmitIssueWithFix(test.Args())
+			if test.ErrCheck(err) {
+				t.Fatalf("failed to call EmitIssueWithFix: %s", err)
+			}
+
+			got := map[string]string{}
+			for name, content := range client.Fixer.Changes() {
+				got[name] = string(content)
+			}
+			if diff := cmp.Diff(got, test.Changes); diff != "" {
+				t.Fatalf("diff: %s", diff)
+			}
+		})
+	}
+}
+
+func TestApplyChanges(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+	getFiles := func() map[string][]byte {
+		return map[string][]byte{
+			"test.tf": []byte(`foo = "bar"`),
+		}
+	}
+
+	tests := []struct {
+		name       string
+		fix        func(tflint.Fixer) error
+		serverImpl func(map[string][]byte) error
+		errCheck   func(error) bool
+	}{
+		{
+			name: "apply changes",
+			fix: func(f tflint.Fixer) error {
+				return f.ReplaceText(
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+					"baz",
+				)
+			},
+			serverImpl: func(files map[string][]byte) error {
+				if diff := cmp.Diff(files, map[string][]byte{
+					"test.tf": []byte(`foo = "baz"`),
+				}); diff != "" {
+					return fmt.Errorf("diff: %s", diff)
+				}
+				return nil
+			},
+			errCheck: neverHappend,
+		},
+		{
+			name: "server returns an error",
+			fix: func(f tflint.Fixer) error {
+				return f.ReplaceText(
+					hcl.Range{Filename: "test.tf", Start: hcl.Pos{Byte: 7}, End: hcl.Pos{Byte: 10}},
+					"baz",
+				)
+			},
+			serverImpl: func(files map[string][]byte) error {
+				return errors.New("unexpected error")
+			},
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != "unexpected error"
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := startTestGRPCServer(t, newMockServer(mockServerImpl{getFiles: getFiles, applyChanges: test.serverImpl}))
+			client.FixEnabled = true
+
+			if err := test.fix(client.Fixer); err != nil {
+				t.Fatalf("failed to call fix: %s", err)
+			}
+
+			err := client.ApplyChanges()
+			if test.errCheck(err) {
+				t.Fatalf("failed to call ApplyChanges: %s", err)
+			}
+
+			if err == nil && client.Fixer.HasChanges() {
+				t.Fatal("fixer should have no changes")
 			}
 		})
 	}

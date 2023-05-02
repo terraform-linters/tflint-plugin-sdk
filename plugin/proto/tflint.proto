@@ -62,6 +62,7 @@ message ApplyGlobalConfig {
         map<string, RuleConfig> rules = 1;
         bool disabled_by_default = 2;
         repeated string only = 3;
+        bool fix = 4;
     }
     message RuleConfig {
         string name = 1;
@@ -97,6 +98,7 @@ service Runner {
     rpc GetRuleConfigContent(GetRuleConfigContent.Request) returns (GetRuleConfigContent.Response);
     rpc EvaluateExpr(EvaluateExpr.Request) returns (EvaluateExpr.Response);
     rpc EmitIssue(EmitIssue.Request) returns (EmitIssue.Response);
+    rpc ApplyChanges(ApplyChanges.Request) returns (ApplyChanges.Response);
 }
 
 enum ModuleCtxType {
@@ -207,6 +209,16 @@ message EmitIssue {
         Rule rule = 1;
         string message = 2;
         Range range = 3;
+        bool fixable = 4;
+    }
+    message Response {
+        bool applied = 1;
+    }
+}
+
+message ApplyChanges {
+    message Request {
+        map<string, bytes> changes = 1;
     }
     message Response {}
 }
