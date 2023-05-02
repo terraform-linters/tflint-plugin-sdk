@@ -19,6 +19,26 @@ Please refer to [tflint-ruleset-template](https://github.com/terraform-linters/t
 
 For more details on the API, see [tflint](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/tflint) and [helper](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/helper) packages on pkg.go.dev.
 
+## Developing
+
+The proto compiler is required when updating `.proto` files. The `protoc` and `protoc-gen-go` can be installed using [aqua](https://github.com/aquaproj/aqua).
+
+```console
+$ make prepare
+curl -sSfL https://raw.githubusercontent.com/aquaproj/aqua-installer/v2.1.1/aqua-installer | bash
+===> Installing aqua v2.2.3 for bootstraping...
+
+...
+
+aqua version 2.3.7 (c07105b10ab825e7f309d2eb83278a0422a2b24f)
+
+Add ${AQUA_ROOT_DIR}/bin to the environment variable PATH.
+export PATH="${AQUA_ROOT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/aquaproj-aqua}/bin:$PATH"
+$ export PATH="${AQUA_ROOT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/aquaproj-aqua}/bin:$PATH"
+$ aqua install
+$ make proto
+```
+
 ## Architecture
 
 ![architecture](architecture.png)
