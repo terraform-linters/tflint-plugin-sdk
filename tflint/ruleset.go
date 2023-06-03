@@ -1,8 +1,6 @@
 package tflint
 
 import (
-	"fmt"
-
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 )
@@ -104,14 +102,10 @@ func (r *BuiltinRuleSet) NewRunner(runner Runner) (Runner, error) {
 	return runner, nil
 }
 
-// Check runs inspection for each rule by applying Runner.
-func (r *BuiltinRuleSet) Check(runner Runner) error {
-	for _, rule := range r.EnabledRules {
-		if err := rule.Check(runner); err != nil {
-			return fmt.Errorf("Failed to check `%s` rule: %s", rule.Name(), err)
-		}
-	}
-	return nil
+// BuiltinImpl returns the receiver itself as BuiltinRuleSet.
+// This is not supposed to be overridden from custom rulesets.
+func (r *BuiltinRuleSet) BuiltinImpl() *BuiltinRuleSet {
+	return r
 }
 
 func (r *BuiltinRuleSet) mustEmbedBuiltinRuleSet() {}

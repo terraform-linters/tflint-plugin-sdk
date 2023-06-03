@@ -2,6 +2,7 @@ package host2plugin
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
@@ -107,8 +108,8 @@ func (s *GRPCServer) ApplyConfig(ctx context.Context, req *proto.ApplyConfig_Req
 	return &proto.ApplyConfig_Response{}, nil
 }
 
-// Check calls its own plugin implementation with an gRPC client that can send
-// requests to the host process.
+// Check calls plugin rules with a gRPC client that can send requests
+// to the host process.
 func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*proto.Check_Response, error) {
 	conn, err := s.broker.Dial(req.Runner)
 	if err != nil {
@@ -120,9 +121,11 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
-	err = s.impl.Check(runner)
-	if err != nil {
-		return nil, toproto.Error(codes.Aborted, err)
+
+	for _, rule := range s.impl.BuiltinImpl().EnabledRules {
+		if err := rule.Check(runner); err != nil {
+			return nil, toproto.Error(codes.Aborted, fmt.Errorf(`failed to check "%s" rule: %s`, rule.Name(), err))
+		}
 	}
 	return &proto.Check_Response{}, nil
 }
