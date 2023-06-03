@@ -87,21 +87,43 @@ func (r *mockRuleSet) NewRunner(runner tflint.Runner) (tflint.Runner, error) {
 	return runner, nil
 }
 
-func (r *mockRuleSet) Check(runner tflint.Runner) error {
-	if r.impl.check != nil {
-		return r.impl.check(runner)
-	}
-	return nil
-}
-
 func newMockRuleSet(name, version string, impl mockRuleSetImpl) *mockRuleSet {
 	return &mockRuleSet{
 		BuiltinRuleSet: tflint.BuiltinRuleSet{
 			Name:    name,
 			Version: version,
+			EnabledRules: []tflint.Rule{
+				&mockRule{check: impl.check},
+			},
 		},
 		impl: impl,
 	}
+}
+
+var _ tflint.Rule = &mockRule{}
+
+type mockRule struct {
+	tflint.DefaultRule
+	check func(tflint.Runner) error
+}
+
+func (r *mockRule) Check(runner tflint.Runner) error {
+	if r.check != nil {
+		return r.check(runner)
+	}
+	return nil
+}
+
+func (r *mockRule) Name() string {
+	return "mock_rule"
+}
+
+func (r *mockRule) Severity() tflint.Severity {
+	return tflint.ERROR
+}
+
+func (r *mockRule) Enabled() bool {
+	return true
 }
 
 func TestRuleSetName(t *testing.T) {
@@ -669,7 +691,7 @@ resource "aws_instance" "foo" {
 				return err
 			},
 			ErrCheck: func(err error) bool {
-				return err == nil || err.Error() != "unexpected error"
+				return err == nil || err.Error() != `failed to check "mock_rule" rule: unexpected error`
 			},
 		},
 		{
@@ -681,7 +703,7 @@ resource "aws_instance" "foo" {
 				return errors.New("unexpected error")
 			},
 			ErrCheck: func(err error) bool {
-				return err == nil || err.Error() != "unexpected error"
+				return err == nil || err.Error() != `failed to check "mock_rule" rule: unexpected error`
 			},
 		},
 		{
@@ -696,7 +718,7 @@ resource "aws_instance" "foo" {
 				return errors.New(runner.(*mockCustomRunner).Hello())
 			},
 			ErrCheck: func(err error) bool {
-				return err == nil || err.Error() != "Hello from custom runner!"
+				return err == nil || err.Error() != `failed to check "mock_rule" rule: Hello from custom runner!`
 			},
 		},
 	}

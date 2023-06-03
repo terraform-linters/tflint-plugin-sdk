@@ -68,9 +68,9 @@ type RuleSet interface {
 	// Custom rulesets can override this method to inject a custom runner.
 	NewRunner(Runner) (Runner, error)
 
-	// Check is a entrypoint for all inspections.
+	// BuiltinImpl returns the receiver itself as BuiltinRuleSet.
 	// This is not supposed to be overridden from custom rulesets.
-	Check(Runner) error
+	BuiltinImpl() *BuiltinRuleSet
 
 	// All Ruleset must embed the builtin ruleset.
 	mustEmbedBuiltinRuleSet()
