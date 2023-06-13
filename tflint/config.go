@@ -5,6 +5,7 @@ type Config struct {
 	Rules             map[string]*RuleConfig
 	DisabledByDefault bool
 	Only              []string
+	Fix               bool
 }
 
 // RuleConfig is a TFLint's rule configuration.

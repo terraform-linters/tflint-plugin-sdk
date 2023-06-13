@@ -35,7 +35,8 @@ type Server interface {
 	GetFiles(tflint.ModuleCtxType) map[string][]byte
 	GetRuleConfigContent(string, *hclext.BodySchema) (*hclext.BodyContent, map[string][]byte, error)
 	EvaluateExpr(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error)
-	EmitIssue(rule tflint.Rule, message string, location hcl.Range) error
+	EmitIssue(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error)
+	ApplyChanges(map[string][]byte) error
 }
 
 // GetOriginalwd gets the original working directory.
@@ -172,9 +173,18 @@ func (s *GRPCServer) EmitIssue(ctx context.Context, req *proto.EmitIssue_Request
 		return nil, status.Error(codes.InvalidArgument, "range should not be null")
 	}
 
-	err := s.Impl.EmitIssue(fromproto.Rule(req.Rule), req.Message, fromproto.Range(req.Range))
+	applied, err := s.Impl.EmitIssue(fromproto.Rule(req.Rule), req.Message, fromproto.Range(req.Range), req.Fixable)
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
-	return &proto.EmitIssue_Response{}, nil
+	return &proto.EmitIssue_Response{Applied: applied}, nil
+}
+
+// ApplyChanges applies the passed changes.
+func (s *GRPCServer) ApplyChanges(ctx context.Context, req *proto.ApplyChanges_Request) (*proto.ApplyChanges_Response, error) {
+	err := s.Impl.ApplyChanges(req.Changes)
+	if err != nil {
+		return nil, toproto.Error(codes.InvalidArgument, err)
+	}
+	return &proto.ApplyChanges_Response{}, nil
 }

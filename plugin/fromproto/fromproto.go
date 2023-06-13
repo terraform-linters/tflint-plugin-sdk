@@ -262,6 +262,7 @@ func Config(config *proto.ApplyGlobalConfig_Config) *tflint.Config {
 		Rules:             rules,
 		DisabledByDefault: config.DisabledByDefault,
 		Only:              config.Only,
+		Fix:               config.Fix,
 	}
 }
 

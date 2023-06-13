@@ -240,6 +240,7 @@ func Config(config *tflint.Config) *proto.ApplyGlobalConfig_Config {
 		Rules:             rules,
 		DisabledByDefault: config.DisabledByDefault,
 		Only:              config.Only,
+		Fix:               config.Fix,
 	}
 }
 

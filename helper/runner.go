@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
@@ -21,8 +22,10 @@ type Runner struct {
 	Issues Issues
 
 	files     map[string]*hcl.File
+	sources   map[string][]byte
 	config    Config
 	variables map[string]*Variable
+	fixer     *internal.Fixer
 }
 
 // Variable is an implementation of variables in Terraform language
@@ -318,6 +321,25 @@ func (r *Runner) EmitIssue(rule tflint.Rule, message string, location hcl.Range)
 	return nil
 }
 
+// EmitIssueWithFix adds an issue and invoke fix.
+func (r *Runner) EmitIssueWithFix(rule tflint.Rule, message string, location hcl.Range, fixFunc func(f tflint.Fixer) error) error {
+	r.fixer.StashChanges()
+	if err := fixFunc(r.fixer); err != nil {
+		if errors.Is(err, tflint.ErrFixNotSupported) {
+			r.fixer.PopChangesFromStash()
+			return r.EmitIssue(rule, message, location)
+		}
+		return err
+	}
+	return r.EmitIssue(rule, message, location)
+}
+
+// Changes returns formatted changes by the fixer.
+func (r *Runner) Changes() map[string][]byte {
+	r.fixer.FormatChanges()
+	return r.fixer.Changes()
+}
+
 // EnsureNoError is a method that simply runs a function if there is no error.
 //
 // Deprecated: Use EvaluateExpr with a function callback. e.g. EvaluateExpr(expr, func (val T) error {}, ...)
@@ -331,7 +353,12 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 // NewLocalRunner initialises a new test runner.
 // Internal use only.
 func NewLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
-	return &Runner{files: map[string]*hcl.File{}, variables: map[string]*Variable{}, Issues: issues}
+	return &Runner{
+		files:     map[string]*hcl.File{},
+		sources:   map[string][]byte{},
+		variables: map[string]*Variable{},
+		Issues:    issues,
+	}
 }
 
 // AddLocalFile adds a new file to the current mapped files.
@@ -342,6 +369,7 @@ func (r *Runner) AddLocalFile(name string, file *hcl.File) bool {
 	}
 
 	r.files[name] = file
+	r.sources[name] = file.Bytes
 	return true
 }
 
@@ -365,6 +393,7 @@ func (r *Runner) initFromFiles() error {
 			}
 		}
 	}
+	r.fixer = internal.NewFixer(r.sources)
 
 	return nil
 }

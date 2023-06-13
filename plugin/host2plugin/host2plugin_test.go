@@ -405,6 +405,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 				},
 				DisabledByDefault: true,
 				Only:              []string{"test_rule1", "test_rule2"},
+				Fix:               true,
 			},
 			ServerImpl: func(config *tflint.Config) error {
 				want := &tflint.Config{
@@ -414,6 +415,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 					},
 					DisabledByDefault: true,
 					Only:              []string{"test_rule1", "test_rule2"},
+					Fix:               true,
 				}
 
 				if diff := cmp.Diff(config, want); diff != "" {
@@ -567,7 +569,9 @@ type mockServer struct {
 }
 
 type mockServerImpl struct {
-	getFile func(string) (*hcl.File, error)
+	getFile      func(string) (*hcl.File, error)
+	getFiles     func(tflint.ModuleCtxType) map[string][]byte
+	applyChanges func(map[string][]byte) error
 }
 
 func (s *mockServer) GetOriginalwd() string {
@@ -597,11 +601,21 @@ func (s *mockServer) EvaluateExpr(expr hcl.Expression, opts tflint.EvaluateExprO
 	return cty.Value{}, nil
 }
 
-func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Range) error {
+func (s *mockServer) EmitIssue(rule tflint.Rule, message string, location hcl.Range, fixable bool) (bool, error) {
+	return true, nil
+}
+
+func (s *mockServer) ApplyChanges(sources map[string][]byte) error {
+	if s.impl.applyChanges != nil {
+		return s.impl.applyChanges(sources)
+	}
 	return nil
 }
 
-func (s *mockServer) GetFiles(tflint.ModuleCtxType) map[string][]byte {
+func (s *mockServer) GetFiles(ctx tflint.ModuleCtxType) map[string][]byte {
+	if s.impl.getFiles != nil {
+		return s.impl.getFiles(ctx)
+	}
 	return map[string][]byte{}
 }
 
@@ -721,12 +735,148 @@ resource "aws_instance" "foo" {
 				return err == nil || err.Error() != `failed to check "mock_rule" rule: Hello from custom runner!`
 			},
 		},
+		{
+			Name: "apply changes",
+			Arg: func() plugin2host.Server {
+				return &mockServer{
+					impl: mockServerImpl{
+						getFiles: func(tflint.ModuleCtxType) map[string][]byte {
+							return map[string][]byte{
+								"main.tf": []byte(`
+foo = 1
+  bar = 2
+`),
+							}
+						},
+						applyChanges: func(sources map[string][]byte) error {
+							want := map[string]string{
+								"main.tf": `
+foo = 1
+baz = 2
+`,
+							}
+							got := map[string]string{}
+							for filename, source := range sources {
+								got[filename] = string(source)
+							}
+							if diff := cmp.Diff(got, want); diff != "" {
+								return fmt.Errorf("diff: %s", diff)
+							}
+							return nil
+						},
+					},
+				}
+			},
+			ServerImpl: func(runner tflint.Runner) error {
+				return runner.EmitIssueWithFix(
+					&mockRule{},
+					"test message",
+					hcl.Range{},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Byte: 11}, End: hcl.Pos{Byte: 14}},
+							"baz",
+						)
+					},
+				)
+			},
+			ErrCheck: neverHappend,
+		},
+		{
+			Name: "apply changes with custom runner",
+			Arg: func() plugin2host.Server {
+				return &mockServer{
+					impl: mockServerImpl{
+						getFiles: func(tflint.ModuleCtxType) map[string][]byte {
+							return map[string][]byte{
+								"main.tf": []byte(`
+foo = 1
+  bar = 2
+`),
+							}
+						},
+						applyChanges: func(sources map[string][]byte) error {
+							want := map[string]string{
+								"main.tf": `
+foo = 1
+baz = 2
+`,
+							}
+							got := map[string]string{}
+							for filename, source := range sources {
+								got[filename] = string(source)
+							}
+							if diff := cmp.Diff(got, want); diff != "" {
+								return fmt.Errorf("diff: %s", diff)
+							}
+							return nil
+						},
+					},
+				}
+			},
+			NewRunnerImpl: func(runner tflint.Runner) (tflint.Runner, error) {
+				return &mockCustomRunner{runner}, nil
+			},
+			ServerImpl: func(runner tflint.Runner) error {
+				return runner.EmitIssueWithFix(
+					&mockRule{},
+					"test message",
+					hcl.Range{},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Byte: 11}, End: hcl.Pos{Byte: 14}},
+							"baz",
+						)
+					},
+				)
+			},
+			ErrCheck: neverHappend,
+		},
+		{
+			Name: "apply errors",
+			Arg: func() plugin2host.Server {
+				return &mockServer{
+					impl: mockServerImpl{
+						getFiles: func(tflint.ModuleCtxType) map[string][]byte {
+							return map[string][]byte{
+								"main.tf": []byte(`
+foo = 1
+  bar = 2
+`),
+							}
+						},
+						applyChanges: func(sources map[string][]byte) error {
+							return errors.New("unexpected error")
+						},
+					},
+				}
+			},
+			ServerImpl: func(runner tflint.Runner) error {
+				return runner.EmitIssueWithFix(
+					&mockRule{},
+					"test message",
+					hcl.Range{},
+					func(f tflint.Fixer) error {
+						return f.ReplaceText(
+							hcl.Range{Filename: "main.tf", Start: hcl.Pos{Byte: 11}, End: hcl.Pos{Byte: 14}},
+							"baz",
+						)
+					},
+				)
+			},
+			ErrCheck: func(err error) bool {
+				return err == nil || err.Error() != `failed to apply fixes by "mock_rule" rule: unexpected error`
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			client := startTestGRPCPluginServer(t, newMockRuleSet("test_ruleset", "0.1.0", mockRuleSetImpl{check: test.ServerImpl, newRunner: test.NewRunnerImpl}))
 
+			if err := client.ApplyGlobalConfig(&tflint.Config{Fix: true}); err != nil {
+				t.Fatalf("failed to call ApplyGlobalConfig: %s", err)
+			}
 			err := client.Check(test.Arg())
 			if test.ErrCheck(err) {
 				t.Fatalf("failed to call Check: %s", err)

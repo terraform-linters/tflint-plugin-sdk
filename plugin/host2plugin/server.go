@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/interceptor"
@@ -24,6 +25,7 @@ type GRPCServer struct {
 
 	impl   tflint.RuleSet
 	broker *plugin.GRPCBroker
+	config *tflint.Config
 }
 
 var _ proto.RuleSetServer = &GRPCServer{}
@@ -85,8 +87,8 @@ func (s *GRPCServer) ApplyGlobalConfig(ctx context.Context, req *proto.ApplyGlob
 		return nil, status.Error(codes.InvalidArgument, "config should not be null")
 	}
 
-	config := fromproto.Config(req.Config)
-	if err := s.impl.ApplyGlobalConfig(config); err != nil {
+	s.config = fromproto.Config(req.Config)
+	if err := s.impl.ApplyGlobalConfig(s.config); err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
 	return &proto.ApplyGlobalConfig_Response{}, nil
@@ -117,7 +119,14 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	}
 	defer conn.Close()
 
-	runner, err := s.impl.NewRunner(&plugin2host.GRPCClient{Client: proto.NewRunnerClient(conn)})
+	client := proto.NewRunnerClient(conn)
+	resp, err := client.GetFiles(ctx, &proto.GetFiles_Request{})
+	if err != nil {
+		return nil, toproto.Error(codes.FailedPrecondition, err)
+	}
+
+	internalRunner := &plugin2host.GRPCClient{Client: client, Fixer: internal.NewFixer(resp.Files), FixEnabled: s.config.Fix}
+	runner, err := s.impl.NewRunner(internalRunner)
 	if err != nil {
 		return nil, toproto.Error(codes.FailedPrecondition, err)
 	}
@@ -125,6 +134,12 @@ func (s *GRPCServer) Check(ctx context.Context, req *proto.Check_Request) (*prot
 	for _, rule := range s.impl.BuiltinImpl().EnabledRules {
 		if err := rule.Check(runner); err != nil {
 			return nil, toproto.Error(codes.Aborted, fmt.Errorf(`failed to check "%s" rule: %s`, rule.Name(), err))
+		}
+		if internalRunner.Fixer.HasChanges() {
+			internalRunner.Fixer.FormatChanges()
+			if err := internalRunner.ApplyChanges(); err != nil {
+				return nil, toproto.Error(codes.Aborted, fmt.Errorf(`failed to apply fixes by "%s" rule: %s`, rule.Name(), err))
+			}
 		}
 	}
 	return &proto.Check_Response{}, nil

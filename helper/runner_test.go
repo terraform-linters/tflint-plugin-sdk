@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -641,6 +642,187 @@ resource "aws_instance" "foo" {
 	opt := cmpopts.IgnoreFields(hcl.Pos{}, "Byte")
 	if diff := cmp.Diff(expected, runner.Issues, opt); diff != "" {
 		t.Fatal(diff)
+	}
+}
+
+func Test_EmitIssueWithFix(t *testing.T) {
+	// default error check helper
+	neverHappend := func(err error) bool { return err != nil }
+
+	tests := []struct {
+		name     string
+		src      string
+		rng      hcl.Range
+		fix      func(tflint.Fixer) error
+		want     Issues
+		fixed    string
+		errCheck func(error) bool
+	}{
+		{
+			name: "with fix",
+			src: `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`,
+			rng: hcl.Range{
+				Filename: "main.tf",
+				Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+				End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+			},
+			fix: func(fixer tflint.Fixer) error {
+				return fixer.ReplaceText(
+					hcl.Range{
+						Filename: "main.tf",
+						Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+						End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+					},
+					`"t3.micro"`,
+				)
+			},
+			want: Issues{
+				{
+					Rule:    &dummyRule{},
+					Message: "issue found",
+					Range:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 19}, End: hcl.Pos{Line: 3, Column: 29}},
+				},
+			},
+			fixed: `
+resource "aws_instance" "foo" {
+  instance_type = "t3.micro"
+}`,
+			errCheck: neverHappend,
+		},
+		{
+			name: "autofix is not supported",
+			src: `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`,
+			rng: hcl.Range{
+				Filename: "main.tf",
+				Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+				End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+			},
+			fix: func(fixer tflint.Fixer) error {
+				if err := fixer.ReplaceText(
+					hcl.Range{
+						Filename: "main.tf",
+						Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+						End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+					},
+					`"t3.micro"`,
+				); err != nil {
+					return err
+				}
+				return tflint.ErrFixNotSupported
+			},
+			want: Issues{
+				{
+					Rule:    &dummyRule{},
+					Message: "issue found",
+					Range:   hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 3, Column: 19}, End: hcl.Pos{Line: 3, Column: 29}},
+				},
+			},
+			errCheck: neverHappend,
+		},
+		{
+			name: "other errors",
+			src: `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`,
+			rng: hcl.Range{
+				Filename: "main.tf",
+				Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+				End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+			},
+			fix: func(fixer tflint.Fixer) error {
+				if err := fixer.ReplaceText(
+					hcl.Range{
+						Filename: "main.tf",
+						Start:    hcl.Pos{Line: 3, Column: 19, Byte: 51},
+						End:      hcl.Pos{Line: 3, Column: 29, Byte: 61},
+					},
+					`"t3.micro"`,
+				); err != nil {
+					return err
+				}
+				return errors.New("unexpected error")
+			},
+			want: Issues{},
+			fixed: `
+resource "aws_instance" "foo" {
+  instance_type = "t3.micro"
+}`,
+			errCheck: func(err error) bool {
+				return err == nil && err.Error() != "unexpected error"
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{"main.tf": test.src})
+
+			err := runner.EmitIssueWithFix(&dummyRule{}, "issue found", test.rng, test.fix)
+			if test.errCheck(err) {
+				t.Fatal(err)
+			}
+
+			opt := cmpopts.IgnoreFields(hcl.Pos{}, "Byte")
+			if diff := cmp.Diff(test.want, runner.Issues, opt); diff != "" {
+				t.Fatal(diff)
+			}
+			if diff := cmp.Diff(test.fixed, string(runner.Changes()["main.tf"]), opt); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func TestChanges(t *testing.T) {
+	tests := []struct {
+		name string
+		src  string
+		fix  func(tflint.Fixer) error
+		want string
+	}{
+		{
+			name: "changes",
+			src: `
+locals {
+  foo = "bar"
+}`,
+			fix: func(fixer tflint.Fixer) error {
+				return fixer.InsertTextBefore(
+					hcl.Range{
+						Filename: "main.tf",
+						Start:    hcl.Pos{Byte: 12},
+						End:      hcl.Pos{Byte: 15},
+					},
+					"bar = \"baz\"\n",
+				)
+			},
+			want: `
+locals {
+  bar = "baz"
+  foo = "bar"
+}`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{"main.tf": test.src})
+
+			if err := test.fix(runner.fixer); err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(test.want, string(runner.Changes()["main.tf"])); diff != "" {
+				t.Fatal(diff)
+			}
+		})
 	}
 }
 
