@@ -381,6 +381,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 		Arg        *tflint.Config
 		ServerImpl func(*tflint.Config) error
 		ErrCheck   func(error) bool
+		LegacyHost bool
 	}{
 		{
 			Name: "nil config",
@@ -435,12 +436,29 @@ func TestApplyGlobalConfig(t *testing.T) {
 				return err == nil || err.Error() != "unexpected error"
 			},
 		},
+		{
+			Name: "legacy host version (TFLint v0.41)",
+			Arg:  nil,
+			ServerImpl: func(config *tflint.Config) error {
+				return nil
+			},
+			LegacyHost: true,
+			ErrCheck: func(err error) bool {
+				return err == nil || err.Error() != "failed to satisfy version constraints; tflint-ruleset-test_ruleset requires >= 0.42, but TFLint version is 0.40 or 0.41"
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			client := startTestGRPCPluginServer(t, newMockRuleSet("test_ruleset", "0.1.0", mockRuleSetImpl{applyGlobalConfig: test.ServerImpl}))
 
+			if !test.LegacyHost {
+				// call VersionConstraints to avoid SDK version incompatible error
+				if _, err := client.VersionConstraints(); err != nil {
+					t.Fatalf("failed to call VersionConstraints: %s", err)
+				}
+			}
 			err := client.ApplyGlobalConfig(test.Arg)
 			if test.ErrCheck(err) {
 				t.Fatalf("failed to call ApplyGlobalConfig: %s", err)
@@ -874,6 +892,10 @@ foo = 1
 		t.Run(test.Name, func(t *testing.T) {
 			client := startTestGRPCPluginServer(t, newMockRuleSet("test_ruleset", "0.1.0", mockRuleSetImpl{check: test.ServerImpl, newRunner: test.NewRunnerImpl}))
 
+			// call VersionConstraints to avoid SDK version incompatible error
+			if _, err := client.VersionConstraints(); err != nil {
+				t.Fatalf("failed to call VersionConstraints: %s", err)
+			}
 			if err := client.ApplyGlobalConfig(&tflint.Config{Fix: true}); err != nil {
 				t.Fatalf("failed to call ApplyGlobalConfig: %s", err)
 			}

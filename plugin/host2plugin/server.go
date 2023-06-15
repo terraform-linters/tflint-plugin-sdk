@@ -26,6 +26,10 @@ type GRPCServer struct {
 	impl   tflint.RuleSet
 	broker *plugin.GRPCBroker
 	config *tflint.Config
+
+	// TFLint v0.41 and earlier does not check version constraints,
+	// so it returns an error in that case.
+	constraintChecked bool
 }
 
 var _ proto.RuleSetServer = &GRPCServer{}
@@ -68,6 +72,7 @@ func (s *GRPCServer) GetRuleNames(ctx context.Context, req *proto.GetRuleNames_R
 
 // GetVersionConstraint returns a constraint of TFLint versions.
 func (s *GRPCServer) GetVersionConstraint(ctx context.Context, req *proto.GetVersionConstraint_Request) (*proto.GetVersionConstraint_Response, error) {
+	s.constraintChecked = true
 	return &proto.GetVersionConstraint_Response{Constraint: s.impl.VersionConstraint()}, nil
 }
 
@@ -83,6 +88,11 @@ func (s *GRPCServer) GetConfigSchema(ctx context.Context, req *proto.GetConfigSc
 
 // ApplyGlobalConfig applies a common config to the plugin.
 func (s *GRPCServer) ApplyGlobalConfig(ctx context.Context, req *proto.ApplyGlobalConfig_Request) (*proto.ApplyGlobalConfig_Response, error) {
+	// TFLint v0.41 and earlier does not check version constraints.
+	if !s.constraintChecked {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("failed to satisfy version constraints; tflint-ruleset-%s requires >= 0.42, but TFLint version is 0.40 or 0.41", s.impl.RuleSetName()))
+	}
+
 	if req.Config == nil {
 		return nil, status.Error(codes.InvalidArgument, "config should not be null")
 	}

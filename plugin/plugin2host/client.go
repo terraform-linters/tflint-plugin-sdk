@@ -374,8 +374,6 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 	resp, err := c.Client.EvaluateExpr(
 		context.Background(),
 		&proto.EvaluateExpr_Request{
-			Expr:       expr.Range().SliceBytes(file.Bytes),
-			ExprRange:  toproto.Range(expr.Range()),
 			Expression: toproto.Expression(expr, file.Bytes),
 			Option:     &proto.EvaluateExpr_Option{Type: tyby, ModuleCtx: toproto.ModuleCtxType(opts.ModuleCtx)},
 		},
