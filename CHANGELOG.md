@@ -1,3 +1,29 @@
+## 0.17.0 (2023-06-18)
+
+This release adds support for autofix API. The `EmitIssueWithFix` API allows you to implement autofix in your plugin using `tflint.Fixer`. Autofix is available in TFLint v0.47+. In earlier versions, the autofix is ignored.
+
+This SDK version no longer supports TFLint v0.40/v0.41. This means that plugins built using this SDK require TFLint v0.42+.
+
+Also, the `Check` method has been removed from `tflint.RuleSet` as a minor change. This means that if you override the `Check` method in a custom ruleset that embeds `tflint.RuleSet`, it will not be called. This is classified as a breaking change, but since the `Check` method is not supposed to be overwritten, it is recommended to use something like `NewRunner`.
+
+### Breaking Changes
+
+- [#258](https://github.com/terraform-linters/tflint-plugin-sdk/pull/258): tflint: Remove `Check` method from `tflint.RuleSet` interface
+- [#263](https://github.com/terraform-linters/tflint-plugin-sdk/pull/263): Drop support for TFLint v0.40/v0.41
+
+### Enhancements
+
+- [#254](https://github.com/terraform-linters/tflint-plugin-sdk/pull/254): Introduce autofix API
+
+### Chores
+
+- [#253](https://github.com/terraform-linters/tflint-plugin-sdk/pull/253): Configure aqua to install protoc
+- [#255](https://github.com/terraform-linters/tflint-plugin-sdk/pull/255): Bump google.golang.org/grpc from 1.54.0 to 1.55.0
+- [#257](https://github.com/terraform-linters/tflint-plugin-sdk/pull/257): Bump github.com/zclconf/go-cty from 1.13.1 to 1.13.2
+- [#261](https://github.com/terraform-linters/tflint-plugin-sdk/pull/261): Bump github.com/hashicorp/go-plugin from 1.4.9 to 1.4.10
+- [#262](https://github.com/terraform-linters/tflint-plugin-sdk/pull/262): Bump github.com/hashicorp/hcl/v2 from 2.16.2 to 2.17.0
+- [#264](https://github.com/terraform-linters/tflint-plugin-sdk/pull/264): Bump golang.org/x/tools from 0.8.0 to 0.10.0
+
 ## 0.16.1 (2023-04-13)
 
 ### BugFixes

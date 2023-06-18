@@ -10,7 +10,7 @@ import (
 )
 
 // SDKVersion is the SDK version.
-const SDKVersion = "0.16.1"
+const SDKVersion = "0.17.0"
 
 // handShakeConfig is used for UX. ProcotolVersion will be updated by incompatible changes.
 var handshakeConfig = plugin.HandshakeConfig{
