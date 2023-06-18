@@ -65,13 +65,7 @@ func BodyContent(body *proto.BodyContent) (*hclext.BodyContent, hcl.Diagnostics)
 
 	attributes := hclext.Attributes{}
 	for key, attr := range body.Attributes {
-		var expr hcl.Expression
-		var exprDiags hcl.Diagnostics
-		if attr.Expression != nil {
-			expr, exprDiags = Expression(attr.Expression)
-		} else {
-			expr, exprDiags = hclext.ParseExpression(attr.Expr, attr.ExprRange.Filename, Pos(attr.ExprRange.Start))
-		}
+		expr, exprDiags := Expression(attr.Expression)
 		diags = diags.Extend(exprDiags)
 
 		attributes[key] = &hclext.Attribute{

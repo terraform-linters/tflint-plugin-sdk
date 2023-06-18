@@ -180,8 +180,7 @@ message EvaluateExpr {
     }
 
     message Request {
-        bytes expr = 1 [deprecated = true];
-        Range expr_range = 2 [deprecated = true];
+        reserved 1, 2;
         Option option = 3;
         Expression expression = 4;
     }
@@ -247,9 +246,8 @@ message BodySchema {
 
 message BodyContent {
     message Attribute {
+        reserved 2, 3;
         string name = 1;
-        bytes expr = 2 [deprecated = true];
-        Range expr_range = 3 [deprecated = true];
         Range range = 4;
         Range name_range = 5;
         Expression expression = 6;

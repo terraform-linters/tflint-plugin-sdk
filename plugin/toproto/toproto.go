@@ -70,8 +70,6 @@ func BodyContent(body *hclext.BodyContent, sources map[string][]byte) *proto.Bod
 
 		attributes[idx] = &proto.BodyContent_Attribute{
 			Name:       attr.Name,
-			Expr:       attr.Expr.Range().SliceBytes(bytes),
-			ExprRange:  Range(attr.Expr.Range()),
 			Expression: Expression(attr.Expr, bytes),
 			Range:      Range(attr.Range),
 			NameRange:  Range(attr.NameRange),
