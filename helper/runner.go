@@ -350,9 +350,8 @@ func (r *Runner) EnsureNoError(err error, proc func() error) error {
 	return err
 }
 
-// NewLocalRunner initialises a new test runner.
-// Internal use only.
-func NewLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
+// newLocalRunner initialises a new test runner.
+func newLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
 	return &Runner{
 		files:     map[string]*hcl.File{},
 		sources:   map[string][]byte{},
@@ -361,9 +360,9 @@ func NewLocalRunner(files map[string]*hcl.File, issues Issues) *Runner {
 	}
 }
 
-// AddLocalFile adds a new file to the current mapped files.
-// Internal use only.
-func (r *Runner) AddLocalFile(name string, file *hcl.File) bool {
+// addLocalFile adds a new file to the current mapped files.
+// For testing only. Normally, the main TFLint process is responsible for loading files.
+func (r *Runner) addLocalFile(name string, file *hcl.File) bool {
 	if _, exists := r.files[name]; exists {
 		return false
 	}
@@ -373,6 +372,8 @@ func (r *Runner) AddLocalFile(name string, file *hcl.File) bool {
 	return true
 }
 
+// initFromFiles initializes the runner from locally added files.
+// For testing only.
 func (r *Runner) initFromFiles() error {
 	for _, file := range r.files {
 		content, _, diags := file.Body.PartialContent(configFileSchema)
