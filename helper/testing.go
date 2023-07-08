@@ -19,7 +19,7 @@ import (
 func TestRunner(t *testing.T, files map[string]string) *Runner {
 	t.Helper()
 
-	runner := NewLocalRunner(map[string]*hcl.File{}, Issues{})
+	runner := newLocalRunner(map[string]*hcl.File{}, Issues{})
 	parser := hclparse.NewParser()
 
 	for name, src := range files {
@@ -41,7 +41,7 @@ func TestRunner(t *testing.T, files map[string]string) *Runner {
 			}
 			runner.config = config
 		} else {
-			runner.AddLocalFile(name, file)
+			runner.addLocalFile(name, file)
 		}
 	}
 
