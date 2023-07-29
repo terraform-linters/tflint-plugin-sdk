@@ -651,21 +651,15 @@ volume_size = 10`)
 			Name: "get content with options",
 			Args: func() (*hclext.BodySchema, *tflint.GetModuleContentOption) {
 				return &hclext.BodySchema{}, &tflint.GetModuleContentOption{
-					ModuleCtx:         tflint.RootModuleCtxType,
-					IncludeNotCreated: true,
-					ExpandMode:        tflint.ExpandModeNone,
-					Hint:              tflint.GetModuleContentHint{ResourceType: "aws_instance"},
+					ModuleCtx:  tflint.RootModuleCtxType,
+					ExpandMode: tflint.ExpandModeNone,
+					Hint:       tflint.GetModuleContentHint{ResourceType: "aws_instance"},
 				}
 			},
 			ServerImpl: func(schema *hclext.BodySchema, opts tflint.GetModuleContentOption) (*hclext.BodyContent, hcl.Diagnostics) {
 				if opts.ModuleCtx != tflint.RootModuleCtxType {
 					return &hclext.BodyContent{}, hcl.Diagnostics{
 						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected moduleCtx options"},
-					}
-				}
-				if !opts.IncludeNotCreated {
-					return &hclext.BodyContent{}, hcl.Diagnostics{
-						&hcl.Diagnostic{Severity: hcl.DiagError, Summary: "unexpected includeNotCreatedResources options"},
 					}
 				}
 				if opts.ExpandMode != tflint.ExpandModeNone {

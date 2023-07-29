@@ -131,9 +131,9 @@ message GetModuleContent {
         EXPAND_MODE_EXPAND = 2;
     }
     message Option {
+        reserved 3;
         ModuleCtxType module_ctx = 1;
         Hint hint = 2;
-        bool include_not_created = 3 [deprecated = true];
         ExpandMode expand_mode = 4;
     }
 

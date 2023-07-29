@@ -34,9 +34,6 @@ type GetModuleContentOption struct {
 	ExpandMode ExpandMode
 	// Hint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
 	Hint GetModuleContentHint
-
-	// Deprecated: Use ExpandMode instead.
-	IncludeNotCreated bool
 }
 
 // GetModuleContentHint is info for optimizing a query. This is an advanced option and it is not intended to be used directly from plugins.
