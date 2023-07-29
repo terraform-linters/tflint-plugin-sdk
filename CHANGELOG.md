@@ -1,3 +1,21 @@
+## 0.18.0 (2023-07-29)
+
+### Breaking Changes
+
+- [#268](https://github.com/terraform-linters/tflint-plugin-sdk/pull/268): helper: Un-export `NewLocalRunner` and `AddLocalFile`
+- [#273](https://github.com/terraform-linters/tflint-plugin-sdk/pull/273): Internalize unnecessarily published plugin packages
+- [#274](https://github.com/terraform-linters/tflint-plugin-sdk/pull/274): tflint: Remove deprecated IncludeNotCreated option
+
+### Enhancements
+
+- [#271](https://github.com/terraform-linters/tflint-plugin-sdk/pull/271): hclext: Add support for expression unwrapping in hclext.BoundExpr
+
+### Chores
+
+- [#267](https://github.com/terraform-linters/tflint-plugin-sdk/pull/267): Bump google.golang.org/protobuf from 1.30.0 to 1.31.0
+- [#270](https://github.com/terraform-linters/tflint-plugin-sdk/pull/270): Bump golang.org/x/tools from 0.10.0 to 0.11.0
+- [#272](https://github.com/terraform-linters/tflint-plugin-sdk/pull/272): Bump google.golang.org/grpc from 1.55.0 to 1.57.0
+
 ## 0.17.0 (2023-06-18)
 
 This release adds support for autofix API. The `EmitIssueWithFix` API allows you to implement autofix in your plugin using `tflint.Fixer`. Autofix is available in TFLint v0.47+. In earlier versions, the autofix is ignored.
