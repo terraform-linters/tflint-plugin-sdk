@@ -45,3 +45,9 @@ func (e BoundExpr) Range() hcl.Range {
 func (e BoundExpr) StartRange() hcl.Range {
 	return e.original.StartRange()
 }
+
+// UnwrapExpression returns the original expression.
+// This satisfies the hcl.unwrapExpression interface.
+func (e BoundExpr) UnwrapExpression() hcl.Expression {
+	return e.original
+}
