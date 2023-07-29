@@ -4,7 +4,7 @@ import (
 	"context"
 
 	plugin "github.com/hashicorp/go-plugin"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"google.golang.org/grpc"
 )

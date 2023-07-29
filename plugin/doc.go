@@ -4,5 +4,5 @@
 // A plugin is implemented as an gRPC server and the host acts
 // as the client, sending analysis requests to the plugin.
 //
-// See host2plugin for implementation details.
+// See internal/host2plugin for implementation details.
 package plugin

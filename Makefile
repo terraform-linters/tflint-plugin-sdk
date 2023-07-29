@@ -5,5 +5,5 @@ prepare:
 	@echo 'export PATH="$${AQUA_ROOT_DIR:-$${XDG_DATA_HOME:-$$HOME/.local/share}/aquaproj-aqua}/bin:$$PATH"'
 
 proto:
-	cd plugin/proto; \
+	cd plugin/internal/proto; \
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative tflint.proto

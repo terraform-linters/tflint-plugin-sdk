@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
