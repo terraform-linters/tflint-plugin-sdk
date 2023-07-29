@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/internal"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"

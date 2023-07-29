@@ -5,9 +5,9 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/fromproto"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/proto"
-	"github.com/terraform-linters/tflint-plugin-sdk/plugin/toproto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/fromproto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
+	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/toproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/json"

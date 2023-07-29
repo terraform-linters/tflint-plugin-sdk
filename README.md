@@ -17,7 +17,7 @@ NOTE: This plugin system is experimental. This means that API compatibility is f
 
 Please refer to [tflint-ruleset-template](https://github.com/terraform-linters/tflint-ruleset-template) for an example plugin implementation using this SDK.
 
-For more details on the API, see [tflint](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/tflint) and [helper](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/helper) packages on pkg.go.dev.
+For more details on the API, see https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk.
 
 ## Developing
 
@@ -41,10 +41,8 @@ $ make proto
 
 ## Architecture
 
-![architecture](architecture.png)
-
-This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFLint launches the plugin as a sub-process and communicates with the plugin over gRPC. The plugin acts as a server, while TFLint acts as a client that sends inspection requests to the plugin.
+This plugin system uses [go-plugin](https://github.com/hashicorp/go-plugin). TFLint launch plugins as sub-processes and communicates with plugins over gRPC. A plugin acts as a server, while TFLint acts as a client that sends inspection requests to the plugin.
 
 On the other hand, the plugin sends various requests to a server (TFLint) to get detailed runtime contexts (e.g. variables and expressions). This means that TFLint and plugins can act as both a server and a client.
 
-These implementations are included in the [plugin/host2plugin](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/host2plugin) and [plugin/plugin2host](https://pkg.go.dev/github.com/terraform-linters/tflint-plugin-sdk/plugin/plugin2host) packages.
+This SDK provides client, server and Protocol Buffers for these bi-directional communications. See [Architecture](https://github.com/terraform-linters/tflint/blob/master/docs/developer-guide/architecture.md) for more details.
