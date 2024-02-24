@@ -17,7 +17,7 @@ import (
 )
 
 func startTestGRPCPluginServer(t *testing.T, ruleset tflint.RuleSet) *GRPCClient {
-	client, _ := plugin.TestPluginGRPCConn(t, map[string]plugin.Plugin{
+	client, _ := plugin.TestPluginGRPCConn(t, false, map[string]plugin.Plugin{
 		"ruleset": &RuleSetPlugin{impl: ruleset},
 	})
 	raw, err := client.Dispense("ruleset")
