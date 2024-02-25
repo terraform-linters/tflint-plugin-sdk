@@ -1,3 +1,20 @@
+## 0.19.0 (2024-02-25)
+
+### Chores
+
+- [#281](https://github.com/terraform-linters/tflint-plugin-sdk/pull/281) [#307](https://github.com/terraform-linters/tflint-plugin-sdk/pull/307): deps: Go 1.22
+- [#283](https://github.com/terraform-linters/tflint-plugin-sdk/pull/283): Bump actions/checkout from 3 to 4
+- [#294](https://github.com/terraform-linters/tflint-plugin-sdk/pull/294): Bump github.com/google/go-cmp from 0.5.9 to 0.6.0
+- [#297](https://github.com/terraform-linters/tflint-plugin-sdk/pull/297): Bump github.com/hashicorp/hcl/v2 from 2.17.0 to 2.19.1
+- [#299](https://github.com/terraform-linters/tflint-plugin-sdk/pull/299): Bump google.golang.org/grpc from 1.57.0 to 1.61.1
+- [#300](https://github.com/terraform-linters/tflint-plugin-sdk/pull/300): Bump github.com/hashicorp/go-plugin from 1.4.10 to 1.6.0
+- [#301](https://github.com/terraform-linters/tflint-plugin-sdk/pull/301): Bump github.com/zclconf/go-cty from 1.13.2 to 1.14.2
+- [#302](https://github.com/terraform-linters/tflint-plugin-sdk/pull/302): Bump golang.org/x/tools from 0.11.0 to 0.18.0
+- [#303](https://github.com/terraform-linters/tflint-plugin-sdk/pull/303): Bump github/codeql-action from 2 to 3
+- [#304](https://github.com/terraform-linters/tflint-plugin-sdk/pull/304): Bump actions/setup-go from 4 to 5
+- [#305](https://github.com/terraform-linters/tflint-plugin-sdk/pull/305): Bump github.com/hashicorp/go-hclog from 1.5.0 to 1.6.2
+- [#306](https://github.com/terraform-linters/tflint-plugin-sdk/pull/306): Bump google.golang.org/protobuf from 1.31.0 to 1.32.0
+
 ## 0.18.0 (2023-07-29)
 
 ### Breaking Changes
