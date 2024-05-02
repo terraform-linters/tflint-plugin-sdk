@@ -1,3 +1,21 @@
+## 0.20.0 (2024-05-02)
+
+### Enhancements
+
+- [#316](https://github.com/terraform-linters/tflint-plugin-sdk/pull/316): Bump github.com/hashicorp/hcl/v2 from 2.19.1 to 2.20.1
+  - This is required for provider-defined functions support
+
+### Chores
+
+- [#311](https://github.com/terraform-linters/tflint-plugin-sdk/pull/311): Bump google.golang.org/protobuf from 1.32.0 to 1.33.0
+- [#314](https://github.com/terraform-linters/tflint-plugin-sdk/pull/314): Bump github.com/zclconf/go-cty from 1.14.2 to 1.14.4
+- [#317](https://github.com/terraform-linters/tflint-plugin-sdk/pull/317): Bump github.com/hashicorp/go-hclog from 1.6.2 to 1.6.3
+- [#319](https://github.com/terraform-linters/tflint-plugin-sdk/pull/319): Bump golang.org/x/tools from 0.18.0 to 0.20.0
+- [#320](https://github.com/terraform-linters/tflint-plugin-sdk/pull/320): Bump google.golang.org/grpc from 1.61.1 to 1.63.2
+- [#321](https://github.com/terraform-linters/tflint-plugin-sdk/pull/321): Bump golang.org/x/net from 0.21.0 to 0.23.0
+- [#322](https://github.com/terraform-linters/tflint-plugin-sdk/pull/322): deps: Go 1.22.2
+- [#323](https://github.com/terraform-linters/tflint-plugin-sdk/pull/323): Bump google.golang.org/protobuf from 1.33.0 to 1.34.0
+
 ## 0.19.0 (2024-02-25)
 
 ### Chores
