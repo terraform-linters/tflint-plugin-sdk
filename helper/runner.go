@@ -7,10 +7,12 @@ import (
 	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/convert"
@@ -410,6 +412,9 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 			{
 				Name: "default",
 			},
+			{
+				Name: "sensitive",
+			},
 		},
 	})
 	if diags.HasErrors() {
@@ -423,6 +428,15 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 		}
 
 		v.Default = val
+	}
+	if attr, exists := content.Attributes["sensitive"]; exists {
+		var sensitive bool
+		diags := gohcl.DecodeExpression(attr.Expr, nil, &sensitive)
+		if diags.HasErrors() {
+			return v, diags
+		}
+
+		v.Default = v.Default.Mark(marks.Sensitive)
 	}
 
 	return v, nil

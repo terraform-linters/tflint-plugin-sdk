@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func Test_GetResourceContent(t *testing.T) {
@@ -536,7 +537,7 @@ func Test_DecodeRuleConfig_config_not_found(t *testing.T) {
 	}
 }
 
-func Test_EvaluateExpr(t *testing.T) {
+func Test_EvaluateExpr_string(t *testing.T) {
 	tests := []struct {
 		Name string
 		Src  string
@@ -591,6 +592,64 @@ resource "aws_instance" "foo" {
 				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, func(val string) error {
 					if instanceType != test.Want {
 						t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType)
+					}
+					return nil
+				}, nil); err != nil {
+					t.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func Test_EvaluateExpr_value(t *testing.T) {
+	tests := []struct {
+		Name string
+		Src  string
+		Want string
+	}{
+		{
+			Name: "sensitive variable",
+			Src: `
+variable "instance_type" {
+  type = string
+  default = "secret"
+  sensitive = true
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: `cty.StringVal("secret").Mark(marks.Sensitive)`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{"main.tf": test.Src})
+
+			resources, err := runner.GetResourceContent("aws_instance", &hclext.BodySchema{
+				Attributes: []hclext.AttributeSchema{{Name: "instance_type"}},
+			}, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, resource := range resources.Blocks {
+				// raw value
+				var instanceType cty.Value
+				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, &instanceType, nil); err != nil {
+					t.Fatal(err)
+				}
+
+				if instanceType.GoString() != test.Want {
+					t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType.GoString())
+				}
+
+				// callback
+				if err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, func(val cty.Value) error {
+					if instanceType.GoString() != test.Want {
+						t.Fatalf(`"%s" is expected, but got "%s"`, test.Want, instanceType.GoString())
 					}
 					return nil
 				}, nil); err != nil {
