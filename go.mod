@@ -12,7 +12,7 @@ require (
 	github.com/zclconf/go-cty v1.15.0
 	golang.org/x/tools v0.23.0
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
