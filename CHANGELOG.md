@@ -1,3 +1,20 @@
+## 0.21.0 (2024-07-29)
+
+### Enhancements
+
+- [#337](https://github.com/terraform-linters/tflint-plugin-sdk/pull/337): helper: Add support sensitive variables in TestRunner
+
+### Chores
+
+- [#324](https://github.com/terraform-linters/tflint-plugin-sdk/pull/324): Bump github.com/hashicorp/go-plugin from 1.6.0 to 1.6.1
+- [#328](https://github.com/terraform-linters/tflint-plugin-sdk/pull/328): Bump github.com/hashicorp/go-version from 1.6.0 to 1.7.0
+- [#330](https://github.com/terraform-linters/tflint-plugin-sdk/pull/330): Bump google.golang.org/protobuf from 1.34.0 to 1.34.2
+- [#332](https://github.com/terraform-linters/tflint-plugin-sdk/pull/332): Bump github.com/go-test/deep from 1.1.0 to 1.1.1
+- [#333](https://github.com/terraform-linters/tflint-plugin-sdk/pull/333): Bump github.com/hashicorp/hcl/v2 from 2.20.1 to 2.21.0
+- [#334](https://github.com/terraform-linters/tflint-plugin-sdk/pull/334): Bump golang.org/x/tools from 0.20.0 to 0.23.0
+- [#335](https://github.com/terraform-linters/tflint-plugin-sdk/pull/335): Bump google.golang.org/grpc from 1.63.2 to 1.65.0
+- [#336](https://github.com/terraform-linters/tflint-plugin-sdk/pull/336): Bump github.com/zclconf/go-cty from 1.14.4 to 1.15.0
+
 ## 0.20.0 (2024-05-02)
 
 ### Enhancements
