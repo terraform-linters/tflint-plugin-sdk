@@ -2015,6 +2015,42 @@ func TestEvaluateExpr(t *testing.T) {
 			GetFileImpl: fileExists,
 			ErrCheck:    neverHappend,
 		},
+		{
+			Name:       "ephemeral",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(""),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.StringVal("bar").Mark(marks.Ephemeral),
+						}),
+					},
+				})
+			},
+			Want:        "",
+			GetFileImpl: fileExists,
+			ErrCheck: func(err error) bool {
+				return !errors.Is(err, tflint.ErrEphemeral)
+			},
+		},
+		{
+			Name:       "ephemeral as cty.Value",
+			Expr:       hclExpr(`var.foo`),
+			TargetType: reflect.TypeOf(cty.Value{}),
+			ServerImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return evalExpr(expr, &hcl.EvalContext{
+					Variables: map[string]cty.Value{
+						"var": cty.MapVal(map[string]cty.Value{
+							"foo": cty.StringVal("bar").Mark(marks.Ephemeral),
+						}),
+					},
+				})
+			},
+			Want:        cty.StringVal("bar").Mark(marks.Ephemeral),
+			GetFileImpl: fileExists,
+			ErrCheck:    neverHappend,
+		},
 	}
 
 	for _, test := range tests {
@@ -2332,6 +2368,32 @@ func TestEvaluateExpr_callback(t *testing.T) {
 			getFileImpl: fileExists,
 			errCheck: func(err error) bool {
 				return err == nil || err.Error() != `value is cty.StringVal("foo").Mark(marks.Sensitive)`
+			},
+		},
+		{
+			name: "callback with ephemeral value as Go value",
+			expr: hclExpr(`var.foo`),
+			target: func(val string) error {
+				return fmt.Errorf("value is %s", val)
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.StringVal("foo").Mark(marks.Ephemeral), nil
+			},
+			getFileImpl: fileExists,
+			errCheck:    neverHappend,
+		},
+		{
+			name: "callback with ephemeral value as cty.Value",
+			expr: hclExpr(`var.foo`),
+			target: func(val cty.Value) error {
+				return fmt.Errorf("value is %s", val.GoString())
+			},
+			serverImpl: func(expr hcl.Expression, opts tflint.EvaluateExprOption) (cty.Value, error) {
+				return cty.StringVal("foo").Mark(marks.Ephemeral), nil
+			},
+			getFileImpl: fileExists,
+			errCheck: func(err error) bool {
+				return err == nil || err.Error() != `value is cty.StringVal("foo").Mark(marks.Ephemeral)`
 			},
 		},
 	}

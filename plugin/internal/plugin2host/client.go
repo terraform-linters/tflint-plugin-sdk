@@ -18,6 +18,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/toproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
+	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
@@ -314,7 +315,11 @@ func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, target interface{}, opts 
 
 	if err != nil {
 		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
-		if errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrSensitive) || errors.Is(err, tflint.ErrUnevaluable) {
+		if errors.Is(err, tflint.ErrUnknownValue) ||
+			errors.Is(err, tflint.ErrNullValue) ||
+			errors.Is(err, tflint.ErrSensitive) ||
+			errors.Is(err, tflint.ErrEphemeral) ||
+			errors.Is(err, tflint.ErrUnevaluable) {
 			return nil
 		}
 		return err
@@ -391,7 +396,7 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 		return gocty.FromCtyValue(val, target)
 	}
 
-	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, sensitive).
+	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, marked).
 	// This allows the caller to handle the value by the errors package.
 	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
 		if !v.IsKnown() {
@@ -402,9 +407,13 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 			logger.Debug(fmt.Sprintf("null value found in %s", expr.Range()))
 			return false, tflint.ErrNullValue
 		}
-		if v.IsMarked() {
+		if v.HasMark(marks.Sensitive) {
 			logger.Debug(fmt.Sprintf("sensitive value found in %s", expr.Range()))
 			return false, tflint.ErrSensitive
+		}
+		if v.HasMark(marks.Ephemeral) {
+			logger.Debug(fmt.Sprintf("ephemeral value found in %s", expr.Range()))
+			return false, tflint.ErrEphemeral
 		}
 		return true, nil
 	})

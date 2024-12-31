@@ -217,9 +217,14 @@ func Value(value []byte, ty cty.Type, valueMarks []*proto.ValueMark) (cty.Value,
 		pvm[idx] = cty.PathValueMarks{
 			Path: AttributePath(mark.Path),
 		}
+		vm := []interface{}{}
 		if mark.Sensitive {
-			pvm[idx].Marks = cty.NewValueMarks(marks.Sensitive)
+			vm = append(vm, marks.Sensitive)
 		}
+		if mark.Ephemeral {
+			vm = append(vm, marks.Ephemeral)
+		}
+		pvm[idx].Marks = cty.NewValueMarks(vm...)
 	}
 
 	return val.MarkWithPaths(pvm), nil
