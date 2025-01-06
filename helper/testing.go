@@ -58,6 +58,8 @@ func AssertIssues(t *testing.T, want Issues, got Issues) {
 	opts := []cmp.Option{
 		// Byte field will be ignored because it's not important in tests such as positions
 		cmpopts.IgnoreFields(hcl.Pos{}, "Byte"),
+		// Issues will be sorted and output in the end, so ignore the order.
+		ignoreIssuesOrder(),
 		ruleComparer(),
 	}
 	if diff := cmp.Diff(want, got, opts...); diff != "" {
@@ -71,6 +73,7 @@ func AssertIssuesWithoutRange(t *testing.T, want Issues, got Issues) {
 
 	opts := []cmp.Option{
 		cmpopts.IgnoreFields(Issue{}, "Range"),
+		ignoreIssuesOrder(),
 		ruleComparer(),
 	}
 	if diff := cmp.Diff(want, got, opts...); diff != "" {
@@ -96,5 +99,26 @@ func AssertChanges(t *testing.T, want map[string]string, got map[string][]byte) 
 func ruleComparer() cmp.Option {
 	return cmp.Comparer(func(x, y tflint.Rule) bool {
 		return reflect.TypeOf(x) == reflect.TypeOf(y)
+	})
+}
+
+func ignoreIssuesOrder() cmp.Option {
+	return cmpopts.SortSlices(func(i, j *Issue) bool {
+		if i.Range.Filename != j.Range.Filename {
+			return i.Range.Filename < j.Range.Filename
+		}
+		if i.Range.Start.Line != j.Range.Start.Line {
+			return i.Range.Start.Line < j.Range.Start.Line
+		}
+		if i.Range.Start.Column != j.Range.Start.Column {
+			return i.Range.Start.Column < j.Range.Start.Column
+		}
+		if i.Range.End.Line != j.Range.End.Line {
+			return i.Range.End.Line > j.Range.End.Line
+		}
+		if i.Range.End.Column != j.Range.End.Column {
+			return i.Range.End.Column > j.Range.End.Column
+		}
+		return i.Message < j.Message
 	})
 }
