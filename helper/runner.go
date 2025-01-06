@@ -415,6 +415,9 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 			{
 				Name: "sensitive",
 			},
+			{
+				Name: "ephemeral",
+			},
 		},
 	})
 	if diags.HasErrors() {
@@ -437,6 +440,15 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 		}
 
 		v.Default = v.Default.Mark(marks.Sensitive)
+	}
+	if attr, exists := content.Attributes["ephemeral"]; exists {
+		var ephemeral bool
+		diags := gohcl.DecodeExpression(attr.Expr, nil, &ephemeral)
+		if diags.HasErrors() {
+			return v, diags
+		}
+
+		v.Default = v.Default.Mark(marks.Ephemeral)
 	}
 
 	return v, nil

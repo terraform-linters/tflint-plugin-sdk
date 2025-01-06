@@ -622,6 +622,20 @@ resource "aws_instance" "foo" {
 }`,
 			Want: `cty.StringVal("secret").Mark(marks.Sensitive)`,
 		},
+		{
+			Name: "ephemeral variable",
+			Src: `
+variable "instance_type" {
+  type = string
+  default = "secret"
+  ephemeral = true
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: `cty.StringVal("secret").Mark(marks.Ephemeral)`,
+		},
 	}
 
 	for _, test := range tests {
