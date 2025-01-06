@@ -8,7 +8,7 @@
 #   - all
 registries:
 - type: standard
-  ref: v3.159.0 # renovate: depName=aquaproj/aqua-registry
+  ref: v4.290.0 # renovate: depName=aquaproj/aqua-registry
 packages:
 - name: protocolbuffers/protobuf/protoc@v22.3
 - name: protocolbuffers/protobuf-go/protoc-gen-go@v1.30.0

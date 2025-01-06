@@ -298,6 +298,7 @@ message AttributePath {
 message ValueMark {
     AttributePath path = 1;
     bool sensitive = 2;
+    bool ephemeral = 3;
 }
 
 enum ErrorCode {

@@ -1,5 +1,5 @@
 prepare:
-	curl -sSfL https://raw.githubusercontent.com/aquaproj/aqua-installer/v2.1.1/aqua-installer | bash
+	curl -sSfL https://raw.githubusercontent.com/aquaproj/aqua-installer/v3.0.1/aqua-installer | bash
 	@echo ''
 	@echo 'Add $${AQUA_ROOT_DIR}/bin to the environment variable PATH.'
 	@echo 'export PATH="$${AQUA_ROOT_DIR:-$${XDG_DATA_HOME:-$$HOME/.local/share}/aquaproj-aqua}/bin:$$PATH"'

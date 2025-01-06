@@ -16,6 +16,8 @@ var (
 	ErrUnevaluable = errors.New("")
 	// ErrSensitive is an error that occurs when decoding a sensitive value to a Go value.
 	ErrSensitive = errors.New("sensitive value found")
+	// ErrEphemeral is an error that occurs when decoding an ephemeral value to a Go value.
+	ErrEphemeral = errors.New("ephemeral value found")
 )
 
 var (

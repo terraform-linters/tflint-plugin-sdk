@@ -35,3 +35,7 @@ func Contains(val cty.Value, mark valueMark) bool {
 // Sensitive indicates that this value is marked as sensitive in the context of
 // Terraform.
 const Sensitive = valueMark("Sensitive")
+
+// Ephemeral indicates that this value is marked as ephemeral in the context of
+// Terraform.
+const Ephemeral = valueMark("Ephemeral")

@@ -182,6 +182,9 @@ func Value(value cty.Value, ty cty.Type) ([]byte, []*proto.ValueMark, error) {
 		if _, exists := m.Marks[marks.Sensitive]; exists {
 			valueMarks[idx].Sensitive = true
 		}
+		if _, exists := m.Marks[marks.Ephemeral]; exists {
+			valueMarks[idx].Ephemeral = true
+		}
 	}
 
 	val, err := msgpack.Marshal(value, ty)
