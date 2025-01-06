@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-plugin v1.6.2
 	github.com/hashicorp/go-version v1.7.0
 	github.com/hashicorp/hcl/v2 v2.23.0
-	github.com/zclconf/go-cty v1.15.1
+	github.com/zclconf/go-cty v1.16.0
 	golang.org/x/tools v0.28.0
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.1
