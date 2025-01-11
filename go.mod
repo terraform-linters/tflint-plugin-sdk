@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-version v1.7.0
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/zclconf/go-cty v1.16.0
-	golang.org/x/tools v0.28.0
+	golang.org/x/tools v0.29.0
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.2
 )
@@ -28,9 +28,9 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
 )
