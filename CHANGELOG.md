@@ -1,3 +1,25 @@
+## 0.22.0 (2025-01-11)
+
+### Enhancements
+
+- [#358](https://github.com/terraform-linters/tflint-plugin-sdk/pull/358) [#361](https://github.com/terraform-linters/tflint-plugin-sdk/pull/361): Introduce ephemeral marks
+
+### Changes
+
+- [#362](https://github.com/terraform-linters/tflint-plugin-sdk/pull/362): require Go 1.23+
+- [#363](https://github.com/terraform-linters/tflint-plugin-sdk/pull/363): helper: Ignore issues order in `helper.AssertIssues`
+
+### Chores
+
+- [#343](https://github.com/terraform-linters/tflint-plugin-sdk/pull/343) [#356](https://github.com/terraform-linters/tflint-plugin-sdk/pull/356): Bump github.com/hashicorp/hcl/v2 from 2.21.0 to 2.23.0
+- [#349](https://github.com/terraform-linters/tflint-plugin-sdk/pull/349) [#355](https://github.com/terraform-linters/tflint-plugin-sdk/pull/355) [#364](https://github.com/terraform-linters/tflint-plugin-sdk/pull/364): Bump google.golang.org/protobuf from 1.34.2 to 1.36.2
+- [#350](https://github.com/terraform-linters/tflint-plugin-sdk/pull/350): Bump github.com/hashicorp/go-plugin from 1.6.1 to 1.6.2
+- [#352](https://github.com/terraform-linters/tflint-plugin-sdk/pull/352) [#365](https://github.com/terraform-linters/tflint-plugin-sdk/pull/365): Bump golang.org/x/tools from 0.23.0 to 0.29.0
+- [#353](https://github.com/terraform-linters/tflint-plugin-sdk/pull/353): Bump google.golang.org/grpc from 1.65.0 to 1.69.2
+- [#354](https://github.com/terraform-linters/tflint-plugin-sdk/pull/354) [#360](https://github.com/terraform-linters/tflint-plugin-sdk/pull/360): Bump github.com/zclconf/go-cty from 1.15.0 to 1.16.0
+- [#357](https://github.com/terraform-linters/tflint-plugin-sdk/pull/357): Bump golang.org/x/net to v0.33.0
+- [#359](https://github.com/terraform-linters/tflint-plugin-sdk/pull/359): Bump protoc, protoc-gen-go, and protoc-gen-go-grpc to the latest version
+
 ## 0.21.0 (2024-07-29)
 
 ### Enhancements
