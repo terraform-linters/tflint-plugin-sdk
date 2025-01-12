@@ -245,7 +245,7 @@ func TestVersionConstraints(t *testing.T) {
 			ServerImpl: func() string {
 				return ""
 			},
-			Want:     "",
+			Want:     minTFLintVersionConstraint.String(),
 			ErrCheck: neverHappend,
 		},
 		{
@@ -253,7 +253,7 @@ func TestVersionConstraints(t *testing.T) {
 			ServerImpl: func() string {
 				return ">= 1.0"
 			},
-			Want:     ">= 1.0",
+			Want:     fmt.Sprintf(">= 1.0,%s", minTFLintVersionConstraint),
 			ErrCheck: neverHappend,
 		},
 		{
@@ -444,7 +444,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 			},
 			LegacyHost: true,
 			ErrCheck: func(err error) bool {
-				return err == nil || err.Error() != "failed to satisfy version constraints; tflint-ruleset-test_ruleset requires >= 0.42, but TFLint version is 0.40 or 0.41"
+				return err == nil || err.Error() != fmt.Sprintf("failed to satisfy version constraints; tflint-ruleset-test_ruleset requires %s, but TFLint version is 0.40 or 0.41", minTFLintVersionConstraint)
 			},
 		},
 	}
