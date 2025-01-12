@@ -4,6 +4,7 @@ import (
 	"context"
 
 	plugin "github.com/hashicorp/go-plugin"
+	"github.com/hashicorp/go-version"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"google.golang.org/grpc"
@@ -11,6 +12,9 @@ import (
 
 // SDKVersion is the SDK version.
 const SDKVersion = "0.22.0"
+
+// minTFLintVersionConstraint presents the minimum version of TFLint that this SDK supports.
+var minTFLintVersionConstraint = version.MustConstraints(version.NewConstraint(">= 0.46"))
 
 // handShakeConfig is used for UX. ProcotolVersion will be updated by incompatible changes.
 var handshakeConfig = plugin.HandshakeConfig{

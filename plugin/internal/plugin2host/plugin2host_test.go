@@ -1762,45 +1762,6 @@ func TestEvaluateExpr(t *testing.T) {
 			},
 		},
 		{
-			Name:       "server returns an unknown error",
-			Expr:       hclExpr(`1`),
-			TargetType: reflect.TypeOf(0),
-			ServerImpl: func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error) {
-				return cty.Value{}, fmt.Errorf("unknown%w", tflint.ErrUnknownValue)
-			},
-			Want:        0,
-			GetFileImpl: fileExists,
-			ErrCheck: func(err error) bool {
-				return !errors.Is(err, tflint.ErrUnknownValue)
-			},
-		},
-		{
-			Name:       "server returns a null value error",
-			Expr:       hclExpr(`1`),
-			TargetType: reflect.TypeOf(0),
-			ServerImpl: func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error) {
-				return cty.Value{}, fmt.Errorf("null value%w", tflint.ErrNullValue)
-			},
-			Want:        0,
-			GetFileImpl: fileExists,
-			ErrCheck: func(err error) bool {
-				return !errors.Is(err, tflint.ErrNullValue)
-			},
-		},
-		{
-			Name:       "server returns a unevaluable error",
-			Expr:       hclExpr(`1`),
-			TargetType: reflect.TypeOf(0),
-			ServerImpl: func(hcl.Expression, tflint.EvaluateExprOption) (cty.Value, error) {
-				return cty.Value{}, fmt.Errorf("unevaluable%w", tflint.ErrUnevaluable)
-			},
-			Want:        0,
-			GetFileImpl: fileExists,
-			ErrCheck: func(err error) bool {
-				return !errors.Is(err, tflint.ErrUnevaluable)
-			},
-		},
-		{
 			Name:       "server returns a sensitive error",
 			Expr:       hclExpr(`1`),
 			TargetType: reflect.TypeOf(0),

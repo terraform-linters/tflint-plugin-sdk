@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/go-plugin"
+	"github.com/hashicorp/go-version"
 	"github.com/terraform-linters/tflint-plugin-sdk/internal"
 	"github.com/terraform-linters/tflint-plugin-sdk/logger"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/fromproto"
@@ -73,7 +74,18 @@ func (s *GRPCServer) GetRuleNames(ctx context.Context, req *proto.GetRuleNames_R
 // GetVersionConstraint returns a constraint of TFLint versions.
 func (s *GRPCServer) GetVersionConstraint(ctx context.Context, req *proto.GetVersionConstraint_Request) (*proto.GetVersionConstraint_Response, error) {
 	s.constraintChecked = true
-	return &proto.GetVersionConstraint_Response{Constraint: s.impl.VersionConstraint()}, nil
+	constraints := version.Constraints{}
+	var err error
+	if s.impl.VersionConstraint() != "" {
+		constraints, err = version.NewConstraint(s.impl.VersionConstraint())
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	// Append a minimum supported version constraint
+	constraints = append(constraints, minTFLintVersionConstraint...)
+
+	return &proto.GetVersionConstraint_Response{Constraint: constraints.String()}, nil
 }
 
 // GetSDKVersion returns the SDK version.
@@ -90,7 +102,7 @@ func (s *GRPCServer) GetConfigSchema(ctx context.Context, req *proto.GetConfigSc
 func (s *GRPCServer) ApplyGlobalConfig(ctx context.Context, req *proto.ApplyGlobalConfig_Request) (*proto.ApplyGlobalConfig_Response, error) {
 	// TFLint v0.41 and earlier does not check version constraints.
 	if !s.constraintChecked {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("failed to satisfy version constraints; tflint-ruleset-%s requires >= 0.42, but TFLint version is 0.40 or 0.41", s.impl.RuleSetName()))
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("failed to satisfy version constraints; tflint-ruleset-%s requires %s, but TFLint version is 0.40 or 0.41", s.impl.RuleSetName(), minTFLintVersionConstraint))
 	}
 
 	if req.Config == nil {
