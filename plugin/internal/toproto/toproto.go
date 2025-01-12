@@ -296,13 +296,7 @@ func Error(code codes.Code, err error) error {
 	}
 
 	var errCode proto.ErrorCode
-	if errors.Is(err, tflint.ErrUnknownValue) {
-		errCode = proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE
-	} else if errors.Is(err, tflint.ErrNullValue) {
-		errCode = proto.ErrorCode_ERROR_CODE_NULL_VALUE
-	} else if errors.Is(err, tflint.ErrUnevaluable) {
-		errCode = proto.ErrorCode_ERROR_CODE_UNEVALUABLE
-	} else if errors.Is(err, tflint.ErrSensitive) {
+	if errors.Is(err, tflint.ErrSensitive) {
 		errCode = proto.ErrorCode_ERROR_CODE_SENSITIVE
 	}
 

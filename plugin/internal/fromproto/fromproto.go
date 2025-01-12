@@ -343,12 +343,6 @@ func Error(err error) error {
 	switch t := st.Details()[0].(type) {
 	case *proto.ErrorDetail:
 		switch t.Code {
-		case proto.ErrorCode_ERROR_CODE_UNKNOWN_VALUE:
-			return tflint.ErrUnknownValue
-		case proto.ErrorCode_ERROR_CODE_NULL_VALUE:
-			return tflint.ErrNullValue
-		case proto.ErrorCode_ERROR_CODE_UNEVALUABLE:
-			return fmt.Errorf("%s%w", st.Message(), tflint.ErrUnevaluable)
 		case proto.ErrorCode_ERROR_CODE_SENSITIVE:
 			return tflint.ErrSensitive
 		}

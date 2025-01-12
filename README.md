@@ -10,8 +10,8 @@ NOTE: This plugin system is experimental. This means that API compatibility is f
 
 ## Requirements
 
-- TFLint v0.42+
-- Go v1.23+
+- TFLint v0.46+
+- Go v1.24+
 
 ## Usage
 
