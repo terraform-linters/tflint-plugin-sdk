@@ -1,3 +1,5 @@
+See https://github.com/terraform-linters/tflint-plugin-sdk/releases for later releases.
+
 ## 0.22.0 (2025-01-11)
 
 ### Enhancements
