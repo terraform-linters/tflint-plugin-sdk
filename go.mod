@@ -1,6 +1,9 @@
 module github.com/terraform-linters/tflint-plugin-sdk
 
-go 1.23
+go 1.23.0
+
+toolchain go1.23.4
+
 require (
 	github.com/go-test/deep v1.1.1
 	github.com/google/go-cmp v0.7.0
