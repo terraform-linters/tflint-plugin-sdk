@@ -2,7 +2,7 @@ module github.com/terraform-linters/tflint-plugin-sdk
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.1
 
 require (
 	github.com/go-test/deep v1.1.1
@@ -14,7 +14,7 @@ require (
 	github.com/zclconf/go-cty v1.16.2
 	golang.org/x/tools v0.31.0
 	google.golang.org/grpc v1.71.0
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
