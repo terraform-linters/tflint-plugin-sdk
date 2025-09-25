@@ -25,7 +25,7 @@ func ParseExpression(src []byte, filename string, start hcl.Pos) (hcl.Expression
 	// We accept any .json file (including .tf.json), not just specific ones like .tflint.json.
 	// The calling functions are responsible for validating that the file should be processed.
 	// If the content is not valid HCL-compatible JSON, the JSON parser will return appropriate diagnostics.
-	if strings.HasSuffix(filename, ".tf.json") || strings.HasSuffix(filename, ".json") {
+	if strings.HasSuffix(filename, ".json") {
 		return json.ParseExpressionWithStartPos(src, filename, start)
 	}
 
