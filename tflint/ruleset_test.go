@@ -135,7 +135,7 @@ func TestApplyGlobalConfig(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(got, test.want); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
