@@ -30,10 +30,18 @@ func TestParseExpression(t *testing.T) {
 			DiagCount: 0,
 		},
 		{
-			Name:      "HCL but file extension is invalid (*.json)",
+			Name:      "JSON (*.json)",
 			Source:    `"baz"`,
 			Filename:  "test.json",
-			DiagCount: 1,
+			Want:      `cty.StringVal("baz")`,
+			DiagCount: 0,
+		},
+		{
+			Name:      "JSON (.tflint.json)",
+			Source:    `{"config": {"force": true}}`,
+			Filename:  ".tflint.json",
+			Want:      `cty.ObjectVal(map[string]cty.Value{"config":cty.ObjectVal(map[string]cty.Value{"force":cty.True})})`,
+			DiagCount: 0,
 		},
 		{
 			Name: "HCL heredoc with trailing newline",
@@ -60,6 +68,18 @@ EOF`,
 			Filename:  "test.tf.json",
 			Want:      `cty.ObjectVal(map[string]cty.Value{"baz":cty.NumberIntVal(1), "foo":cty.StringVal("bar")})`,
 			DiagCount: 0,
+		},
+		{
+			Name:      "Invalid JSON content",
+			Source:    `{invalid json content}`,
+			Filename:  "test.json",
+			DiagCount: 2, // JSON parser returns 2 diagnostics for this invalid JSON
+		},
+		{
+			Name:      "Invalid file extension",
+			Source:    `"test"`,
+			Filename:  "test.yaml",
+			DiagCount: 1,
 		},
 	}
 
