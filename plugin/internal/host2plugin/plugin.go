@@ -11,7 +11,7 @@ import (
 )
 
 // SDKVersion is the SDK version.
-const SDKVersion = "0.22.0"
+const SDKVersion = "0.23.0"
 
 // minTFLintVersionConstraint presents the minimum version of TFLint that this SDK supports.
 var minTFLintVersionConstraint = version.MustConstraints(version.NewConstraint(">= 0.46"))
