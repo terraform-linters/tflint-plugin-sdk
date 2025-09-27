@@ -668,7 +668,7 @@ func TestReplaceText(t *testing.T) {
 				changes[filename] = string(source)
 			}
 			if diff := cmp.Diff(test.want, changes); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -757,7 +757,7 @@ func TestInsertText(t *testing.T) {
 				changes[filename] = string(source)
 			}
 			if diff := cmp.Diff(test.want, changes); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -821,7 +821,7 @@ func TestRemove(t *testing.T) {
 				changes[filename] = string(source)
 			}
 			if diff := cmp.Diff(test.want, changes); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1039,7 +1039,7 @@ locals {
 			}
 
 			if diff := cmp.Diff(test.want, string(fixer.changes["main.tf"])); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1278,7 +1278,7 @@ baz = 1`,
 			}
 
 			if diff := cmp.Diff(test.want, string(fixer.changes["main.tf"])); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1337,7 +1337,7 @@ block {
 			}
 
 			if diff := cmp.Diff(test.want, string(fixer.changes["main.tf"])); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1378,7 +1378,7 @@ func TestTextAt(t *testing.T) {
 			fixer := NewFixer(test.src)
 			got := fixer.TextAt(test.rng)
 			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1504,7 +1504,7 @@ func TestValueText(t *testing.T) {
 			fixer := NewFixer(nil)
 			got := fixer.ValueText(test.value)
 			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1551,7 +1551,7 @@ func TestRangeTo(t *testing.T) {
 
 			got := fixer.RangeTo(test.to, "", start)
 			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -1600,10 +1600,10 @@ foo = 1
 	}
 
 	if diff := cmp.Diff(src, fixer.sources); diff != "" {
-		t.Errorf(diff)
+		t.Error(diff)
 	}
 	if diff := cmp.Diff(fixer.Changes(), changed); diff != "" {
-		t.Errorf(diff)
+		t.Error(diff)
 	}
 	if !fixer.HasChanges() {
 		t.Errorf("unexpected changes: %#v", fixer.Changes())
@@ -1624,7 +1624,7 @@ barbaz = 2
 	}
 
 	if diff := cmp.Diff(fixer.Changes(), fixed); diff != "" {
-		t.Errorf(diff)
+		t.Error(diff)
 	}
 	if len(fixer.shifts) != 2 {
 		t.Errorf("unexpected shifts: %#v", fixer.shifts)
@@ -1634,7 +1634,7 @@ barbaz = 2
 	fixer.ApplyChanges()
 
 	if diff := cmp.Diff(fixed, fixer.sources); diff != "" {
-		t.Errorf(diff)
+		t.Error(diff)
 	}
 	if len(fixer.Changes()) != 0 {
 		t.Errorf("unexpected changes: %#v", fixer.Changes())
@@ -1707,7 +1707,7 @@ func TestStashChanges(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(test.want, string(fixer.changes["main.tf"])); diff != "" {
-				t.Errorf(diff)
+				t.Error(diff)
 			}
 			if test.shifts != len(fixer.shifts) {
 				t.Errorf("shifts: want %d, got %d", test.shifts, len(fixer.shifts))
