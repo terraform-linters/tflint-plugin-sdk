@@ -1211,7 +1211,7 @@ data "terraform_remote_state" "remote_state" {
 		{
 			name: "array-based json",
 			files: map[string][]byte{
-				"imports.tf.json": []byte(`[
+				"main.tf.json": []byte(`[
   {
     "resource": {
       "null_resource": {
