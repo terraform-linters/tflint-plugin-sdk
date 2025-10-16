@@ -2,6 +2,7 @@ package plugin2host
 
 import (
 	"context"
+	stdjson "encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -205,58 +206,65 @@ func (w *nativeWalker) Exit(node hclsyntax.Node) hcl.Diagnostics {
 	return nil
 }
 
-// extractJSONAttributeNames parses error diagnostics from Content() to discover attribute names.
-// This is needed for JSON files with array-based syntax like [{"foo": {...}}].
-func extractJSONAttributeNames(body hcl.Body) ([]string, error) {
-	content, diags := body.Content(&hcl.BodySchema{})
+// extractJSONKeys extracts attribute names from JSON bytes using encoding/json.
+// This works for both object-based JSON {"foo": ...} and array-based JSON [{"foo": ...}].
+func extractJSONKeys(bytes []byte) ([]string, error) {
+	// Try to unmarshal as an object first
+	var obj map[string]any
+	if err := stdjson.Unmarshal(bytes, &obj); err == nil {
+		keys := make([]string, 0, len(obj))
+		for k := range obj {
+			keys = append(keys, k)
+		}
+		return keys, nil
+	}
 
-	var names []string
-	for _, diag := range diags {
-		if diag.Summary == "Extraneous JSON object property" {
-			// Detail format: "No argument or block type is named \"foo\"."
-			detail := diag.Detail
-			if idx := strings.Index(detail, "\""); idx != -1 {
-				end := strings.Index(detail[idx+1:], "\"")
-				if end != -1 {
-					name := detail[idx+1 : idx+1+end]
-					names = append(names, name)
-				}
-			}
+	// Try as an array of objects
+	var arr []map[string]any
+	if err := stdjson.Unmarshal(bytes, &arr); err != nil {
+		return nil, err
+	}
+
+	// Collect all unique keys from all objects in the array
+	keysMap := make(map[string]bool)
+	for _, obj := range arr {
+		for k := range obj {
+			keysMap[k] = true
 		}
 	}
 
-	if len(content.Attributes) > 0 || len(content.Blocks) > 0 {
-		return nil, fmt.Errorf("unexpected content")
+	keys := make([]string, 0, len(keysMap))
+	for k := range keysMap {
+		keys = append(keys, k)
 	}
-
-	return names, nil
+	return keys, nil
 }
 
 // getJSONAttributes gets all attributes from a JSON body, supporting both object
 // and array-based syntax. For array-based JSON like [{"import": {...}}], it
-// discovers attribute names from error messages and builds a schema to extract them.
-func getJSONAttributes(body hcl.Body) (hcl.Attributes, hcl.Diagnostics) {
+// extracts attribute names using encoding/json and builds a schema to extract them.
+func getJSONAttributes(body hcl.Body, bytes []byte) (hcl.Attributes, hcl.Diagnostics) {
 	// First, try JustAttributes (works for object-based JSON)
 	attrs, diags := body.JustAttributes()
 	if !diags.HasErrors() {
 		return attrs, nil
 	}
 
-	// Get attribute names from errors
-	names, err := extractJSONAttributeNames(body)
+	// Extract keys using encoding/json
+	keys, err := extractJSONKeys(bytes)
 	if err != nil {
-		return attrs, diags
+		return attrs, diags // Return original JustAttributes error
 	}
 
-	// Build a schema with all discovered attributes
+	// Build a schema with all discovered keys
 	schema := &hcl.BodySchema{
-		Attributes: make([]hcl.AttributeSchema, len(names)),
+		Attributes: make([]hcl.AttributeSchema, len(keys)),
 	}
-	for i, name := range names {
-		schema.Attributes[i] = hcl.AttributeSchema{Name: name}
+	for i, key := range keys {
+		schema.Attributes[i] = hcl.AttributeSchema{Name: key}
 	}
 
-	// Now use PartialContent with the complete schema
+	// Use PartialContent to get proper *json.expression objects
 	content, _, partialDiags := body.PartialContent(schema)
 	return content.Attributes, partialDiags
 }
@@ -292,7 +300,7 @@ func (c *GRPCClient) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
 		}
 
 		// In JSON syntax, everything can be walked as an attribute.
-		attrs, jsonDiags := getJSONAttributes(file.Body)
+		attrs, jsonDiags := getJSONAttributes(file.Body, file.Bytes)
 		if jsonDiags.HasErrors() {
 			diags = diags.Extend(jsonDiags)
 			continue
