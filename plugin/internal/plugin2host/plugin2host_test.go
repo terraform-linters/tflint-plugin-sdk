@@ -1208,6 +1208,31 @@ data "terraform_remote_state" "remote_state" {
 				{Start: hcl.Pos{Line: 8, Column: 17}, End: hcl.Pos{Line: 8, Column: 32}},
 			},
 		},
+		{
+			name: "array-based json",
+			files: map[string][]byte{
+				"imports.tf.json": []byte(`[
+  {
+    "resource": {
+      "null_resource": {
+        "foo": {}
+      }
+    }
+  },
+  {
+    "variable": {
+      "example": {
+        "type": "string"
+      }
+    }
+  }
+]`),
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 17}, End: hcl.Pos{Line: 7, Column: 6}},
+				{Start: hcl.Pos{Line: 10, Column: 17}, End: hcl.Pos{Line: 14, Column: 6}},
+			},
+		},
 	}
 
 	for _, test := range tests {

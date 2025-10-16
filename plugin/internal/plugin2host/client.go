@@ -205,6 +205,62 @@ func (w *nativeWalker) Exit(node hclsyntax.Node) hcl.Diagnostics {
 	return nil
 }
 
+// extractJSONAttributeNames parses error diagnostics from Content() to discover attribute names.
+// This is needed for JSON files with array-based syntax like [{"foo": {...}}].
+func extractJSONAttributeNames(body hcl.Body) ([]string, error) {
+	content, diags := body.Content(&hcl.BodySchema{})
+
+	var names []string
+	for _, diag := range diags {
+		if diag.Summary == "Extraneous JSON object property" {
+			// Detail format: "No argument or block type is named \"foo\"."
+			detail := diag.Detail
+			if idx := strings.Index(detail, "\""); idx != -1 {
+				end := strings.Index(detail[idx+1:], "\"")
+				if end != -1 {
+					name := detail[idx+1 : idx+1+end]
+					names = append(names, name)
+				}
+			}
+		}
+	}
+
+	if len(content.Attributes) > 0 || len(content.Blocks) > 0 {
+		return nil, fmt.Errorf("unexpected content")
+	}
+
+	return names, nil
+}
+
+// getJSONAttributes gets all attributes from a JSON body, supporting both object
+// and array-based syntax. For array-based JSON like [{"import": {...}}], it
+// discovers attribute names from error messages and builds a schema to extract them.
+func getJSONAttributes(body hcl.Body) (hcl.Attributes, hcl.Diagnostics) {
+	// First, try JustAttributes (works for object-based JSON)
+	attrs, diags := body.JustAttributes()
+	if !diags.HasErrors() {
+		return attrs, nil
+	}
+
+	// Get attribute names from errors
+	names, err := extractJSONAttributeNames(body)
+	if err != nil {
+		return attrs, diags
+	}
+
+	// Build a schema with all discovered attributes
+	schema := &hcl.BodySchema{
+		Attributes: make([]hcl.AttributeSchema, len(names)),
+	}
+	for i, name := range names {
+		schema.Attributes[i] = hcl.AttributeSchema{Name: name}
+	}
+
+	// Now use PartialContent with the complete schema
+	content, _, partialDiags := body.PartialContent(schema)
+	return content.Attributes, partialDiags
+}
+
 // WalkExpressions traverses expressions in all files by the passed walker.
 // Note that it behaves differently in native HCL syntax and JSON syntax.
 //
@@ -236,7 +292,7 @@ func (c *GRPCClient) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
 		}
 
 		// In JSON syntax, everything can be walked as an attribute.
-		attrs, jsonDiags := file.Body.JustAttributes()
+		attrs, jsonDiags := getJSONAttributes(file.Body)
 		if jsonDiags.HasErrors() {
 			diags = diags.Extend(jsonDiags)
 			continue
