@@ -263,7 +263,7 @@ func TestVersionConstraints(t *testing.T) {
 			},
 			Want: "",
 			ErrCheck: func(err error) bool {
-				return err == nil || err.Error() != "Malformed constraint: >> 1.0"
+				return err == nil || err.Error() != "malformed constraint: >> 1.0"
 			},
 		},
 	}
