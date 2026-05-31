@@ -609,6 +609,16 @@ func Test_EvaluateExpr_value(t *testing.T) {
 		Want string
 	}{
 		{
+			Name: "unknown variable",
+			Src: `
+variable "instance_type" {}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: `cty.DynamicVal`,
+		},
+		{
 			Name: "sensitive variable",
 			Src: `
 variable "instance_type" {

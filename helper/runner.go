@@ -431,6 +431,8 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 		}
 
 		v.Default = val
+	} else {
+		v.Default = cty.DynamicVal
 	}
 	if attr, exists := content.Attributes["sensitive"]; exists {
 		var sensitive bool
