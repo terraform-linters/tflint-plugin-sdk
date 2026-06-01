@@ -712,8 +712,16 @@ func TestParseRef(t *testing.T) {
 		},
 		{
 			`boop_instance`,
-			nil,
-			`A reference to a resource type must be followed by at least one attribute access, specifying the resource name.`,
+			&Reference{
+				Subject: BareRef{
+					Name: "boop_instance",
+				},
+				SourceRange: hcl.Range{
+					Start: hcl.Pos{Line: 1, Column: 1, Byte: 0},
+					End:   hcl.Pos{Line: 1, Column: 14, Byte: 13},
+				},
+			},
+			``,
 		},
 	}
 

@@ -221,6 +221,16 @@ func parseRef(traversal hcl.Traversal) (*Reference, hcl.Diagnostics) {
 		return nil, diags
 
 	default:
+		// Bare references like `ignore_changes = [tags]` are invalid in Terraform,
+		// but they are returned as valid references in the context of static analysis.
+		if len(traversal) == 1 {
+			return &Reference{
+				Subject:     BareRef{Name: root},
+				SourceRange: rootRange,
+			}, diags
+		}
+
+		// Parse traversal except a bare reference, assuming this is a managed resource reference.
 		return parseResourceRef(ManagedResourceMode, rootRange, traversal)
 	}
 }
