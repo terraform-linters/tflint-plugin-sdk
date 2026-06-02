@@ -82,9 +82,18 @@ func TestReferencesInExpr(t *testing.T) {
 			},
 		},
 		{
-			Name:  "contains invalid references",
-			Input: `"${boop_instance}_${var.foo}"`, // A reference to a resource type must be followed by at least one attribute access, specifying the resource name.
+			Name:  "contains bare references",
+			Input: `"${boop_instance}_${var.foo}"`,
 			Want: []*addrs.Reference{
+				{
+					Subject: addrs.BareRef{
+						Name: "boop_instance",
+					},
+					SourceRange: hcl.Range{
+						Start: hcl.Pos{Line: 1, Column: 4, Byte: 3},
+						End:   hcl.Pos{Line: 1, Column: 17, Byte: 16},
+					},
+				},
 				{
 					Subject: addrs.InputVariable{
 						Name: "foo",
