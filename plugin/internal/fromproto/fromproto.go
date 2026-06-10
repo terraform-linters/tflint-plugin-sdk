@@ -151,6 +151,25 @@ func Rule(rule *proto.EmitIssue_Rule) *RuleObject {
 
 // Expression converts proto.Expression to hcl.Expression
 func Expression(expr *proto.Expression) (hcl.Expression, hcl.Diagnostics) {
+	if expr == nil {
+		return nil, hcl.Diagnostics{
+			{
+				Severity: hcl.DiagError,
+				Summary:  "Failed to decode expression",
+				Detail:   "expression should not be null",
+			},
+		}
+	}
+	if expr.Range == nil {
+		return nil, hcl.Diagnostics{
+			{
+				Severity: hcl.DiagError,
+				Summary:  "Failed to decode expression",
+				Detail:   "expression.range should not be null",
+			},
+		}
+	}
+
 	parsed, diags := hclext.ParseExpression(expr.Bytes, expr.Range.Filename, Pos(expr.Range.Start))
 	if diags.HasErrors() {
 		return nil, diags
