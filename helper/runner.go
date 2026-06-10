@@ -441,7 +441,9 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 			return v, diags
 		}
 
-		v.Default = v.Default.Mark(marks.Sensitive)
+		if sensitive {
+			v.Default = v.Default.Mark(marks.Sensitive)
+		}
 	}
 	if attr, exists := content.Attributes["ephemeral"]; exists {
 		var ephemeral bool
@@ -450,7 +452,9 @@ func decodeVariableBlock(block *hcl.Block) (*Variable, hcl.Diagnostics) {
 			return v, diags
 		}
 
-		v.Default = v.Default.Mark(marks.Ephemeral)
+		if ephemeral {
+			v.Default = v.Default.Mark(marks.Ephemeral)
+		}
 	}
 
 	return v, nil
