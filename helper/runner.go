@@ -238,7 +238,11 @@ func (r *Runner) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tfl
 
 	if err != nil {
 		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
-		if errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrSensitive) || errors.Is(err, tflint.ErrUnevaluable) {
+		if errors.Is(err, tflint.ErrUnknownValue) ||
+			errors.Is(err, tflint.ErrNullValue) ||
+			errors.Is(err, tflint.ErrSensitive) ||
+			errors.Is(err, tflint.ErrEphemeral) ||
+			errors.Is(err, tflint.ErrUnevaluable) {
 			return nil
 		}
 		return err
@@ -310,6 +314,31 @@ func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tfl
 		return err
 	}
 
+	if ty == cty.DynamicPseudoType {
+		return gocty.FromCtyValue(val, target)
+	}
+
+	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, marked).
+	// This allows the caller to handle the value by the errors package.
+	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
+		if !v.IsKnown() {
+			return false, tflint.ErrUnknownValue
+		}
+		if v.IsNull() {
+			return false, tflint.ErrNullValue
+		}
+		if v.HasMark(marks.Sensitive) {
+			return false, tflint.ErrSensitive
+		}
+		if v.HasMark(marks.Ephemeral) {
+			return false, tflint.ErrEphemeral
+		}
+		return true, nil
+	})
+	if err != nil {
+		return err
+	}
+
 	return gocty.FromCtyValue(val, target)
 }
 
@@ -348,6 +377,10 @@ func (r *Runner) Changes() map[string][]byte {
 func (r *Runner) EnsureNoError(err error, proc func() error) error {
 	if err == nil {
 		return proc()
+	}
+
+	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrSensitive) {
+		return nil
 	}
 	return err
 }
