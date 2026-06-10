@@ -63,7 +63,10 @@ func (r *Runner) GetModulePath() (addrs.Module, error) {
 
 // GetModuleContent gets a content of the current module
 func (r *Runner) GetModuleContent(schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
-	content := &hclext.BodyContent{}
+	content := &hclext.BodyContent{
+		Attributes: hclext.Attributes{},
+		Blocks:     hclext.Blocks{},
+	}
 	diags := hcl.Diagnostics{}
 
 	for _, f := range r.files {
