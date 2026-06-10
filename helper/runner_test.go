@@ -464,6 +464,31 @@ resource "null_resource" "test" {
 			},
 		},
 		{
+			name: "array-based json",
+			files: map[string]string{
+				"main.tf.json": `[
+  {
+    "resource": {
+      "null_resource": {
+        "foo": {}
+      }
+    }
+  },
+  {
+    "variable": {
+      "example": {
+        "type": "string"
+      }
+    }
+  }
+]`,
+			},
+			walked: []hcl.Range{
+				{Start: hcl.Pos{Line: 3, Column: 17}, End: hcl.Pos{Line: 7, Column: 6}},
+				{Start: hcl.Pos{Line: 10, Column: 17}, End: hcl.Pos{Line: 14, Column: 6}},
+			},
+		},
+		{
 			name: "multiple files",
 			files: map[string]string{
 				"main.tf": `
