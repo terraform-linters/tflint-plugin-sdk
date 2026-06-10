@@ -186,6 +186,7 @@ terraform {
 				},
 			},
 			Expected: &hclext.BodyContent{
+				Attributes: hclext.Attributes{},
 				Blocks: hclext.Blocks{
 					{
 						Type: "terraform",
@@ -225,6 +226,56 @@ terraform {
 						TypeRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 2, Column: 1}, End: hcl.Pos{Line: 2, Column: 10}},
 					},
 				},
+			},
+		},
+		{
+			Name: "top level attribute",
+			Src:  `foo = "bar"`,
+			Schema: &hclext.BodySchema{
+				Attributes: []hclext.AttributeSchema{{Name: "foo"}},
+			},
+			Expected: &hclext.BodyContent{
+				Attributes: hclext.Attributes{
+					"foo": &hclext.Attribute{
+						Name: "foo",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 8}, End: hcl.Pos{Line: 1, Column: 11}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 7}, End: hcl.Pos{Line: 1, Column: 12}},
+						},
+						Range:     hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 12}},
+						NameRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 4}},
+					},
+				},
+				Blocks: hclext.Blocks{},
+			},
+		},
+		{
+			Name: "just attributes mode",
+			Src:  `foo = "bar"`,
+			Schema: &hclext.BodySchema{
+				Mode: hclext.SchemaJustAttributesMode,
+			},
+			Expected: &hclext.BodyContent{
+				Attributes: hclext.Attributes{
+					"foo": &hclext.Attribute{
+						Name: "foo",
+						Expr: &hclsyntax.TemplateExpr{
+							Parts: []hclsyntax.Expression{
+								&hclsyntax.LiteralValueExpr{
+									SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 8}, End: hcl.Pos{Line: 1, Column: 11}},
+								},
+							},
+							SrcRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 7}, End: hcl.Pos{Line: 1, Column: 12}},
+						},
+						Range:     hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 12}},
+						NameRange: hcl.Range{Filename: "main.tf", Start: hcl.Pos{Line: 1, Column: 1}, End: hcl.Pos{Line: 1, Column: 4}},
+					},
+				},
+				Blocks: hclext.Blocks{},
 			},
 		},
 	}
