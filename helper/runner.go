@@ -2,21 +2,19 @@ package helper
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"reflect"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/internal"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal/runner"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/convert"
-	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 // Runner is a mock that satisfies the Runner interface for plugin testing.
@@ -86,48 +84,12 @@ func (r *Runner) GetModuleContent(schema *hclext.BodySchema, opts *tflint.GetMod
 
 // GetResourceContent gets a resource content of the current module
 func (r *Runner) GetResourceContent(name string, schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
-	body, err := r.GetModuleContent(&hclext.BodySchema{
-		Blocks: []hclext.BlockSchema{
-			{Type: "resource", LabelNames: []string{"type", "name"}, Body: schema},
-		},
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
-	for _, resource := range body.Blocks {
-		if resource.Labels[0] != name {
-			continue
-		}
-
-		content.Blocks = append(content.Blocks, resource)
-	}
-
-	return content, nil
+	return runner.GetResourceContent(r, name, schema, opts)
 }
 
 // GetProviderContent gets a provider content of the current module
 func (r *Runner) GetProviderContent(name string, schema *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
-	body, err := r.GetModuleContent(&hclext.BodySchema{
-		Blocks: []hclext.BlockSchema{
-			{Type: "provider", LabelNames: []string{"name"}, Body: schema},
-		},
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
-	for _, provider := range body.Blocks {
-		if provider.Labels[0] != name {
-			continue
-		}
-
-		content.Blocks = append(content.Blocks, provider)
-	}
-
-	return content, nil
+	return runner.GetProviderContent(r, name, schema, opts)
 }
 
 // GetFile returns the hcl.File object
@@ -188,110 +150,28 @@ func (r *Runner) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
 
 // DecodeRuleConfig extracts the rule's configuration into the given value
 func (r *Runner) DecodeRuleConfig(name string, ret interface{}) error {
-	schema := hclext.ImpliedBodySchema(ret)
-
-	for _, rule := range r.config.Rules {
-		if rule.Name == name {
-			body, diags := hclext.Content(rule.Body, schema)
-			if diags.HasErrors() {
-				return diags
+	return runner.DecodeRuleConfig(ret, func(schema *hclext.BodySchema) (*hclext.BodyContent, error) {
+		for _, rule := range r.config.Rules {
+			if rule.Name == name {
+				body, diags := hclext.Content(rule.Body, schema)
+				if diags.HasErrors() {
+					return nil, diags
+				}
+				return body, nil
 			}
-			if diags := hclext.DecodeBody(body, nil, ret); diags.HasErrors() {
-				return diags
-			}
-			return nil
 		}
-	}
-
-	return nil
+		return nil, nil
+	})
 }
-
-var errRefTy = reflect.TypeOf((*error)(nil)).Elem()
 
 // EvaluateExpr returns a value of the passed expression.
 // Note that some features are limited
 func (r *Runner) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
-	rval := reflect.ValueOf(target)
-	rty := rval.Type()
-
-	var callback bool
-	switch rty.Kind() {
-	case reflect.Func:
-		// Callback must meet the following requirements:
-		//   - It must be a function
-		//   - It must take an argument
-		//   - It must return an error
-		if !(rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy)) {
-			panic(`callback must be of type "func (v T) error"`)
-		}
-		callback = true
-		target = reflect.New(rty.In(0)).Interface()
-
-	case reflect.Pointer:
-		// ok
-	default:
-		panic("target value is not a pointer or function")
-	}
-
-	err := r.evaluateExpr(expr, target, opts)
-	if !callback {
-		// error should be handled in the caller
-		return err
-	}
-
-	if err != nil {
-		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
-		if errors.Is(err, tflint.ErrUnknownValue) ||
-			errors.Is(err, tflint.ErrNullValue) ||
-			errors.Is(err, tflint.ErrSensitive) ||
-			errors.Is(err, tflint.ErrEphemeral) ||
-			errors.Is(err, tflint.ErrUnevaluable) {
-			return nil
-		}
-		return err
-	}
-
-	rerr := rval.Call([]reflect.Value{reflect.ValueOf(target).Elem()})
-	if rerr[0].IsNil() {
-		return nil
-	}
-	return rerr[0].Interface().(error)
+	return runner.EvaluateExpr(expr, target, opts, r.evaluateExpr)
 }
 
 func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
-	if opts == nil {
-		opts = &tflint.EvaluateExprOption{}
-	}
-
-	var ty cty.Type
-	if opts.WantType != nil {
-		ty = *opts.WantType
-	} else {
-		switch target.(type) {
-		case *string:
-			ty = cty.String
-		case *int:
-			ty = cty.Number
-		case *bool:
-			ty = cty.Bool
-		case *[]string:
-			ty = cty.List(cty.String)
-		case *[]int:
-			ty = cty.List(cty.Number)
-		case *[]bool:
-			ty = cty.List(cty.Bool)
-		case *map[string]string:
-			ty = cty.Map(cty.String)
-		case *map[string]int:
-			ty = cty.Map(cty.Number)
-		case *map[string]bool:
-			ty = cty.Map(cty.Bool)
-		case *cty.Value:
-			ty = cty.DynamicPseudoType
-		default:
-			return fmt.Errorf("unsupported target type: %T", target)
-		}
-	}
+	ty := runner.WantType(target, opts)
 
 	variables := map[string]cty.Value{}
 	for _, variable := range r.variables {
@@ -317,32 +197,7 @@ func (r *Runner) evaluateExpr(expr hcl.Expression, target interface{}, opts *tfl
 		return err
 	}
 
-	if ty == cty.DynamicPseudoType {
-		return gocty.FromCtyValue(val, target)
-	}
-
-	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, marked).
-	// This allows the caller to handle the value by the errors package.
-	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
-		if !v.IsKnown() {
-			return false, tflint.ErrUnknownValue
-		}
-		if v.IsNull() {
-			return false, tflint.ErrNullValue
-		}
-		if v.HasMark(marks.Sensitive) {
-			return false, tflint.ErrSensitive
-		}
-		if v.HasMark(marks.Ephemeral) {
-			return false, tflint.ErrEphemeral
-		}
-		return true, nil
-	})
-	if err != nil {
-		return err
-	}
-
-	return gocty.FromCtyValue(val, target)
+	return runner.DecodeValue(val, ty, expr.Range(), target)
 }
 
 // EmitIssue adds an issue to the runner itself.
@@ -378,14 +233,7 @@ func (r *Runner) Changes() map[string][]byte {
 //
 // Deprecated: Use EvaluateExpr with a function callback. e.g. EvaluateExpr(expr, func (val T) error {}, ...)
 func (r *Runner) EnsureNoError(err error, proc func() error) error {
-	if err == nil {
-		return proc()
-	}
-
-	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrSensitive) {
-		return nil
-	}
-	return err
+	return runner.EnsureNoError(err, proc)
 }
 
 // newLocalRunner initialises a new test runner.

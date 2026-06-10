@@ -4,9 +4,7 @@ import (
 	"context"
 	stdjson "encoding/json"
 	"errors"
-	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -14,15 +12,12 @@ import (
 	hcljson "github.com/hashicorp/hcl/v2/json"
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/internal"
-	"github.com/terraform-linters/tflint-plugin-sdk/logger"
+	"github.com/terraform-linters/tflint-plugin-sdk/internal/runner"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/fromproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/proto"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin/internal/toproto"
 	"github.com/terraform-linters/tflint-plugin-sdk/terraform/addrs"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform/lang/marks"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
-	"github.com/zclconf/go-cty/cty"
-	"github.com/zclconf/go-cty/cty/gocty"
 	"github.com/zclconf/go-cty/cty/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,58 +58,13 @@ func (c *GRPCClient) GetModulePath() (addrs.Module, error) {
 // GetResourceContent gets the contents of resources based on the schema.
 // This is shorthand of GetModuleContent for resources
 func (c *GRPCClient) GetResourceContent(name string, inner *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
-	if opts == nil {
-		opts = &tflint.GetModuleContentOption{}
-	}
-	opts.Hint.ResourceType = name
-
-	body, err := c.GetModuleContent(&hclext.BodySchema{
-		Blocks: []hclext.BlockSchema{
-			{Type: "resource", LabelNames: []string{"type", "name"}, Body: inner},
-		},
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
-	for _, resource := range body.Blocks {
-		if resource.Labels[0] != name {
-			continue
-		}
-
-		content.Blocks = append(content.Blocks, resource)
-	}
-
-	return content, nil
+	return runner.GetResourceContent(c, name, inner, opts)
 }
 
 // GetProviderContent gets the contents of providers based on the schema.
 // This is shorthand of GetModuleContent for providers
 func (c *GRPCClient) GetProviderContent(name string, inner *hclext.BodySchema, opts *tflint.GetModuleContentOption) (*hclext.BodyContent, error) {
-	if opts == nil {
-		opts = &tflint.GetModuleContentOption{}
-	}
-
-	body, err := c.GetModuleContent(&hclext.BodySchema{
-		Blocks: []hclext.BlockSchema{
-			{Type: "provider", LabelNames: []string{"name"}, Body: inner},
-		},
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	content := &hclext.BodyContent{Blocks: []*hclext.Block{}}
-	for _, provider := range body.Blocks {
-		if provider.Labels[0] != name {
-			continue
-		}
-
-		content.Blocks = append(content.Blocks, provider)
-	}
-
-	return content, nil
+	return runner.GetProviderContent(c, name, inner, opts)
 }
 
 // GetModuleContent gets the contents of the module based on the schema.
@@ -320,80 +270,28 @@ func (c *GRPCClient) WalkExpressions(walker tflint.ExprWalker) hcl.Diagnostics {
 // DecodeRuleConfig guesses the schema of the rule config from the passed interface and sends the schema to GRPC server.
 // Content retrieved based on the schema is decoded into the passed interface.
 func (c *GRPCClient) DecodeRuleConfig(name string, ret interface{}) error {
-	resp, err := c.Client.GetRuleConfigContent(context.Background(), &proto.GetRuleConfigContent_Request{
-		Name:   name,
-		Schema: toproto.BodySchema(hclext.ImpliedBodySchema(ret)),
+	return runner.DecodeRuleConfig(ret, func(schema *hclext.BodySchema) (*hclext.BodyContent, error) {
+		resp, err := c.Client.GetRuleConfigContent(context.Background(), &proto.GetRuleConfigContent_Request{
+			Name:   name,
+			Schema: toproto.BodySchema(schema),
+		})
+		if err != nil {
+			return nil, fromproto.Error(err)
+		}
+
+		content, diags := fromproto.BodyContent(resp.Content)
+		if diags.HasErrors() {
+			return nil, diags
+		}
+		return content, nil
 	})
-	if err != nil {
-		return fromproto.Error(err)
-	}
-
-	content, diags := fromproto.BodyContent(resp.Content)
-	if diags.HasErrors() {
-		return diags
-	}
-	if content.IsEmpty() {
-		return nil
-	}
-
-	diags = hclext.DecodeBody(content, nil, ret)
-	if diags.HasErrors() {
-		return diags
-	}
-	return nil
 }
-
-var errRefTy = reflect.TypeOf((*error)(nil)).Elem()
 
 // EvaluateExpr evals the passed expression based on the type.
 // Passing a callback function instead of a value as the target will invoke the callback,
 // passing the evaluated value to the argument.
 func (c *GRPCClient) EvaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
-	rval := reflect.ValueOf(target)
-	rty := rval.Type()
-
-	var callback bool
-	switch rty.Kind() {
-	case reflect.Func:
-		// Callback must meet the following requirements:
-		//   - It must be a function
-		//   - It must take an argument
-		//   - It must return an error
-		if !(rty.NumIn() == 1 && rty.NumOut() == 1 && rty.Out(0).Implements(errRefTy)) {
-			panic(`callback must be of type "func (v T) error"`)
-		}
-		callback = true
-		target = reflect.New(rty.In(0)).Interface()
-
-	case reflect.Pointer:
-		// ok
-	default:
-		panic("target value is not a pointer or function")
-	}
-
-	err := c.evaluateExpr(expr, target, opts)
-	if !callback {
-		// error should be handled in the caller
-		return err
-	}
-
-	if err != nil {
-		// If it cannot be represented as a Go value, exit without invoking the callback rather than returning an error.
-		if errors.Is(err, tflint.ErrUnknownValue) ||
-			errors.Is(err, tflint.ErrNullValue) ||
-			errors.Is(err, tflint.ErrSensitive) ||
-			errors.Is(err, tflint.ErrEphemeral) ||
-			errors.Is(err, tflint.ErrUnevaluable) {
-			return nil
-		}
-		return err
-	}
-
-	rerr := rval.Call([]reflect.Value{reflect.ValueOf(target).Elem()})
-	if rerr[0].IsNil() {
-		return nil
-	}
-	return rerr[0].Interface().(error)
+	return runner.EvaluateExpr(expr, target, opts, c.evaluateExpr)
 }
 
 func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts *tflint.EvaluateExprOption) error {
@@ -401,35 +299,7 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 		opts = &tflint.EvaluateExprOption{}
 	}
 
-	var ty cty.Type
-	if opts.WantType != nil {
-		ty = *opts.WantType
-	} else {
-		switch target.(type) {
-		case *string:
-			ty = cty.String
-		case *int:
-			ty = cty.Number
-		case *bool:
-			ty = cty.Bool
-		case *[]string:
-			ty = cty.List(cty.String)
-		case *[]int:
-			ty = cty.List(cty.Number)
-		case *[]bool:
-			ty = cty.List(cty.Bool)
-		case *map[string]string:
-			ty = cty.Map(cty.String)
-		case *map[string]int:
-			ty = cty.Map(cty.Number)
-		case *map[string]bool:
-			ty = cty.Map(cty.Bool)
-		case *cty.Value:
-			ty = cty.DynamicPseudoType
-		default:
-			panic(fmt.Sprintf("unsupported target type: %T", target))
-		}
-	}
+	ty := runner.WantType(target, opts)
 	tyby, err := json.MarshalType(ty)
 	if err != nil {
 		return err
@@ -456,36 +326,7 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 		return err
 	}
 
-	if ty == cty.DynamicPseudoType {
-		return gocty.FromCtyValue(val, target)
-	}
-
-	// Returns an error if the value cannot be decoded to a Go value (e.g. unknown, null, marked).
-	// This allows the caller to handle the value by the errors package.
-	err = cty.Walk(val, func(path cty.Path, v cty.Value) (bool, error) {
-		if !v.IsKnown() {
-			logger.Debug(fmt.Sprintf("unknown value found in %s", expr.Range()))
-			return false, tflint.ErrUnknownValue
-		}
-		if v.IsNull() {
-			logger.Debug(fmt.Sprintf("null value found in %s", expr.Range()))
-			return false, tflint.ErrNullValue
-		}
-		if v.HasMark(marks.Sensitive) {
-			logger.Debug(fmt.Sprintf("sensitive value found in %s", expr.Range()))
-			return false, tflint.ErrSensitive
-		}
-		if v.HasMark(marks.Ephemeral) {
-			logger.Debug(fmt.Sprintf("ephemeral value found in %s", expr.Range()))
-			return false, tflint.ErrEphemeral
-		}
-		return true, nil
-	})
-	if err != nil {
-		return err
-	}
-
-	return gocty.FromCtyValue(val, target)
+	return runner.DecodeValue(val, ty, expr.Range(), target)
 }
 
 // EmitIssue emits the issue with the passed rule, message, location
@@ -547,12 +388,5 @@ func (c *GRPCClient) ApplyChanges() error {
 //
 // Deprecated: Use errors.Is() instead to determine which errors can be ignored.
 func (*GRPCClient) EnsureNoError(err error, proc func() error) error {
-	if err == nil {
-		return proc()
-	}
-
-	if errors.Is(err, tflint.ErrUnevaluable) || errors.Is(err, tflint.ErrNullValue) || errors.Is(err, tflint.ErrUnknownValue) || errors.Is(err, tflint.ErrSensitive) {
-		return nil
-	}
-	return err
+	return runner.EnsureNoError(err, proc)
 }
