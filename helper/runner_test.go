@@ -684,6 +684,20 @@ resource "aws_instance" "foo" {
 			Want: `cty.StringVal("secret").Mark(marks.Sensitive)`,
 		},
 		{
+			Name: "explicitly non-sensitive variable",
+			Src: `
+variable "instance_type" {
+  type = string
+  default = "t2.micro"
+  sensitive = false
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: `cty.StringVal("t2.micro")`,
+		},
+		{
 			Name: "ephemeral variable",
 			Src: `
 variable "instance_type" {
@@ -696,6 +710,20 @@ resource "aws_instance" "foo" {
   instance_type = var.instance_type
 }`,
 			Want: `cty.StringVal("secret").Mark(marks.Ephemeral)`,
+		},
+		{
+			Name: "explicitly non-ephemeral variable",
+			Src: `
+variable "instance_type" {
+  type = string
+  default = "t2.micro"
+  ephemeral = false
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: `cty.StringVal("t2.micro")`,
 		},
 	}
 
