@@ -763,6 +763,106 @@ resource "aws_instance" "foo" {
 	}
 }
 
+func Test_EvaluateExpr_sentinels(t *testing.T) {
+	tests := []struct {
+		Name string
+		Src  string
+		Want error
+	}{
+		{
+			Name: "known value",
+			Src: `
+resource "aws_instance" "foo" {
+  instance_type = "t2.micro"
+}`,
+			Want: nil,
+		},
+		{
+			Name: "sensitive variable",
+			Src: `
+variable "instance_type" {
+  default   = "secret"
+  sensitive = true
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: tflint.ErrSensitive,
+		},
+		{
+			Name: "ephemeral variable",
+			Src: `
+variable "instance_type" {
+  default   = "secret"
+  ephemeral = true
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: tflint.ErrEphemeral,
+		},
+		{
+			Name: "unknown variable",
+			Src: `
+variable "instance_type" {}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: tflint.ErrUnknownValue,
+		},
+		{
+			Name: "null variable",
+			Src: `
+variable "instance_type" {
+  default = null
+}
+
+resource "aws_instance" "foo" {
+  instance_type = var.instance_type
+}`,
+			Want: tflint.ErrNullValue,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{"main.tf": test.Src})
+
+			resources, err := runner.GetResourceContent("aws_instance", &hclext.BodySchema{
+				Attributes: []hclext.AttributeSchema{{Name: "instance_type"}},
+			}, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, resource := range resources.Blocks {
+				// raw value
+				var instanceType string
+				err := runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, &instanceType, nil)
+				if !errors.Is(err, test.Want) {
+					t.Fatalf("expected %v, but got %v", test.Want, err)
+				}
+
+				// callback: sentinel errors are filtered without invoking the callback
+				called := false
+				err = runner.EvaluateExpr(resource.Body.Attributes["instance_type"].Expr, func(val string) error {
+					called = true
+					return nil
+				}, nil)
+				if err != nil {
+					t.Fatalf("expected no error, but got %v", err)
+				}
+				if wantCalled := test.Want == nil; called != wantCalled {
+					t.Fatalf("expected callback invocation to be %t, but got %t", wantCalled, called)
+				}
+			}
+		})
+	}
+}
+
 type dummyRule struct {
 	tflint.DefaultRule
 }
@@ -989,18 +1089,77 @@ locals {
 }
 
 func Test_EnsureNoError(t *testing.T) {
-	runner := TestRunner(t, map[string]string{})
-
-	var run bool
-	err := runner.EnsureNoError(nil, func() error {
-		run = true
-		return nil
-	})
-	if err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		Name    string
+		Err     error
+		WantErr error
+		WantRun bool
+	}{
+		{
+			Name:    "no error",
+			Err:     nil,
+			WantErr: nil,
+			WantRun: true,
+		},
+		{
+			Name:    "unevaluable error",
+			Err:     tflint.ErrUnevaluable,
+			WantErr: nil,
+			WantRun: false,
+		},
+		{
+			Name:    "null value error",
+			Err:     tflint.ErrNullValue,
+			WantErr: nil,
+			WantRun: false,
+		},
+		{
+			Name:    "unknown value error",
+			Err:     tflint.ErrUnknownValue,
+			WantErr: nil,
+			WantRun: false,
+		},
+		{
+			Name:    "sensitive error",
+			Err:     tflint.ErrSensitive,
+			WantErr: nil,
+			WantRun: false,
+		},
+		{
+			// The production runner does not filter ErrEphemeral in EnsureNoError.
+			Name:    "ephemeral error",
+			Err:     tflint.ErrEphemeral,
+			WantErr: tflint.ErrEphemeral,
+			WantRun: false,
+		},
+		{
+			Name:    "other error",
+			Err:     errors.New("unexpected"),
+			WantErr: errors.New("unexpected"),
+			WantRun: false,
+		},
 	}
 
-	if !run {
-		t.Fatal("Expected to exec the passed proc, but doesn't")
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			runner := TestRunner(t, map[string]string{})
+
+			var run bool
+			err := runner.EnsureNoError(test.Err, func() error {
+				run = true
+				return nil
+			})
+			if test.WantErr == nil {
+				if err != nil {
+					t.Fatalf("expected no error, but got %v", err)
+				}
+			} else if err == nil || err.Error() != test.WantErr.Error() {
+				t.Fatalf("expected %v, but got %v", test.WantErr, err)
+			}
+
+			if run != test.WantRun {
+				t.Fatalf("expected proc invocation to be %t, but got %t", test.WantRun, run)
+			}
+		})
 	}
 }
