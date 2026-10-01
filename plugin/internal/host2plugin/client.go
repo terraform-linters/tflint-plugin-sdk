@@ -3,6 +3,7 @@ package host2plugin
 import (
 	"context"
 	"os/exec"
+	"sync"
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/hashicorp/go-version"
@@ -122,10 +123,29 @@ func (c *GRPCClient) ApplyConfig(content *hclext.BodyContent, sources map[string
 func (c *GRPCClient) Check(runner plugin2host.Server) error {
 	brokerID := c.broker.NextId()
 	logger.Debug("starting host-side gRPC server")
+
+	var mu sync.Mutex
+	var server *grpc.Server
+	done := false
+	defer func() {
+		mu.Lock()
+		defer mu.Unlock()
+		done = true
+		if server != nil {
+			server.Stop()
+		}
+	}()
+
 	go c.broker.AcceptAndServe(brokerID, func(opts []grpc.ServerOption) *grpc.Server {
 		opts = append(opts, grpc.UnaryInterceptor(interceptor.RequestLogging("plugin2host")))
-		server := grpc.NewServer(opts...)
+		mu.Lock()
+		defer mu.Unlock()
+		server = grpc.NewServer(opts...)
 		proto.RegisterRunnerServer(server, &plugin2host.GRPCServer{Impl: runner})
+		if done {
+			// Check already returned
+			server.Stop()
+		}
 		return server
 	})
 
