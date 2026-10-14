@@ -435,15 +435,15 @@ func (c *GRPCClient) evaluateExpr(expr hcl.Expression, target interface{}, opts 
 		return err
 	}
 
-	file, err := c.GetFile(expr.Range().Filename)
+	file, err := c.Client.GetFile(context.Background(), &proto.GetFile_Request{Name: expr.Range().Filename})
 	if err != nil {
-		return err
+		return fromproto.Error(err)
 	}
 
 	resp, err := c.Client.EvaluateExpr(
 		context.Background(),
 		&proto.EvaluateExpr_Request{
-			Expression: toproto.Expression(expr, file.Bytes),
+			Expression: toproto.Expression(expr, file.File),
 			Option:     &proto.EvaluateExpr_Option{Type: tyby, ModuleCtx: toproto.ModuleCtxType(opts.ModuleCtx)},
 		},
 	)
