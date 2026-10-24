@@ -3,7 +3,7 @@ module github.com/terraform-linters/tflint-plugin-sdk
 go 1.26.0
 
 require (
-	github.com/go-test/deep v1.1.1
+	github.com/go-test/deep v1.1.2
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.8.0
